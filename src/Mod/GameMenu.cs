@@ -65,7 +65,7 @@ internal static class GameMenu
         catch(Exception e){status.text=e is FormatException?"Введите числа от 1 до 1 000 000.":e.Message;}
     }
     private static void FitPanel(){if(panelRect==null)return;var canvasRect=root.GetComponent<RectTransform>();float fit=Math.Min((canvasRect.rect.width-24)/600,(canvasRect.rect.height-24)/480);float scale=Math.Min(Mod.Config.UiScale,fit);panelRect.localScale=new Vector3(scale,scale,1);}
-    internal static void Tick(){ if(root!=null){FitPanel();if(Input.GetKeyDown(KeyCode.F8))Toggle();} }
+    internal static void Tick(){ if(root!=null){FitPanel();if(WindowHotkey.F8Pressed())Toggle();} }
     private static void Toggle()
     {
         Open=!Open;overlay.SetActive(Open);

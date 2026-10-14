@@ -1,7 +1,7 @@
 using DivineLabs.IdleSlayer;
 using DivineLabs.IdleSlayer.Launcher;
 static void Check(bool value,string name){if(!value)throw new Exception(name);Console.WriteLine("ПРОЙДЕНО: "+name);}
-var root=Path.Combine(Environment.GetEnvironmentVariable("TEMP")!,"DivineLabs-checks-"+Guid.NewGuid());Directory.CreateDirectory(root);
+var root=Path.Combine(@"W:\DEV\.cache\temp","DivineLabs-checks-"+Guid.NewGuid());Directory.CreateDirectory(root);
 Check(Settings.MultiplyIncome(-200,100)==-200,"Покупка не умножает расход");
 Check(10+Settings.MultiplyIncome(2,100)+Settings.MultiplyIncome(-200,100)==10,"Доход и последующая покупка сохраняют верный баланс");
 Check(Settings.MultiplyIncome(double.MaxValue,100)==double.MaxValue,"Защита от переполнения");

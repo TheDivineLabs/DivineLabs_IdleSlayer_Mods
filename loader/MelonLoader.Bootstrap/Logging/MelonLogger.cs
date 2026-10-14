@@ -6,8 +6,8 @@ namespace MelonLoader.Bootstrap.Logging;
 internal static class MelonLogger
 {
     private static readonly string timeFormat = "HH:mm:ss.fff";
-    private static readonly ColorARGB timeColor = ColorARGB.LimeGreen;
-    private static readonly ConsoleColor legacyTimeColor = ConsoleColor.Green;
+    private static readonly ColorARGB timeColor = ColorARGB.DeepSkyBlue;
+    private static readonly ConsoleColor legacyTimeColor = ConsoleColor.Cyan;
 
     private static readonly List<StreamWriter> logFiles = [];
 
@@ -181,6 +181,7 @@ internal static class MelonLogger
             return;
 
         msg = DivineLabsMessages.Translate(strippedMessage.ToString()).AsSpan();
+        sectionName = sectionName.ToString().Replace("MelonLoader", "DivineLabs Loader").AsSpan();
 
         if (WineUtils.IsWine)
         {
@@ -243,6 +244,8 @@ internal static class MelonLogger
         if (!ConsoleHandler.IsOpen)
             return;
 
+        specialPart = specialPart.Replace("WARNING", "ПРЕДУПРЕЖДЕНИЕ").Replace("ERROR", "ОШИБКА");
+        sectionPart = sectionPart.Replace("MelonLoader", "DivineLabs Loader");
         logStr = $"[{time}] {specialPart}{sectionPart}{DivineLabsMessages.Translate(msg.ToString())}";
 
         if (WineUtils.IsWine)
