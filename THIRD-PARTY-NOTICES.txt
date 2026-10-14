@@ -1,0 +1,16 @@
+DivineLabs IdleSlayer Mods
+Copyright 2026 DivineLabs. Own code: Apache License 2.0.
+
+MelonLoader 0.7.3 (Lava Gang): Apache-2.0.
+Fork revision: 982ed9981ac5b0619648a2e79bcc02fd8861db33.
+See loader/LICENSE.md and loader/NOTICE.txt in source; payload/MelonLoader/Documentation in distribution.
+Changes: DivineLabs console branding and Russian presentation; originals retained in diagnostic files.
+
+.NET runtime: Microsoft, MIT. Runtime LICENSE.txt and ThirdPartyNotices.txt are retained.
+HarmonyX, MonoMod, Mono.Cecil, Il2CppInterop, Cpp2IL and other loader dependencies retain upstream licenses and notices supplied with MelonLoader.
+Unity and TextMeshPro: Unity Technologies. Game binaries and game-derived reference assemblies are not distributed by this project.
+Idle Slayer: Pablo Leban. Not affiliated with or endorsed by the game developer, Valve or Unity.
+
+No code or binary from IdleSlayerMods.Common is included in the product.
+
+See licenses/ for original license texts and the corresponding Il2CppInterop source archive (LGPL-3.0-only).

@@ -1,0 +1,123 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>$(BootstrapTarget)</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PublishAot>true</PublishAot>
+        <SelfContained>true</SelfContained>
+        <PublishDir>$(MLOutDir)</PublishDir>
+        <DefineConstants>$(DefineConstants);BOOTSTRAP</DefineConstants>
+        <AcceptVSBuildToolsLicense>true</AcceptVSBuildToolsLicense>
+        <XwinArches Condition="'$(XWinArches)' == ''">x86,x86_64</XwinArches>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(RuntimeIdentifier.StartsWith(`linux-`))' == 'true'">
+        <ExportsFile>linuxexports.def</ExportsFile>
+        <LinkStandardCPlusPlusLibrary>true</LinkStandardCPlusPlusLibrary>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(RuntimeIdentifier.StartsWith(`osx-`))' == 'true'">
+        <ExportsFile>osxexports.def</ExportsFile>
+        <OSXEntryPath>Deps/$(RuntimeIdentifier)/osxentry.o</OSXEntryPath>
+        <LinkStandardCPlusPlusLibrary>true</LinkStandardCPlusPlusLibrary>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-x64'">
+        <OSXEntryArch>x86_64</OSXEntryArch>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-arm64'">
+        <OSXEntryArch>arm64</OSXEntryArch>
+    </PropertyGroup>
+
+    <Target Condition="'$(RuntimeIdentifier.StartsWith(`osx-`))' == 'true'" Name="BuildOSXEntry" BeforeTargets="Build">
+        <!-- -arch is required because g++ on Apple Silicon defaults to arm64, producing
+             an object file that ld64 silently ignores when linking an x86_64 dylib. -->
+        <Exec Command="g++ -arch $(OSXEntryArch) -c -O2 -fPIC OSXEntry/osxentry.cpp -o $(OSXEntryPath)" />
+    </Target>
+
+    <ItemGroup Condition="'$(RuntimeIdentifier.StartsWith(`win-`))' == 'true'">
+        <LinkerArg Include="/DEF:Exports.def" />
+    </ItemGroup>
+
+    <!-- Force ld64 to keep _SetRlimitHook and, by extension, the __DATA,__interpose struct
+         that references it. Without this, dead-stripping removes the interpose entry that
+         triggers MelonLoader on macOS, because nothing in the managed code references it. -->
+    <ItemGroup Condition="'$(RuntimeIdentifier.StartsWith(`osx-`))' == 'true'">
+        <LinkerArg Include="-Wl,-u,_SetRlimitHook" />
+    </ItemGroup>
+
+    <!-- Ship the launch wrapper alongside the dylib so end users have a ready-made
+         Steam launch option that survives macOS LaunchServices stripping DYLD_*.
+         Source file is committed with +x in the index; CopyToOutputDirectory and
+         Publish preserve Unix permissions on macOS so no chmod is needed. -->
+    <ItemGroup Condition="'$(RuntimeIdentifier.StartsWith(`osx-`))' == 'true'">
+        <None Include="OSXEntry/melonloader-launch.sh"
+              CopyToOutputDirectory="PreserveNewest"
+              Link="melonloader-launch.sh" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' != 'Debug'">
+        <DebugSymbols>false</DebugSymbols>
+        <DebugType>none</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(SolutionDir)/BaseLibs/NetStandardPatches/*" CopyToOutputDirectory="PreserveNewest" Link="MelonLoader/Dependencies/NetStandardPatches/%(RecursiveDir)%(Filename)%(Extension)" />
+        <None Include="$(SolutionDir)/BaseLibs/MonoBleedingEdgePatches/*" CopyToOutputDirectory="PreserveNewest" Link="MelonLoader/Dependencies/MonoBleedingEdgePatches/%(RecursiveDir)%(Filename)%(Extension)" />
+        <None Include="$(SolutionDir)/NOTICE.txt" CopyToOutputDirectory="PreserveNewest" Link="MelonLoader/Documentation/%(Filename)%(Extension)" />
+        <None Include="$(SolutionDir)/LICENSE.md" CopyToOutputDirectory="PreserveNewest" Link="MelonLoader/Documentation/%(Filename)%(Extension)" />
+        <None Include="$(SolutionDir)/CHANGELOG.md" CopyToOutputDirectory="PreserveNewest" Link="MelonLoader/Documentation/%(Filename)%(Extension)" />
+        <None Include="$(SolutionDir)/README.md" CopyToOutputDirectory="PreserveNewest" Link="MelonLoader/Documentation/%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="TrimmerRoots.xml">
+            <LogicalName>ILLink.Descriptors.xml</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <AppHostPath>$(NuGetPackageRoot)/runtime.$(RuntimeIdentifier).microsoft.netcore.dotnetapphost/$(AppHostVersion)/runtimes/$(RuntimeIdentifier)/native/libnethost$(LibExt)</AppHostPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="PublishAotCrossXWin" Version="1.2.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.NETCore.DotNetAppHost" Version="$(AppHostVersion)" PrivateAssets="All" />
+        <PackageReference Include="Pastel" Version="$(PastelVersion)" />
+        <PackageReference Include="Samboy063.Tomlet" Version="$(TomletVersion)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="$(SolutionDir)/MelonLoader/LoaderConfig.cs" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(RuntimeIdentifier.StartsWith(`osx-`))' == 'true'">
+        <NativeLibrary Include="$(OSXEntryPath)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <NativeLibrary Include="$(AppHostPath)" />
+        <NativeLibrary Include="Deps/$(RuntimeIdentifier)/$(LibPrefix)dobby$(LibExt)" />
+        <NativeLibrary Include="Deps/$(RuntimeIdentifier)/$(LibPrefix)plthook$(LibExt)" />
+    </ItemGroup>
+
+    <!-- For some reasons, the linux export file .NET auto generate after compilation contains a hardcoded
+         version being "V1.0". This is bad for us because it means every symbols we export will have "@@V1.0"
+         appended. Our entrypoint on linux REQUIRES to expose "__libc_start_main" without any version suffix.
+         To workaround this, we can remove the string in the file before linking, but after compile -->
+    <Target Name="Replace" BeforeTargets="LinkNative" DependsOnTargets="IlcCompile" Condition="'$(ExportsFile)' != ''">
+        <WriteLinesToFile File="$(ExportsFile)" Lines="$([System.IO.File]::ReadAllText($(ExportsFile)).Replace('V1.0',''))" Overwrite="true" />
+    </Target>
+
+    <Target Name="PublishAfterBuild" AfterTargets="Build" Condition="'$(SkipPublishAfterBuild)' != 'true'">
+        <MSBuild Projects="$(MSBuildProjectFile)"
+             Targets="Publish"
+             Properties="Configuration=$(Configuration);PublishDir=$(PublishDir);SkipPublishAfterBuild=true" />
+    </Target>
+
+    <Target Condition="'$(RuntimeIdentifier.StartsWith(`win-`))' == 'true'" Name="RenameBinary" AfterTargets="Build">
+        <Move SourceFiles="$(PublishDir)$(TargetName).dll" DestinationFiles="$(MLOutDir)/version.dll" Condition="Exists('$(PublishDir)$(TargetName).dll')" />
+    </Target>
+</Project>
+

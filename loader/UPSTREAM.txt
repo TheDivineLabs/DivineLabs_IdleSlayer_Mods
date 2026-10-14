@@ -1,0 +1,5 @@
+MelonLoader v0.7.3
+https://github.com/LavaGang/MelonLoader
+Commit: 982ed9981ac5b0619648a2e79bcc02fd8861db33
+DivineLabs changes: localized console, product title; diagnostic files preserve originals.
+License: Apache-2.0; original NOTICE.txt and LICENSE.md retained.

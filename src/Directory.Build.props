@@ -1,0 +1,1 @@
+<Project><PropertyGroup><ImplicitUsings>enable</ImplicitUsings><Nullable>disable</Nullable><LangVersion>latest</LangVersion><Deterministic>true</Deterministic><GamePath Condition="'$(GamePath)'==''">W:\steam\steamapps\common\Idle Slayer</GamePath><LoaderPath Condition="'$(LoaderPath)'==''">$(GamePath)\MelonLoader</LoaderPath></PropertyGroup></Project>

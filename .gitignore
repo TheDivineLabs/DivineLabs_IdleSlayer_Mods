@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/Output/
+.local/
+/packages/
+/artifacts/
+*.user
+*.sav
+loader/Dependencies/SupportModules/*/Libs/*.dll

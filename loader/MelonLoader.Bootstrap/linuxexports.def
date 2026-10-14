@@ -1,0 +1,16 @@
+{
+    global:
+        DotNetRuntimeDebugHeader;
+        __libc_start_main;
+        NativeHookAttach;
+        NativeHookDetach;
+        LogMsg;
+        LogError;
+        LogMelonInfo;
+        MonoInstallHooks;
+        MonoGetDomainPtr;
+        MonoGetRuntimeHandle;
+        IsConsoleOpen;
+        GetLoaderConfig;
+    local: *;
+};

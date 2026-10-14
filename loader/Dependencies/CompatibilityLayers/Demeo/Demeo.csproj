@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>$(MonoBleedingEdgeTarget)</TargetFramework>
+        <RootNamespace>MelonLoader.CompatibilityLayers</RootNamespace>
+        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+        <OutputPath>$(MLOutDir)/MelonLoader/Dependencies/CompatibilityLayers</OutputPath>
+        <DebugType>portable</DebugType>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="$(SolutionDir)\MelonLoader\MelonLoader.csproj" Private="false" />
+        <PackageReference Include="HarmonyX" Version="$(HarmonyXVersion)" ExcludeAssets="Runtime" />
+    </ItemGroup>
+</Project>

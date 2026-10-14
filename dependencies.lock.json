@@ -1,0 +1,10 @@
+{
+  "loader": {
+    "sha256": "5B2B2F3D1CD42B59EC886C5BDC2663EDAE87A0097A4F4A8F58C0965A99DDA416",
+    "url": "https://github.com/LavaGang/MelonLoader/releases/download/v0.7.3/MelonLoader.x64.zip"
+  },
+  "runtime": {
+    "sha256": "C077CCC342C5571CEB7A3C06D1DFBC99B989ED5A6E0F3A0B0B450531C1259615",
+    "url": "https://builds.dotnet.microsoft.com/dotnet/Runtime/6.0.36/dotnet-runtime-6.0.36-win-x64.zip"
+  }
+}
