@@ -1,4 +1,4 @@
-DivineLabs IdleSlayer Mods 0.3.0
+DivineLabs IdleSlayer Mods 0.3.1
 
 Начало работы
 Распакуйте portable ZIP целиком либо запустите Setup.exe и выберите папку.

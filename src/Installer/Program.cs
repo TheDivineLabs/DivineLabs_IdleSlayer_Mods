@@ -50,7 +50,7 @@ internal static class Program
         status=Control("STATIC","Выберите папку и нажмите «Установить».",0,28,202,684,38);
         bar=Control("msctls_progress32","",0,28,246,684,16);SendMessageW(bar,0x406,0,new IntPtr(100));
         install=Control("BUTTON","Установить",1,522,292,190,38,103);
-        Control("STATIC","DivineLabs 0.3.0  ·  Windows x64  ·  Steam",0,28,300,464,28);
+        Control("STATIC","DivineLabs 0.3.1  ·  Windows x64  ·  Steam",0,28,300,464,28);
         ShowWindow(window,5);UpdateWindow(window);
         while(GetMessageW(out var message,0,0,0)>0){TranslateMessage(ref message);DispatchMessageW(ref message);}
     }

@@ -4,12 +4,12 @@
 
 ## Скачать и начать
 
-В [выпуске 0.3.0](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/tag/v0.3.0) есть два варианта:
+В [выпуске 0.3.1](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/tag/v0.3.1) есть два варианта:
 
 | Вариант | Как использовать |
 | --- | --- |
-| **DivineLabs-IdleSlayer-0.3.0-Setup.exe** | Один автономный установщик. Выберите папку, дождитесь установки и откройте созданный ярлык. Удаление доступно в приложениях Windows. |
-| **DivineLabs-IdleSlayer-0.3.0-portable.zip** | Распакуйте весь архив в удобную папку и откройте DivineLabs.IdleSlayer.exe. Устанавливать .NET отдельно не нужно. |
+| **DivineLabs-IdleSlayer-0.3.1-Setup.exe** | Один автономный установщик. Выберите папку, дождитесь установки и откройте созданный ярлык. Удаление доступно в приложениях Windows. |
+| **DivineLabs-IdleSlayer-0.3.1-portable.zip** | Распакуйте весь архив в удобную папку и откройте DivineLabs.IdleSlayer.exe. Устанавливать .NET отдельно не нужно. |
 
 Программа сама проверит комплект и подготовит игру. Когда появится «Всё готово к игре», нажмите «Играть». Если Steam или игра находятся в нестандартной папке, выберите папку игры один раз. При первой подготовке связки с Unity загрузчик может скачать дополнительные средства анализа; интернет потребуется для этих загрузок и облачной синхронизации игры.
 
@@ -90,7 +90,7 @@ App/Setup добавляется установщиком. Отладочные 
 dotnet run --project tests/Checks.csproj -c Release
 ```
 
-В перенесённом C++ toolchain укажите `-NativeBin` и `-NativeLib`, содержащие MSVC и библиотеки Windows SDK. Полная сборка создаёт portable ZIP, Setup EXE, служебный архив компонентов для автоматической загрузки и SHA256SUMS.txt под `W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.3.0`. Архивы создаются из новой папки подготовки, пользовательская Data исключается. Скачиваемый пакет закреплён URL и SHA256 в src/Runtime/Resources/package-index.json.
+В перенесённом C++ toolchain укажите `-NativeBin` и `-NativeLib`, содержащие MSVC и библиотеки Windows SDK. Полная сборка создаёт portable ZIP, Setup EXE, служебный архив компонентов для автоматической загрузки и SHA256SUMS.txt под `W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.3.1`. Архивы создаются из новой папки подготовки, пользовательская Data исключается. Скачиваемый пакет закреплён URL и SHA256 в src/Runtime/Resources/package-index.json.
 
 Для проверки готовых файлов используйте scripts/CheckPortable.ps1 и scripts/CheckInstaller.ps1. Они проверяют запуск EXE, перенос portable, обновление с 0.2.0, удаление и повторную установку в изолированных папках W:\DEV\.cache\temp. Игру эти сценарии не запускают. Результаты выпуска описаны в docs/VALIDATION.md.
 Служебный components.zip не является третьим вариантом программы: его скачивает лаунчер при восстановлении. Пользователь выбирает Setup или portable.

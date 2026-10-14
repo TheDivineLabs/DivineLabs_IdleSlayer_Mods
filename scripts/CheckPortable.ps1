@@ -1,4 +1,4 @@
-param([string]$Archive='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.3.0\DivineLabs-IdleSlayer-0.3.0-portable.zip')
+param([string]$Archive='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.3.1\DivineLabs-IdleSlayer-0.3.1-portable.zip')
 $ErrorActionPreference='Stop'
 $workspace=Join-Path 'W:\DEV\.cache\temp' ('DivineLabs-portable-check-'+[Guid]::NewGuid().ToString('N'))
 $target=Join-Path $workspace 'Portable до перемещения'
