@@ -15,5 +15,9 @@ jobs:
           New-Item -ItemType Directory -Force W:\DEV\.cache\temp | Out-Null
       - name: Build launcher
         run: dotnet build src/Launcher/Launcher.csproj -c Release
+      - name: Build native entry point and installer sources
+        run: |
+          dotnet build src/Bootstrap/Bootstrap.csproj -c Release
+          dotnet build src/Installer/Installer.csproj -c Release
       - name: Check configuration, downloads and installation contracts
         run: dotnet run --project tests/Checks.csproj -c Release

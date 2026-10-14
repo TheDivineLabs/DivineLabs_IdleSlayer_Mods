@@ -22,8 +22,8 @@ public static class Payload
     }
     public static async Task<string> EnsureAsync(IProgress<SetupProgress> progress=null,CancellationToken cancel=default)
     {
-        string cache=Path.Combine(Product.Data,"components",Product.Version);
-        foreach(string candidate in new[]{Path.Combine(Product.Home,"payload"),cache})
+        string cache=Path.Combine(Product.Cache,"Components",Product.Version);
+        foreach(string candidate in new[]{Product.Components,cache})
         {
             if(!Directory.Exists(candidate))continue;
             try{Verify(candidate,progress,cancel);return candidate;}catch(Exception e)when(e is IOException or JsonException){Product.Record(e);}
@@ -31,9 +31,9 @@ public static class Payload
         using var resource=typeof(Payload).Assembly.GetManifestResourceStream("DivineLabs.PackageIndex");
         var index=JsonSerializer.Deserialize<PackageIndex>(resource!)!;
         if(index.version!=Product.Version||index.sha256.Length!=64||!index.sha256.All(Uri.IsHexDigit))throw new InvalidDataException("Не настроен источник компонентов. Используйте полный portable ZIP.");
-        string download=Path.Combine(Product.Data,"downloads",Product.Version+"-components.zip");Directory.CreateDirectory(Path.GetDirectoryName(download)!);
+        string download=Path.Combine(Product.Cache,"Downloads",Product.Version+"-components.zip");Directory.CreateDirectory(Path.GetDirectoryName(download)!);
         await DownloadVerifiedAsync(new Uri(index.url),download,index.sha256,progress,cancel);
-        string stage=Path.Combine(Product.Data,"work","components-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(stage);
+        string stage=Path.Combine(Product.Cache,"Work","components-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(stage);
         progress?.Report(new("Распаковка компонентов…"));ExtractSafe(download,stage,cancel);Verify(stage,progress,cancel);
         Directory.CreateDirectory(Path.GetDirectoryName(cache)!);
         if(Directory.Exists(cache))Directory.Move(cache,cache+"-damaged-"+Guid.NewGuid().ToString("N"));

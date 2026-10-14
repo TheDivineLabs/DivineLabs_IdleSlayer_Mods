@@ -19,7 +19,7 @@ internal static class Program
             if(args.Contains("--cleanup")){SetupOperations.Cleanup(target,int.Parse(Arg("--parent")),filesOnly);return 0;}
             if(args.Contains("--uninstall"))
             {
-                target=Arg("--dir",Path.GetDirectoryName(Environment.ProcessPath)!);
+                target=Arg("--dir",SetupOperations.UninstallRoot());
                 if(!silent&&MessageBoxW(0,"Удалить программу DivineLabs IdleSlayer Mods?\nНастройки и резервные копии сохранятся.","DivineLabs",0x24)!=6)return 0;
                 SetupOperations.BeginUninstall(target,filesOnly,silent);return 0;
             }
@@ -28,11 +28,11 @@ internal static class Program
         }
         catch(Exception e)
         {
-            try{Directory.CreateDirectory(Path.Combine(target,"Data"));File.AppendAllText(Path.Combine(target,"Data","setup.log"),DateTime.UtcNow+" "+e+Environment.NewLine);}catch{}
+            try{SetupOperations.Log(target,e);}catch{}
             if(!silent)MessageBoxW(0,Russian(e),"Установка DivineLabs",0x10);return 2;
         }
     }
-    private static string Russian(Exception e)=>e.Message.Length>0&&e.Message[0]>='А'&&e.Message[0]<='я'?e.Message:"Не удалось завершить установку. Подробности сохранены в Data/setup.log.";
+    private static string Russian(Exception e)=>e.Message.Length>0&&e.Message[0]>='А'&&e.Message[0]<='я'?e.Message:"Не удалось завершить установку. Подробности сохранены в Data/Logs/setup.log.";
     private static void RunWindow(string target)
     {
         CoInitializeEx(0,2);IntPtr module=GetModuleHandleW(null);
@@ -50,7 +50,7 @@ internal static class Program
         status=Control("STATIC","Выберите папку и нажмите «Установить».",0,28,202,684,38);
         bar=Control("msctls_progress32","",0,28,246,684,16);SendMessageW(bar,0x406,0,new IntPtr(100));
         install=Control("BUTTON","Установить",1,522,292,190,38,103);
-        Control("STATIC","DivineLabs 0.2.0  ·  Windows x64  ·  Steam",0,28,300,464,28);
+        Control("STATIC","DivineLabs 0.3.0  ·  Windows x64  ·  Steam",0,28,300,464,28);
         ShowWindow(window,5);UpdateWindow(window);
         while(GetMessageW(out var message,0,0,0)>0){TranslateMessage(ref message);DispatchMessageW(ref message);}
     }
@@ -68,7 +68,7 @@ internal static class Program
                     Task.Run(()=>
                     {
                         try{SetupOperations.Install(installed,true,(s,p)=>{latest=s;percentage=p;PostMessageW(window,Update,0,0);});SetupOperations.Launch(installed);done=true;}
-                        catch(Exception e){latest=Russian(e);failed=true;try{Directory.CreateDirectory(Path.Combine(installed,"Data"));File.AppendAllText(Path.Combine(installed,"Data","setup.log"),e+Environment.NewLine);}catch{}}
+                        catch(Exception e){latest=Russian(e);failed=true;try{SetupOperations.Log(installed,e);}catch{}}
                         finally{busy=false;PostMessageW(window,Update,0,0);}
                     });return 0;
                 }

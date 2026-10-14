@@ -3,7 +3,7 @@ Copyright 2026 DivineLabs. Own code: Apache License 2.0.
 
 MelonLoader 0.7.3 (Lava Gang): Apache-2.0.
 Fork revision: 982ed9981ac5b0619648a2e79bcc02fd8861db33.
-See DivineLabs_Loader/LICENSE.md and DivineLabs_Loader/NOTICE.txt in source; payload/DivineLabs_Loader/Documentation in distribution.
+See DivineLabs_Loader/LICENSE.md and DivineLabs_Loader/NOTICE.txt in source; App/Components/DivineLabs_Loader/Documentation in distribution.
 Changes: DivineLabs console branding and Russian presentation; originals retained in diagnostic files.
 
 .NET runtime: Microsoft, MIT. Runtime LICENSE.txt and ThirdPartyNotices.txt are retained.
@@ -13,4 +13,4 @@ Idle Slayer: Pablo Leban. Not affiliated with or endorsed by the game developer,
 
 No code or binary from IdleSlayerMods.Common is included in the product.
 
-See licenses/ for original license texts and the corresponding Il2CppInterop source archive (LGPL-3.0-only).
+See licenses/ in source and Docs/Licenses/ in distribution for original license texts and the corresponding Il2CppInterop source archive (LGPL-3.0-only).

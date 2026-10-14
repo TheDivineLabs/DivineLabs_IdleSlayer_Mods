@@ -14,7 +14,7 @@ public static class Installation
     public static bool Restored(string game)=>File.Exists(Path.Combine(game,".divinelabs-manual-mode"));
     public static string FindGame()
     {
-        string saved=Path.Combine(Data,"game-path.txt");if(File.Exists(saved)&&ValidGame(File.ReadAllText(saved).Trim()))return File.ReadAllText(saved).Trim();
+        string saved=Path.Combine(Product.Config,"game-path.txt");if(File.Exists(saved)&&ValidGame(File.ReadAllText(saved).Trim()))return File.ReadAllText(saved).Trim();
         var roots=new HashSet<string>(StringComparer.OrdinalIgnoreCase){@"W:\steam",Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),"Steam")};
         foreach(var hive in new[]{Registry.CurrentUser,Registry.LocalMachine})foreach(string name in new[]{@"Software\Valve\Steam",@"Software\WOW6432Node\Valve\Steam"})
         {using var key=hive.OpenSubKey(name);if(key?.GetValue("SteamPath") is string p)roots.Add(p);if(key?.GetValue("InstallPath") is string s)roots.Add(s);}
@@ -23,7 +23,7 @@ public static class Installation
         return roots.Select(p=>Path.Combine(p,"steamapps","common","Idle Slayer")).FirstOrDefault(ValidGame)??"";
     }
     public static void RememberGame(string game)
-    {if(!ValidGame(game))throw new IOException("В этой папке нет установленной игры Idle Slayer.");Directory.CreateDirectory(Data);File.WriteAllText(Path.Combine(Data,"game-path.txt"),Path.GetFullPath(game));}
+    {if(!ValidGame(game))throw new IOException("В этой папке нет установленной игры Idle Slayer.");Directory.CreateDirectory(Product.Config);File.WriteAllText(Path.Combine(Product.Config,"game-path.txt"),Path.GetFullPath(game));}
     public static string Config(string game)
     {string directory=Path.Combine(game,"UserData");if(!Directory.Exists(directory)&&Directory.Exists(Path.Combine(game,".divinelabs-disabled","UserData")))directory=Path.Combine(game,".divinelabs-disabled","UserData");return Path.Combine(directory,SettingsStore.FileName);}
     public static void RequireStopped(){if(Running)throw new InvalidOperationException("Закройте игру штатно перед изменением установки или настроек.");}
@@ -57,8 +57,8 @@ public static class Installation
         foreach(var entry in manifest.Files)
         {
             // UserData contains seed files which are subsequently edited by the loader/user.
-            if(entry.Key.StartsWith("UserData/",StringComparison.OrdinalIgnoreCase))continue;
-            string file=Paths.Inside(game,entry.Key);
+            if(entry.Key.StartsWith("UserData/",StringComparison.OrdinalIgnoreCase)||entry.Key.StartsWith("Defaults/",StringComparison.OrdinalIgnoreCase))continue;
+            string file=Paths.Inside(game,PackageManifest.GameRelative(entry.Key));
             if(!File.Exists(file)||!Digest(file).Equals(entry.Value,StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Компоненты нужно восстановить: "+entry.Key);
         }
     }
@@ -78,8 +78,9 @@ public static class Installation
     }
     private static void InstallCore(string game,string payload,IProgress<SetupProgress> progress,CancellationToken cancel,bool reuseCache)
     {
-        Payload.Verify(payload,progress,cancel);EnableCore(game);string stage=Path.Combine(Data,"work","installation-"+Guid.NewGuid().ToString("N"));
+        Payload.Verify(payload,progress,cancel);EnableCore(game);string stage=Path.Combine(Product.Cache,"Work","installation-"+Guid.NewGuid().ToString("N"));
         progress?.Report(new("Подготовка установки…"));CopyTree(payload,stage);
+        if(Directory.Exists(Path.Combine(stage,"Defaults")))CopyTree(Path.Combine(stage,"Defaults"),Path.Combine(stage,"UserData"));
         foreach(string name in new[]{"Mods","UserData","UserLibs","Plugins"})Directory.CreateDirectory(Path.Combine(stage,name));
         if(Directory.Exists(Path.Combine(game,"UserData")))CopyTree(Path.Combine(game,"UserData"),Path.Combine(stage,"UserData"));
         string oldLoader=Loader(game),newLoader=Path.Combine(stage,Product.LoaderDirectory);
@@ -114,11 +115,11 @@ public static class Installation
         catch
         {foreach(string name in added.AsEnumerable().Reverse())RemoveNewEntry(game,name);foreach(string name in saved)MoveEntry(Path.Combine(baseline,name),Path.Combine(game,name));if(previous!=null)File.WriteAllText(previousRecord,previous);else if(File.Exists(previousRecord))File.Delete(previousRecord);throw;}
         // Only the fresh, confined staging directory is removed. Backups are retained.
-        if(!stage.StartsWith(Path.GetFullPath(Path.Combine(Data,"work"))+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase))throw new IOException("Неверная папка подготовки.");
+        if(!stage.StartsWith(Path.GetFullPath(Path.Combine(Product.Cache,"Work"))+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase))throw new IOException("Неверная папка подготовки.");
         Directory.Delete(stage,true);progress?.Report(new("Всё готово. Можно играть.",100));
     }
     public static void BackupSaves()
-    {string source=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),"AppData","LocalLow","Pablo Leban","Idle Slayer");if(!Directory.Exists(source))return;string target=Path.Combine(Data,"save-backups",DateTime.UtcNow.ToString("yyyyMMddHHmmssfff"));Directory.CreateDirectory(target);foreach(string file in Directory.GetFiles(source,"*.sav"))File.Copy(file,Path.Combine(target,Path.GetFileName(file)));}
+    {string source=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),"AppData","LocalLow","Pablo Leban","Idle Slayer");if(!Directory.Exists(source))return;string target=Path.Combine(Product.Backups,"Saves",DateTime.UtcNow.ToString("yyyyMMddHHmmssfff"));Directory.CreateDirectory(target);foreach(string file in Directory.GetFiles(source,"*.sav"))File.Copy(file,Path.Combine(target,Path.GetFileName(file)));}
     public static void Disable(string game){using var operation=new Operation();DisableCore(game);}
     private static void DisableCore(string game)
     {

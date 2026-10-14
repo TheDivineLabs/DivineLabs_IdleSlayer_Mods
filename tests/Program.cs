@@ -28,10 +28,10 @@ File.WriteAllText(download,"previous-good-file");serve=Serve();bool mismatch=fal
 string installedGame=Installation.FindGame();
 if(Installation.ValidGame(installedGame)&&!Installation.Running)
 {
-    string local=Path.Combine(Product.Home,"payload");
+    string local=Product.Components;
     if(Directory.Exists(local))throw new IOException("Для локальной проверки нужна отдельная папка tests/bin без пользовательского payload.");
     Directory.CreateDirectory(local);var manifest=new PackageManifest{Version=Product.Version};
-    foreach(string relative in new[]{"version.dll",Product.LoaderDirectory+"/net6/MelonLoader.dll","Mods/DivineLabs.IdleSlayer.Mod.dll","UserLibs/DivineLabs.IdleSlayer.Contracts.dll"})
+    foreach(string relative in new[]{"version.dll",Product.LoaderDirectory+"/net6/MelonLoader.dll","Mods/DivineLabs.IdleSlayer.Mod.dll","UserLibs/DivineLabs.IdleSlayer.Contracts.dll","Defaults/Loader.cfg"})
     {string p=Paths.Inside(local,relative);Directory.CreateDirectory(Path.GetDirectoryName(p)!);File.WriteAllText(p,"test-component-"+relative);using var input=File.OpenRead(p);manifest.Files[relative]=Convert.ToHexString(SHA256.HashData(input));}
     File.WriteAllText(Path.Combine(local,"manifest.json"),JsonSerializer.Serialize(manifest));
     File.Copy(Path.Combine(installedGame,"GameAssembly.dll"),Path.Combine(fake,"GameAssembly.dll"));File.WriteAllText(Path.Combine(fake,"Idle Slayer.exe"),"local-test-placeholder");
@@ -40,10 +40,12 @@ if(Installation.ValidGame(installedGame)&&!Installation.Running)
     Check(Installation.Installed(fake)&&!Directory.Exists(Path.Combine(fake,"MelonLoader")),"Миграция подключает DivineLabs_Loader вместо MelonLoader");
     Check((File.GetAttributes(Path.Combine(fake,Product.LoaderDirectory))&FileAttributes.ReparsePoint)==0,"Установка не зависит от junction на portable");
     Check(SettingsStore.Read(Installation.Config(fake)).CoinMultiplier==123,"Миграция сохраняет пользовательские коэффициенты");
+    Check(File.Exists(Path.Combine(fake,"UserData","Loader.cfg")),"Начальные настройки Defaults устанавливаются в UserData игры");
     Installation.VerifyInstalled(fake,local);Directory.Move(local,local+"-moved");Check(Installation.Installed(fake),"Перенос portable не ломает игровые компоненты");
     Installation.Restore(fake);Check(File.ReadAllText(Path.Combine(fake,"MelonLoader","original.txt"))=="legacy-preserved"&&File.ReadAllText(Path.Combine(fake,"Mods","user.txt"))=="preserve","Откат возвращает прежние пользовательские файлы");
     // Test-generated payload is retained as an artifact, never removed from an unknown path.
     Directory.Move(local+"-moved",Path.Combine(root,"test-payload"));
 }
 else Console.WriteLine("Локальная проверка миграции пропущена: нужна установленная закрытая игра.");
+Check(Product.ResolveHome(Path.Combine(root,"App","Launcher"))==root,"Внутренний лаунчер использует корень продукта");
 Console.WriteLine("Проверки завершены. Артефакты: "+root);
