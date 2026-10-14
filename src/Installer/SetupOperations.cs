@@ -63,14 +63,14 @@ internal static class SetupOperations
         var saved=new List<string>();var added=new List<string>();
         try
         {
+            if(Directory.Exists(oldPayload)){Directory.CreateDirectory(Path.GetDirectoryName(savedPayload)!);Directory.Move(oldPayload,savedPayload);legacyMoved=true;}
             foreach(string relative in files)
             {
                 string from=Inside(stage,relative),to=Inside(target,relative);Directory.CreateDirectory(Path.GetDirectoryName(to)!);
                 if(File.Exists(to)){string backup=Inside(history,relative);Directory.CreateDirectory(Path.GetDirectoryName(backup)!);File.Move(to,backup);saved.Add(relative);}
                 File.Move(from,to);added.Add(relative);
             }
-            File.WriteAllText(Path.Combine(target,"installation.json"),JsonSerializer.Serialize(new Receipt{Files=files.ToArray()},ReceiptJson.Default.Receipt));
-            if(integrations)Register(target);
+            if(integrations){try{Register(target);}catch(Exception error){Directory.CreateDirectory(Path.Combine(target,"Data"));File.AppendAllText(Path.Combine(target,"Data","setup.log"),error+Environment.NewLine);}}
         }
         catch
         {
