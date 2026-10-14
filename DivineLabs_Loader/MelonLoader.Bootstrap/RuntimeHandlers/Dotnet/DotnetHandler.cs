@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using MelonLoader.Bootstrap.Logging;
 
@@ -12,7 +12,7 @@ internal static class DotnetHandler
     
     public static void Initialize()
     {
-        var managedDir = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "MelonLoader", "net6");
+        var managedDir = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "DivineLabs_Loader", "net6");
         var runtimeConfigPath = Path.Combine(managedDir, "MelonLoader.runtimeconfig.json");
         var nativeHostPath = Path.Combine(managedDir, "MelonLoader.NativeHost.dll");
 
@@ -64,7 +64,7 @@ internal static class DotnetHandler
         }
         
         // Try to use a portable runtime from repository
-        portableDir = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "MelonLoader", "Dependencies", "dotnet");
+        portableDir = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "DivineLabs_Loader", "Dependencies", "dotnet");
         MelonDebug.Log($"Attempting to load hostfxr using .NET runtime from: {portableDir}");
         if (ScanDirectory(portableDir)
             && InitializeDomain(runtimeConfigPath, nativeHostPath))

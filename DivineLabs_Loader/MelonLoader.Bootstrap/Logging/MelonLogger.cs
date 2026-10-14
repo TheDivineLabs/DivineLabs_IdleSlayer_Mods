@@ -36,7 +36,7 @@ internal static class MelonLogger
 
         MelonDebug.Log($"Creating log files (Max logs: {LoaderConfig.Current.Logs.MaxLogs})");
 
-        var logsDir = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "MelonLoader", "Logs");
+        var logsDir = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "DivineLabs_Loader", "Logs");
         Directory.CreateDirectory(logsDir);
 
         if (LoaderConfig.Current.Logs.MaxLogs > 0)
@@ -73,7 +73,7 @@ internal static class MelonLogger
             }
         }
 
-        var latestPath = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "MelonLoader", "Latest.log");
+        var latestPath = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "DivineLabs_Loader", "Latest.log");
         var cachedPath = Path.Combine(logsDir, $"{DateTime.Now:%y-%M-%d_%H-%m-%s}.log");
 
         MelonDebug.Log("Opening stream to latest log");

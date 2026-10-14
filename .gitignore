@@ -6,4 +6,4 @@
 /artifacts/
 *.user
 *.sav
-loader/Dependencies/SupportModules/*/Libs/*.dll
+DivineLabs_Loader/Dependencies/SupportModules/*/Libs/*.dll

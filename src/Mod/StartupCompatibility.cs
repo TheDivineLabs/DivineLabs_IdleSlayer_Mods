@@ -7,7 +7,7 @@ internal static class StartupCompatibility
 {
     private static string gameRoot;
     private static readonly HashSet<string> Markers = new(StringComparer.OrdinalIgnoreCase)
-    { "Mods", "MelonLoader", "UserData", "UserLibs", "Plugins", "BepInEx", "dotnet", "Melon Loader", "version.dll", "winhttp.dll", "opengl32.dll", "doorstop_config.ini", ".doorstop_version", "changelog.txt" };
+    { "Mods", "DivineLabs_Loader", "MelonLoader", "UserData", "UserLibs", "Plugins", "BepInEx", "dotnet", "Melon Loader", "version.dll", "winhttp.dll", "opengl32.dll", "doorstop_config.ini", ".doorstop_version", "changelog.txt" };
     internal static void Install(HarmonyLib.Harmony harmony, string game)
     {
         gameRoot=Path.GetFullPath(game).TrimEnd(Path.DirectorySeparatorChar);

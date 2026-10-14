@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework><RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishAot>true</PublishAot><SelfContained>true</SelfContained><AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ImplicitUsings>enable</ImplicitUsings><Nullable>disable</Nullable><AssemblyName>DivineLabs.IdleSlayer.Setup</AssemblyName>
+    <ApplicationIcon>../../assets/DivineLabs.ico</ApplicationIcon><ApplicationManifest>../Launcher/app.manifest</ApplicationManifest>
+    <Company>DivineLabs</Company><Product>DivineLabs IdleSlayer Mods</Product><AssemblyTitle>Установка DivineLabs IdleSlayer Mods</AssemblyTitle>
+    <Version>0.2.0</Version><IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <PackageArchive Condition="'$(PackageArchive)'==''">W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.2.0\DivineLabs-IdleSlayer-0.2.0-portable.zip</PackageArchive>
+  </PropertyGroup>
+  <ItemGroup><EmbeddedResource Include="$(PackageArchive)" LogicalName="DivineLabs.ApplicationPackage" Condition="Exists('$(PackageArchive)')"/></ItemGroup>
+  <Target Name="RequireApplicationPackage" BeforeTargets="Publish"><Error Condition="!Exists('$(PackageArchive)')" Text="Сначала создайте portable ZIP через scripts/Build.ps1 или укажите PackageArchive."/></Target>
+</Project>

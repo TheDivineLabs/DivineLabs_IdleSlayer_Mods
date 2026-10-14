@@ -63,12 +63,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="$(SolutionDir)/BaseLibs/NetStandardPatches/*" CopyToOutputDirectory="PreserveNewest" Link="MelonLoader/Dependencies/NetStandardPatches/%(RecursiveDir)%(Filename)%(Extension)" />
-        <None Include="$(SolutionDir)/BaseLibs/MonoBleedingEdgePatches/*" CopyToOutputDirectory="PreserveNewest" Link="MelonLoader/Dependencies/MonoBleedingEdgePatches/%(RecursiveDir)%(Filename)%(Extension)" />
-        <None Include="$(SolutionDir)/NOTICE.txt" CopyToOutputDirectory="PreserveNewest" Link="MelonLoader/Documentation/%(Filename)%(Extension)" />
-        <None Include="$(SolutionDir)/LICENSE.md" CopyToOutputDirectory="PreserveNewest" Link="MelonLoader/Documentation/%(Filename)%(Extension)" />
-        <None Include="$(SolutionDir)/CHANGELOG.md" CopyToOutputDirectory="PreserveNewest" Link="MelonLoader/Documentation/%(Filename)%(Extension)" />
-        <None Include="$(SolutionDir)/README.md" CopyToOutputDirectory="PreserveNewest" Link="MelonLoader/Documentation/%(Filename)%(Extension)" />
+        <None Include="$(SolutionDir)/BaseLibs/NetStandardPatches/*" CopyToOutputDirectory="PreserveNewest" Link="DivineLabs_Loader/Dependencies/NetStandardPatches/%(RecursiveDir)%(Filename)%(Extension)" />
+        <None Include="$(SolutionDir)/BaseLibs/MonoBleedingEdgePatches/*" CopyToOutputDirectory="PreserveNewest" Link="DivineLabs_Loader/Dependencies/MonoBleedingEdgePatches/%(RecursiveDir)%(Filename)%(Extension)" />
+        <None Include="$(SolutionDir)/NOTICE.txt" CopyToOutputDirectory="PreserveNewest" Link="DivineLabs_Loader/Documentation/%(Filename)%(Extension)" />
+        <None Include="$(SolutionDir)/LICENSE.md" CopyToOutputDirectory="PreserveNewest" Link="DivineLabs_Loader/Documentation/%(Filename)%(Extension)" />
+        <None Include="$(SolutionDir)/CHANGELOG.md" CopyToOutputDirectory="PreserveNewest" Link="DivineLabs_Loader/Documentation/%(Filename)%(Extension)" />
+        <None Include="$(SolutionDir)/README.md" CopyToOutputDirectory="PreserveNewest" Link="DivineLabs_Loader/Documentation/%(Filename)%(Extension)" />
     </ItemGroup>
 
     <ItemGroup>

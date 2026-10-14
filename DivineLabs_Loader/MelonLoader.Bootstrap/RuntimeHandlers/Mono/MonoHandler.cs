@@ -105,13 +105,13 @@ internal static class MonoHandler
 
         if (Mono.IsOld)
         {
-            string baseOverridesDir = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "MelonLoader", "Dependencies", "NetStandardPatches");
+            string baseOverridesDir = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "DivineLabs_Loader", "Dependencies", "NetStandardPatches");
             newAssembliesPathSb.Append(baseOverridesDir);
             newAssembliesPathSb.Append(MonoPathSeparator);
         }
         else if (LoaderConfig.Current.UnityEngine.MBEPatch)
         {
-            string baseOverridesDir = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "MelonLoader", "Dependencies", "MonoBleedingEdgePatches");
+            string baseOverridesDir = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "DivineLabs_Loader", "Dependencies", "MonoBleedingEdgePatches");
             newAssembliesPathSb.Append(baseOverridesDir);
             newAssembliesPathSb.Append(MonoPathSeparator);
         }
@@ -193,7 +193,7 @@ internal static class MonoHandler
     {
         MelonDebug.Log("Initializing managed assemblies");
 
-        var mlPath = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "MelonLoader", "net35", "MelonLoader.dll");
+        var mlPath = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "DivineLabs_Loader", "net35", "MelonLoader.dll");
         if (!File.Exists(mlPath))
         {
             Core.Logger.Error($"Mono MelonLoader assembly not found at: '{mlPath}'");

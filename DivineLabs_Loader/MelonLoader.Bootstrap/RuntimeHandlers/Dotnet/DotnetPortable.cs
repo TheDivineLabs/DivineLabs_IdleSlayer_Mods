@@ -1,4 +1,4 @@
-﻿#if X64 && (WINDOWS || OSX || LINUX)
+#if X64 && (WINDOWS || OSX || LINUX)
 using System.Diagnostics;
 using System.IO.Compression;
 
@@ -53,7 +53,7 @@ internal static class DotnetPortable
         }
 
         Core.Logger.Msg("Extracting the Portable .NET Runtime...");
-        string dependenciesDir = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "MelonLoader", "Dependencies");
+        string dependenciesDir = Path.Combine(LoaderConfig.Current.Loader.BaseDirectory, "DivineLabs_Loader", "Dependencies");
         string dotnetDir = Path.Combine(dependenciesDir, "dotnet");
         if (!Directory.Exists(dependenciesDir))
             Directory.CreateDirectory(dependenciesDir);

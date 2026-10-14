@@ -2,7 +2,7 @@ using System.Reflection;
 using HarmonyLib;
 using MelonLoader;
 using UnityEngine;
-[assembly: MelonInfo(typeof(DivineLabs.IdleSlayer.Mod), "DivineLabs • Idle Slayer", "0.1.0", "DivineLabs")]
+[assembly: MelonInfo(typeof(DivineLabs.IdleSlayer.Mod), "DivineLabs • Idle Slayer", "0.2.0", "DivineLabs")]
 [assembly: MelonGame("Pablo Leban", "Idle Slayer")]
 namespace DivineLabs.IdleSlayer;
 public sealed class Mod : MelonMod

@@ -1,0 +1,19 @@
+name: Проверки программы
+on: [push, pull_request]
+jobs:
+  launcher-runtime:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Prepare workspace drive
+        shell: pwsh
+        run: |
+          subst W: $env:RUNNER_TEMP
+          New-Item -ItemType Directory -Force W:\DEV\.cache\temp | Out-Null
+      - name: Build launcher
+        run: dotnet build src/Launcher/Launcher.csproj -c Release
+      - name: Check configuration, downloads and installation contracts
+        run: dotnet run --project tests/Checks.csproj -c Release

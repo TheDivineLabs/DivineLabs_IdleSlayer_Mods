@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Diagnostics;
 
 namespace MelonLoader.Utils
@@ -23,7 +23,7 @@ namespace MelonLoader.Utils
 #else
             Process.GetCurrentProcess().MainModule.FileName;
 #endif
-        public static string MelonLoaderDirectory { get; } = Path.Combine(MelonBaseDirectory, "MelonLoader");
+        public static string MelonLoaderDirectory { get; } = Path.Combine(MelonBaseDirectory, "DivineLabs_Loader");
         public static string GameRootDirectory { get; } = Path.GetDirectoryName(GameExecutablePath);
 
 

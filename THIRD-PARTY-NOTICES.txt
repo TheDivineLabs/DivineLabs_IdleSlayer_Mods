@@ -3,7 +3,7 @@ Copyright 2026 DivineLabs. Own code: Apache License 2.0.
 
 MelonLoader 0.7.3 (Lava Gang): Apache-2.0.
 Fork revision: 982ed9981ac5b0619648a2e79bcc02fd8861db33.
-See loader/LICENSE.md and loader/NOTICE.txt in source; payload/MelonLoader/Documentation in distribution.
+See DivineLabs_Loader/LICENSE.md and DivineLabs_Loader/NOTICE.txt in source; payload/DivineLabs_Loader/Documentation in distribution.
 Changes: DivineLabs console branding and Russian presentation; originals retained in diagnostic files.
 
 .NET runtime: Microsoft, MIT. Runtime LICENSE.txt and ThirdPartyNotices.txt are retained.
