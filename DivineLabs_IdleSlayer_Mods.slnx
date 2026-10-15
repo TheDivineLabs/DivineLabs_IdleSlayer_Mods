@@ -1,5 +1,5 @@
 <Solution>
- <Folder Name="Программа/"><Project Path="src/Bootstrap/Bootstrap.csproj"/><Project Path="src/Launcher/Launcher.csproj"/><Project Path="src/Runtime/Runtime.csproj"/><Project Path="src/Installer/Installer.csproj"/></Folder>
+ <Folder Name="Программа/"><Project Path="src/DesktopUI/DesktopUI.csproj"/><Project Path="src/Bootstrap/Bootstrap.csproj"/><Project Path="src/Launcher/Launcher.csproj"/><Project Path="src/Runtime/Runtime.csproj"/><Project Path="src/Installer/Installer.csproj"/></Folder>
  <Folder Name="Игровые компоненты/"><Project Path="src/Contracts/Contracts.csproj"/><Project Path="src/Mod/Mod.csproj"/></Folder>
  <Folder Name="Проверки/"><Project Path="tests/Checks.csproj"/></Folder>
 </Solution>

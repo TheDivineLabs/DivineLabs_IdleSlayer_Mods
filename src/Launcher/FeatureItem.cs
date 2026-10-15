@@ -1,0 +1,20 @@
+using System.ComponentModel;
+using System.Globalization;
+namespace DivineLabs.IdleSlayer.Launcher;
+public sealed class FeatureItem:INotifyPropertyChanged
+{
+    public event PropertyChangedEventHandler PropertyChanged;
+    public FeatureDefinition Definition {get;}
+    public string Id=>Definition.Id;
+    public string Title=>Definition.Title;
+    public string Description=>Definition.Description;
+    public string Category=>Definition.Category;
+    public bool Enabled {get;private set;}
+    public string Value {get;private set;}
+    public string FavoriteLabel {get;private set;}
+    public string KeyLabel {get;private set;}
+    public string Error {get;set;}="";
+    public FeatureItem(FeatureDefinition d)=>Definition=d;
+    public void Refresh(Settings s){Enabled=Id=="coins"?s.CoinsEnabled:s.DamageEnabled;Value=(Id=="coins"?s.CoinMultiplier:s.DamageMultiplier).ToString(CultureInfo.InvariantCulture);FavoriteLabel=s.Favorites.Contains(Id)?"★":"☆";KeyLabel=s.Bindings[Id].ToString();Notify();}
+    public void Notify()=>PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(""));
+}

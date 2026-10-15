@@ -9,7 +9,7 @@ namespace DivineLabs.IdleSlayer.Setup;
 internal sealed class Receipt
 {
     public string Product {get;set;}="DivineLabs.IdleSlayer";
-    public string Version {get;set;}="0.3.1";
+    public string Version {get;set;}="0.4.0";
     public string[] Files {get;set;}=Array.Empty<string>();
 }
 [JsonSerializable(typeof(Receipt))]
@@ -45,7 +45,7 @@ internal static class SetupOperations
             else process.Dispose();
         }
     }
-    internal static void Install(string target,bool integrations,Action<string,int> report)
+    internal static void Install(string target,bool integrations,Action<string,int> report,bool shortcuts=true)
     {
         target=ValidateTarget(target);
         foreach(var process in Launchers(target)){process.Dispose();throw new IOException("Закройте лаунчер DivineLabs перед обновлением.");}
@@ -98,7 +98,7 @@ internal static class SetupOperations
                 if(File.Exists(to))SavePrevious(relative);
                 File.Move(from,to);added.Add(relative);
             }
-            if(integrations){try{Register(target);}catch(Exception error){Log(target,error);}}
+            if(integrations){try{Register(target,shortcuts);}catch(Exception error){Log(target,error);}}
         }
         catch
         {
@@ -112,9 +112,10 @@ internal static class SetupOperations
     }
     internal static void Log(string root,Exception error)
     {string logs=Inside(root,"Data/Logs");Directory.CreateDirectory(logs);File.AppendAllText(Path.Combine(logs,"setup.log"),$"{DateTime.UtcNow:O} {error}{Environment.NewLine}");}
-    private static void Register(string target)
+    private static void Register(string target,bool shortcuts)
     {
-        using var key=Registry.CurrentUser.CreateSubKey(RegistryKey);key.SetValue("DisplayName","DivineLabs IdleSlayer Mods");key.SetValue("DisplayVersion","0.3.1");key.SetValue("Publisher","DivineLabs");key.SetValue("InstallLocation",target);key.SetValue("DisplayIcon",Inside(target,"DivineLabs.IdleSlayer.exe"));key.SetValue("UninstallString","\""+Inside(target,Uninstaller)+"\" --uninstall");key.SetValue("NoModify",1);key.SetValue("NoRepair",1);
+        using var key=Registry.CurrentUser.CreateSubKey(RegistryKey);key.SetValue("DisplayName","DivineLabs IdleSlayer Mods");key.SetValue("DisplayVersion","0.4.0");key.SetValue("Publisher","DivineLabs");key.SetValue("InstallLocation",target);key.SetValue("DisplayIcon",Inside(target,"DivineLabs.IdleSlayer.exe"));key.SetValue("UninstallString","\""+Inside(target,Uninstaller)+"\" --uninstall");key.SetValue("NoModify",1);key.SetValue("NoRepair",1);
+        if(!shortcuts)return;
         string Q(string text)=>"'"+text.Replace("'","''")+"'";
         string desktop=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),"DivineLabs IdleSlayer Mods.lnk");
         string startMenu=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs),"DivineLabs","IdleSlayer Mods.lnk");
@@ -139,9 +140,20 @@ internal static class SetupOperations
         string helper=Path.Combine(cache,"DivineLabs-Uninstall-"+Guid.NewGuid().ToString("N")+".exe");File.Copy(Environment.ProcessPath!,helper);
         var start=new ProcessStartInfo(helper){UseShellExecute=false,CreateNoWindow=silent};foreach(string a in new[]{"--cleanup","--dir",root,"--parent",Environment.ProcessId.ToString()})start.ArgumentList.Add(a);if(filesOnly)start.ArgumentList.Add("--files-only");if(silent)start.ArgumentList.Add("--silent");Process.Start(start);
     }
+    internal static void UninstallNow(string root,bool filesOnly)
+    {
+        root=ValidateTarget(root);
+        if(!File.Exists(ReceiptPath(root)))throw new IOException("Установка DivineLabs не найдена.");
+        foreach(var p in Launchers(root))using(p){if(p.MainWindowHandle!=0)p.CloseMainWindow();if(!p.WaitForExit(15000))throw new IOException("Закройте лаунчер DivineLabs перед удалением.");}
+        if(!filesOnly){
+            var info=new ProcessStartInfo(Inside(root,"DivineLabs.IdleSlayer.exe")){UseShellExecute=false,CreateNoWindow=true};info.ArgumentList.Add("--uninstall-components");
+            using var process=Process.Start(info)!;process.WaitForExit();if(process.ExitCode!=0)throw new IOException("Закройте игру перед удалением программы.");
+        }
+        Cleanup(root,-1,filesOnly);
+    }
     internal static void Cleanup(string root,int parent,bool filesOnly)
     {
-        try{using var p=Process.GetProcessById(parent);if(!p.WaitForExit(30000))throw new IOException("Программа удаления ещё работает.");}catch(ArgumentException){}
+        if(parent>=0)try{using var p=Process.GetProcessById(parent);if(!p.WaitForExit(30000))throw new IOException("Программа удаления ещё работает.");}catch(ArgumentException){}
         root=ValidateTarget(root);string receiptPath=ReceiptPath(root);var receipt=JsonSerializer.Deserialize(File.ReadAllText(receiptPath),ReceiptJson.Default.Receipt);
         if(receipt?.Product!="DivineLabs.IdleSlayer"||receipt.Files.Any(p=>p.StartsWith("Data/",StringComparison.OrdinalIgnoreCase)||p.StartsWith(".application-history/",StringComparison.OrdinalIgnoreCase)))throw new IOException("Неверный список файлов установки.");
         var paths=receipt.Files.Select(p=>Inside(root,p)).ToArray();

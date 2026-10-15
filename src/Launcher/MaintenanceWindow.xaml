@@ -1,0 +1,48 @@
+<Window x:Class="DivineLabs.IdleSlayer.Launcher.MaintenanceWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="DivineLabs" Width="800" Height="660" MinWidth="680" MinHeight="600" WindowStartupLocation="CenterScreen">
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/DivineLabs.DesktopUI;component/Theme.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
+  <Grid Margin="36">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <StackPanel>
+      <StackPanel Orientation="Horizontal">
+        <Image Source="{StaticResource Logo}" Width="34" Height="34" Margin="0,0,12,0" />
+        <TextBlock Text="DIVINELABS" Foreground="{StaticResource Accent}" FontSize="20" FontWeight="Bold" />
+      </StackPanel>
+      <TextBlock x:Name="Eyebrow" Text="УСТАНОВКА" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,32,0,0" />
+      <TextBlock x:Name="Heading" Text="Всё для вашей игры." Style="{StaticResource Heading}" />
+      <TextBlock x:Name="Subtitle" Text="Лаунчер и игровые компоненты в одном месте." Style="{StaticResource Caption}" />
+    </StackPanel>
+    <StackPanel Grid.Row="1" Margin="0,16,0,0">
+      <Border Style="{StaticResource Card}">
+        <StackPanel>
+          <TextBlock x:Name="PathLabel" Text="Папка программы" Style="{StaticResource Caption}" />
+          <DockPanel>
+            <Button x:Name="Browse" Content="Выбрать…" DockPanel.Dock="Right" Click="BrowseClick" />
+            <TextBox x:Name="TargetPath" TextChanged="PathChanged" />
+          </DockPanel>
+          <CheckBox x:Name="Shortcuts" Content="Ярлыки на рабочем столе и в меню «Пуск»" IsChecked="True" />
+          <TextBlock x:Name="Retention" Visibility="Collapsed" Text="Настройки, сохранения игры и резервные копии сохраняются." Style="{StaticResource Caption}" />
+        </StackPanel>
+      </Border>
+      <TextBlock x:Name="Status" Text="Выберите папку и нажмите «Установить»." Margin="0,0,0,16" />
+      <ProgressBar x:Name="Progress" Visibility="Collapsed" />
+      <Button x:Name="Log" Content="Открыть журнал" Click="LogClick" Visibility="Collapsed" HorizontalAlignment="Left" Margin="0,16,0,0" />
+    </StackPanel>
+    <DockPanel Grid.Row="2" Margin="0,24,0,0">
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+        <Button x:Name="Cancel" Content="Отмена" Click="CancelClick" />
+        <Button x:Name="Primary" Content="Установить →" Style="{StaticResource Primary}" Click="PrimaryClick" />
+      </StackPanel>
+      <TextBlock Text="WINDOWS x64 · DIVINELABS 0.4.0" Foreground="{StaticResource Muted}" FontSize="11" />
+    </DockPanel>
+  </Grid>
+</Window>
