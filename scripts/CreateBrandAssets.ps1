@@ -1,4 +1,4 @@
-param([string]$Root=(Split-Path $PSScriptRoot -Parent))
+param([string]$Root=(Split-Path $PSScriptRoot -Parent),[string]$PreviewDirectory="")
 Add-Type -AssemblyName PresentationCore,WindowsBase
 [xml]$brandSource=Get-Content -LiteralPath (Join-Path $Root 'assets\DivineLabs.svg') -Raw
 $brandPath=($brandSource.DocumentElement.ChildNodes|Where-Object LocalName -eq 'path'|Select-Object -First 1).GetAttribute('d')
@@ -10,16 +10,31 @@ foreach($size in @(16,24,32,48,64,128,256)){
  $drawing=[Windows.Media.DrawingVisual]::new();$dc=$drawing.RenderOpen()
  [Windows.Media.RenderOptions]::SetBitmapScalingMode($drawing,[Windows.Media.BitmapScalingMode]::NearestNeighbor)
  $dc.DrawImage($source,[Windows.Rect]::new(0,0,$size,$size))
- $dc.PushTransform([Windows.Media.ScaleTransform]::new($size/128.0,$size/128.0))
- $dc.DrawRoundedRectangle([Windows.Media.BrushConverter]::new().ConvertFromString('#6658E8'),$null,[Windows.Rect]::new(83,83,44,44),10,10)
- $dc.PushTransform([Windows.Media.TranslateTransform]::new(83.24,82.6))
- $dc.PushTransform([Windows.Media.ScaleTransform]::new(.32,.32))
+ # Keep the game icon recognisable, with a larger, pixel-aligned DivineLabs badge.
+ # Tiny shell icons need slightly more badge area than the large application artwork.
+ $badgeSize=[Math]::Ceiling($size*$(if($size-le32){.56}else{.50}))
+ $badgeLeft=$size-$badgeSize;$badgeTop=$size-$badgeSize
+ $borderWidth=$(if($size-le32){1.0}else{$size/128.0})
+ $badgeRect=[Windows.Rect]::new($badgeLeft+$borderWidth/2,$badgeTop+$borderWidth/2,$badgeSize-$borderWidth,$badgeSize-$borderWidth)
+ $fill=[Windows.Media.LinearGradientBrush]::new([Windows.Media.ColorConverter]::ConvertFromString('#7B55FF'),[Windows.Media.ColorConverter]::ConvertFromString('#5347DB'),45)
+ $dc.DrawRoundedRectangle($fill,[Windows.Media.Pen]::new([Windows.Media.Brushes]::White,$borderWidth),$badgeRect,$badgeSize*.23,$badgeSize*.23)
  $geometry=[Windows.Media.Geometry]::Parse($brandPath)
- $dc.DrawGeometry([Windows.Media.BrushConverter]::new().ConvertFromString('#FFFFFF'),$null,$geometry)
+ $bounds=$geometry.Bounds
+ $glyphScale=($badgeSize*.84)/$bounds.Height
+ $glyphLeft=$badgeLeft+($badgeSize-$bounds.Width*$glyphScale)/2
+ $glyphTop=$badgeTop+($badgeSize-$bounds.Height*$glyphScale)/2
+ $dc.PushTransform([Windows.Media.TranslateTransform]::new($glyphLeft,$glyphTop))
+ $dc.PushTransform([Windows.Media.ScaleTransform]::new($glyphScale,$glyphScale))
+ $dc.PushTransform([Windows.Media.TranslateTransform]::new(-$bounds.X,-$bounds.Y))
+ $dc.DrawGeometry([Windows.Media.Brushes]::White,$null,$geometry)
  $dc.Pop();$dc.Pop();$dc.Pop();$dc.Close()
  $bitmap=[Windows.Media.Imaging.RenderTargetBitmap]::new($size,$size,96,96,[Windows.Media.PixelFormats]::Pbgra32);$bitmap.Render($drawing)
  $encoder=[Windows.Media.Imaging.PngBitmapEncoder]::new();$encoder.Frames.Add([Windows.Media.Imaging.BitmapFrame]::Create($bitmap))
  $stream=[IO.MemoryStream]::new();$encoder.Save($stream);$frames.Add($stream.ToArray());$stream.Dispose()
+ if($PreviewDirectory){
+  [IO.Directory]::CreateDirectory($PreviewDirectory)|Out-Null
+  [IO.File]::WriteAllBytes((Join-Path $PreviewDirectory ("icon-"+$size+".png")),$frames[$frames.Count-1])
+ }
  if($size-eq 256){[IO.File]::WriteAllBytes((Join-Path $Root 'assets\DivineLabs.png'),$frames[$frames.Count-1])}
 }
 $stream=[IO.MemoryStream]::new();$writer=[IO.BinaryWriter]::new($stream)

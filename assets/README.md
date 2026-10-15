@@ -5,7 +5,8 @@
 - IdleSlayer.wordmark.png: original game wordmark from the local Steam library cache.
   Game artwork/marks belong to Pablo Leban and are excluded from the code license.
 - DivineLabs.svg: own vector mark, based on the user's supplied flowing D references.
-- DivineLabs.png / .ico: original game icon plus small violet DivineLabs badge.
+- DivineLabs.png / .ico: original game icon plus a prominent violet DivineLabs badge (50% of the icon,
+  56% at 16–32px), white separation border and optically centred glyph.
   Regenerate with scripts/CreateBrandAssets.ps1; this also produces the Unity
   polygon data in src/Mod/BrandGeometry.cs.
 - Installer.cover.png: built-in image_gen output, generated from the approved
