@@ -15,6 +15,6 @@ public sealed class FeatureItem:INotifyPropertyChanged
     public string KeyLabel {get;private set;}
     public string Error {get;set;}="";
     public FeatureItem(FeatureDefinition d)=>Definition=d;
-    public void Refresh(Settings s){Enabled=Id=="coins"?s.CoinsEnabled:s.DamageEnabled;Value=(Id=="coins"?s.CoinMultiplier:s.DamageMultiplier).ToString(CultureInfo.InvariantCulture);FavoriteLabel=s.Favorites.Contains(Id)?"★":"☆";KeyLabel=s.Bindings[Id].ToString();Notify();}
+    public void Refresh(Settings s){Enabled=s.FeatureEnabled(Id);Value=s.Multiplier(Id).ToString(CultureInfo.InvariantCulture);FavoriteLabel=s.Favorites.Contains(Id)?"★":"☆";KeyLabel=s.Bindings[Id].ToString();Notify();}
     public void Notify()=>PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(""));
 }

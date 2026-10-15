@@ -8,11 +8,14 @@ public sealed class Settings
     public bool Enabled {get;set;}=true;
     public bool CoinsEnabled {get;set;}=true;
     public bool DamageEnabled {get;set;}=true;
+    public bool SoulsEnabled {get;set;}
     public double CoinMultiplier {get;set;}=100;
     public double DamageMultiplier {get;set;}=1000;
+    public double SoulMultiplier {get;set;}=100;
     public float UiScale {get;set;}=1;
     public bool ReduceMotion {get;set;}
     public bool WidgetVisible {get;set;}=true;
+    public bool ActiveListVisible {get;set;}=true;
     public float WidgetOpacity {get;set;}=.85f;
     public float WidgetX {get;set;}=1;
     public float WidgetY {get;set;}
@@ -23,7 +26,7 @@ public sealed class Settings
     {
         if(SchemaVersion!=2)throw new InvalidDataException("Неизвестная версия настроек.");
         if(Revision<0)throw new InvalidDataException("Некорректная ревизия настроек.");
-        if(!Valid(CoinMultiplier)||!Valid(DamageMultiplier))throw new InvalidDataException("Множители должны быть числами от 1 до 1 000 000.");
+        if(!Valid(CoinMultiplier)||!Valid(DamageMultiplier)||!Valid(SoulMultiplier))throw new InvalidDataException(MultiplierHint);
         if(!float.IsFinite(UiScale)||UiScale<.75f||UiScale>1.5f)throw new InvalidDataException("Масштаб должен быть от 75% до 150%.");
         if(!float.IsFinite(WidgetOpacity)||WidgetOpacity<.2f||WidgetOpacity>1||!float.IsFinite(WidgetX)||WidgetX<0||WidgetX>1||!float.IsFinite(WidgetY)||WidgetY<0||WidgetY>1)
             throw new InvalidDataException("Некорректные параметры виджета.");
@@ -33,8 +36,18 @@ public sealed class Settings
         if(Bindings["menu"].Key==0)throw new InvalidDataException("Для меню нужна клавиша.");
         if(Bindings.Values.Where(b=>b.Key!=0).GroupBy(b=>(b.Key,b.Modifiers)).Any(g=>g.Count()>1))throw new InvalidDataException("Сочетание уже назначено другому действию.");
     }
-    public static bool Valid(double v)=>double.IsFinite(v)&&v>=1&&v<=1000000;
-    public static double MultiplyIncome(double amount,double factor)=>amount>0&&double.IsFinite(amount)&&Valid(factor)&&double.IsFinite(amount*factor)?amount*factor:amount;
+    public const string MultiplierHint="Введите конечное число от 1, например 1000 или 1e60.";
+    public bool FeatureEnabled(string id)=>id switch{"coins"=>CoinsEnabled,"damage"=>DamageEnabled,"souls"=>SoulsEnabled,_=>throw new ArgumentException("Неизвестная функция.",nameof(id))};
+    public double Multiplier(string id)=>id switch{"coins"=>CoinMultiplier,"damage"=>DamageMultiplier,"souls"=>SoulMultiplier,_=>throw new ArgumentException("Неизвестная функция.",nameof(id))};
+    public void SetFeatureEnabled(string id,bool value){switch(id){case "coins":CoinsEnabled=value;break;case "damage":DamageEnabled=value;break;case "souls":SoulsEnabled=value;break;default:throw new ArgumentException("Неизвестная функция.",nameof(id));}}
+    public void SetMultiplier(string id,double value){switch(id){case "coins":CoinMultiplier=value;break;case "damage":DamageMultiplier=value;break;case "souls":SoulMultiplier=value;break;default:throw new ArgumentException("Неизвестная функция.",nameof(id));}}
+    public static bool Valid(double v)=>double.IsFinite(v)&&v>=1;
+    public static double MultiplyIncome(double amount,double factor,double available=double.MaxValue)
+    {
+        if(amount<=0||!double.IsFinite(amount)||!Valid(factor))return amount;
+        double result=amount*factor;
+        return double.IsFinite(result)&&result<=available?result:amount;
+    }
 }
 public static class SettingsStore
 {
@@ -47,6 +60,8 @@ public static class SettingsStore
         int schema=doc.RootElement.TryGetProperty("SchemaVersion",out var v)?v.GetInt32():1;
         if(schema is not (1 or 2))throw new InvalidDataException("Неизвестная версия настроек.");
         var value=JsonSerializer.Deserialize<Settings>(text)??throw new InvalidDataException("Пустые настройки.");
+        // Extend the existing v2 binding map only for the newly introduced action.
+        if(value.Bindings!=null&&!value.Bindings.ContainsKey("souls"))value.Bindings.Add("souls",new KeyBinding());
         value.SchemaVersion=2;value.Validate();return value;
     }
     public static Settings Load(string path,Action<string> report=null)
@@ -56,6 +71,9 @@ public static class SettingsStore
                 var s=Read(path);
                 using var doc=JsonDocument.Parse(File.ReadAllText(path));
                 if(!doc.RootElement.TryGetProperty("SchemaVersion",out var v)||v.GetInt32()==1){if(!File.Exists(path+".v1.bak"))File.Copy(path,path+".v1.bak");Save(path,s);}
+                else if(doc.RootElement.TryGetProperty("Bindings",out var bindings)&&bindings.ValueKind==JsonValueKind.Object&&!bindings.TryGetProperty("souls",out _)){
+                    if(!File.Exists(path+".pre-souls.bak"))File.Copy(path,path+".pre-souls.bak");Save(path,s);
+                }
                 return s;
             }catch(Exception e) when(e is JsonException or InvalidDataException or IOException){
                 if(e is InvalidDataException&&e.Message.Contains("версия"))throw;

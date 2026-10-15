@@ -53,11 +53,11 @@ public partial class MainWindow:Window
         try{
             var s=client.Current;renderedRevision=s.Revision;
             foreach(var f in features)f.Refresh(s);
-            AllEnabled.IsChecked=s.Enabled;WidgetVisible.IsChecked=s.WidgetVisible;ReduceMotion.IsChecked=s.ReduceMotion;
+            AllEnabled.IsChecked=s.Enabled;WidgetVisible.IsChecked=s.WidgetVisible;ActiveListVisible.IsChecked=s.ActiveListVisible;ReduceMotion.IsChecked=s.ReduceMotion;
             OpacitySlider.Value=s.WidgetOpacity*100;ScaleSlider.Value=s.UiScale*100;
             Motion.SetEnabled(this,!s.ReduceMotion&&SystemParameters.ClientAreaAnimation);
             KeyList.ItemsSource=FeatureCatalog.Actions.Select(id=>new{Id=id,Title=FeatureCatalog.ActionTitle(id),Label=s.Bindings[id].ToString()}).ToArray();
-            Summary.Text=s.Enabled?$"Монеты {(s.CoinsEnabled?"×"+s.CoinMultiplier:"выкл.")}     /     Урон {(s.DamageEnabled?"×"+s.DamageMultiplier:"выкл.")}":"Все функции выключены";
+            Summary.Text=s.Enabled?string.Join("     /     ",FeatureCatalog.All.Select(f=>f.Title+" "+(s.FeatureEnabled(f.Id)?"×"+s.Multiplier(f.Id).ToString("G6",CultureInfo.InvariantCulture):"выкл."))):"Все функции выключены";
             MenuHint.Text=$"Меню в игре — {s.Bindings["menu"]}. Покупки списывают обычную стоимость.";
             Filter();
         }finally{refreshing=false;}
@@ -80,19 +80,20 @@ public partial class MainWindow:Window
         foreach(var b in new[]{NavHome,NavFeatures,NavSettings})b.BorderBrush=(System.Windows.Media.Brush)FindResource((string)b.Tag==name?"Accent":"Background");
     }
     private async void AllClick(object s,RoutedEventArgs e){bool v=AllEnabled.IsChecked==true;await Change(c=>c.Enabled=v);}
-    private async void FeatureEnabledClick(object sender,RoutedEventArgs e){var b=(CheckBox)sender;string id=(string)b.Tag;bool value=b.IsChecked==true;await Change(c=>{if(id=="coins")c.CoinsEnabled=value;else c.DamageEnabled=value;});}
+    private async void FeatureEnabledClick(object sender,RoutedEventArgs e){var b=(CheckBox)sender;string id=(string)b.Tag;bool value=b.IsChecked==true;await Change(c=>c.SetFeatureEnabled(id,value));}
     private async void FavoriteClick(object sender,RoutedEventArgs e){string id=(string)((Button)sender).Tag;await Change(c=>c.Favorites=c.Favorites.Contains(id)?c.Favorites.Where(v=>v!=id).ToArray():c.Favorites.Append(id).ToArray());}
     private async void PresetClick(object sender,RoutedEventArgs e){var b=(Button)sender;double v=double.Parse(((string)b.Content)[1..],CultureInfo.InvariantCulture);await SetNumber((string)b.Tag,v);}
-    private async Task SetNumber(string id,double value){await Change(c=>{if(id=="coins")c.CoinMultiplier=value;else c.DamageMultiplier=value;});}
+    private async Task SetNumber(string id,double value){await Change(c=>c.SetMultiplier(id,value));}
     private async void NumberCommit(object sender,KeyboardFocusChangedEventArgs e)=>await Commit((TextBox)sender);
     private async void NumberKey(object sender,KeyEventArgs e){if(e.Key==Key.Enter){e.Handled=true;await Commit((TextBox)sender);}}
     private async Task Commit(TextBox input)
     {
         if(refreshing||editing)return;string id=(string)input.Tag;var f=features.Single(x=>x.Id==id);
-        if(!double.TryParse(input.Text.Replace(',','.'),NumberStyles.Float,CultureInfo.InvariantCulture,out double value)||!Settings.Valid(value)){f.Error="Введите число от 1 до 1 000 000.";f.Notify();return;}
-        f.Error="";if(value==(id=="coins"?client.Current.CoinMultiplier:client.Current.DamageMultiplier)){f.Notify();return;}await SetNumber(id,value);
+        if(!double.TryParse(input.Text.Replace(',','.'),NumberStyles.Float,CultureInfo.InvariantCulture,out double value)||!Settings.Valid(value)){f.Error=Settings.MultiplierHint;f.Notify();return;}
+        f.Error="";if(value==client.Current.Multiplier(id)){f.Notify();return;}await SetNumber(id,value);
     }
     private async void WidgetClick(object s,RoutedEventArgs e){bool v=WidgetVisible.IsChecked==true;await Change(c=>c.WidgetVisible=v);}
+    private async void ActiveListClick(object s,RoutedEventArgs e){bool v=ActiveListVisible.IsChecked==true;await Change(c=>c.ActiveListVisible=v);}
     private async void MotionClick(object s,RoutedEventArgs e){bool v=ReduceMotion.IsChecked==true;await Change(c=>c.ReduceMotion=v);}
     private async Task CommitVisual(){float alpha=(float)OpacitySlider.Value/100,scale=(float)ScaleSlider.Value/100;await Change(c=>{c.WidgetOpacity=alpha;c.UiScale=scale;});}
     private async void VisualCommit(object s,MouseButtonEventArgs e)=>await CommitVisual();
@@ -141,7 +142,7 @@ public partial class MainWindow:Window
         Vanilla.IsEnabled=valid&&!busy&&!running;
         Choose.IsEnabled=Repair.IsEnabled=Restore.IsEnabled=!busy&&!running;
         FeaturesPage.IsEnabled=valid&&!busy&&!editing&&(!running||client.Connected);
-        KeyList.IsEnabled=WidgetVisible.IsEnabled=ReduceMotion.IsEnabled=OpacitySlider.IsEnabled=ScaleSlider.IsEnabled=valid&&!busy&&!editing&&(!running||client.Connected);
+        KeyList.IsEnabled=WidgetVisible.IsEnabled=ActiveListVisible.IsEnabled=ReduceMotion.IsEnabled=OpacitySlider.IsEnabled=ScaleSlider.IsEnabled=valid&&!busy&&!editing&&(!running||client.Connected);
     }
     private async void PlayClick(object s,RoutedEventArgs e)=>await Run(()=>Installation.PlayAsync(client.Game,false,Reporter(),lifetime.Token));
     private async void VanillaClick(object s,RoutedEventArgs e)=>await Run(()=>Installation.PlayAsync(client.Game,true,Reporter(),lifetime.Token));

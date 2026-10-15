@@ -126,13 +126,14 @@
             <StackPanel>
               <TextBlock Text="Игровой интерфейс" FontSize="20" Margin="0,0,0,12" />
               <CheckBox x:Name="WidgetVisible" Content="Показывать виджет" Click="WidgetClick" />
+              <CheckBox x:Name="ActiveListVisible" Content="Список активных функций в игре" Click="ActiveListClick" />
               <CheckBox x:Name="ReduceMotion" Content="Уменьшить анимации" Click="MotionClick" />
               <TextBlock Text="Прозрачность виджета · 20–100%" Style="{StaticResource Caption}" />
               <Slider x:Name="OpacitySlider" Minimum="20" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True" PreviewMouseLeftButtonUp="VisualCommit" PreviewKeyUp="VisualKeyCommit" />
               <TextBlock Text="Масштаб меню · 75–150%" Style="{StaticResource Caption}" />
               <Slider x:Name="ScaleSlider" Minimum="75" Maximum="150" TickFrequency="5" IsSnapToTickEnabled="True" PreviewMouseLeftButtonUp="VisualCommit" PreviewKeyUp="VisualKeyCommit" />
               <Button Content="Сбросить расположение виджета" Click="ResetWidget" Margin="0,18,0,0" HorizontalAlignment="Left" />
-              <TextBlock Text="Перемещение доступно в настройках игрового меню." Style="{StaticResource Caption}" />
+              <TextBlock Text="Виджет можно перетащить мышью прямо в игре." Style="{StaticResource Caption}" />
             </StackPanel>
           </Border>
           <Expander Header="Обслуживание" Foreground="{StaticResource Text}" Margin="0,0,0,20">

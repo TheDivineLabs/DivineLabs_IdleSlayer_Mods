@@ -57,6 +57,16 @@ Check(Settings.MultiplyIncome(-200,100)==-200,"Покупка не умножа�
 Check(10+Settings.MultiplyIncome(2,100)+Settings.MultiplyIncome(-200,100)==10,"Доход и покупка сохраняют верный баланс");
 Check(Settings.MultiplyIncome(double.MaxValue,100)==double.MaxValue,"Защита от переполнения");
 Check(Settings.MultiplyIncome(25,1)==25,"Отключение через ×1");
+Check(Settings.MultiplyIncome(2,1e100,1e90)==2&&Settings.MultiplyIncome(2,100,1000)==200,"Начисление учитывает свободный диапазон игрового баланса");
+Check(Settings.Valid(1e60)&&Settings.Valid(double.MaxValue)&&Settings.MultiplyIncome(2,1e60)==2e60,"Большие конечные множители разрешены без прежнего лимита");
+Check(Settings.MultiplyIncome(1e250,1e100)==1e250&&Settings.MultiplyIncome(-17,1e60)==-17,"Большие множители не передают переполнение и не меняют списания");
+string largeFile=Path.Combine(root,"large.json");var large=new Settings{CoinMultiplier=1e60,DamageMultiplier=1e70,SoulsEnabled=true,SoulMultiplier=1e55,ActiveListVisible=false};
+SettingsStore.Save(largeFile,large);var largeRead=SettingsStore.Read(largeFile);
+Check(largeRead.CoinMultiplier==1e60&&largeRead.SoulMultiplier==1e55&&largeRead.SoulsEnabled&&!largeRead.ActiveListVisible,"Большие числа, души и активный список сохраняются в JSON");
+string oldV2=Path.Combine(root,"old-v2.json");var oldMap=System.Text.Json.Nodes.JsonNode.Parse(JsonSerializer.Serialize(new Settings()))!;oldMap["Bindings"]!.AsObject().Remove("souls");oldMap.AsObject().Remove("SoulsEnabled");oldMap.AsObject().Remove("SoulMultiplier");oldMap.AsObject().Remove("ActiveListVisible");
+File.WriteAllText(oldV2,oldMap.ToJsonString());var newV2=SettingsStore.Load(oldV2);
+Check(!newV2.SoulsEnabled&&newV2.Bindings["souls"].Key==0&&newV2.ActiveListVisible&&File.Exists(oldV2+".pre-souls.bak"),"Старые настройки v2 сохраняются перед добавлением душ и активного списка");
+
 Check(!Settings.Valid(double.NaN)&&!Settings.Valid(double.PositiveInfinity)&&!Settings.Valid(0),"Некорректные коэффициенты отклонены");
 string file=Path.Combine(root,SettingsStore.FileName),legacy=Path.Combine(root,"IdleSlayerQoL.json");File.WriteAllText(legacy,"{\"Enabled\":false,\"CoinMultiplier\":25,\"DamageMultiplier\":50}");
 var s=SettingsStore.Load(file);Check(s.CoinMultiplier==25&&!s.Enabled&&File.Exists(legacy),"Миграция сохраняет значения и исходник");s.CoinMultiplier=30;SettingsStore.Save(file,s);Check(SettingsStore.Read(file).CoinMultiplier==30,"Атомарная запись");File.WriteAllText(file,"broken");Check(SettingsStore.Load(file).CoinMultiplier==25,"Восстановление резервного JSON");

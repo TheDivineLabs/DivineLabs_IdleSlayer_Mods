@@ -7,30 +7,29 @@ using Object=UnityEngine.Object;
 namespace DivineLabs.IdleSlayer;
 internal static class GameMenu
 {
-    private static GameObject root,overlay,widgetRoot,widget,functions,preferences,content;
+    private static GameObject root,overlay,widgetRoot,widget,functions,preferences,content,activeList;
     private static TMP_FontAsset font;
     private static TMP_InputField search;
-    private static TextMeshProUGUI status,global,visibleText,motionText,opacityText,scaleText,moveText;
+    private static TextMeshProUGUI status,global,visibleText,motionText,opacityText,scaleText,activeListText,activeListToggle;
     private static CanvasGroup fade,widgetFade;
-    private static RectTransform panel,widgetRect;
+    private static RectTransform panel,widgetRect,activeListRect;
     private static readonly List<Card> cards=new();
     private static readonly List<Button> buttons=new();
     private static readonly Dictionary<string,TextMeshProUGUI> bindLabels=new();
     private static readonly List<TMP_InputField> fields=new();
     private static readonly Color Background=new(.063f,.078f,.11f,1),Surface=new(.102f,.133f,.188f,1),Accent=new(.447f,.812f,1,1),Muted=new(.643f,.69f,.761f,1);
-    private static bool widgetHeld;
-    private static bool refreshing,cursorVisible,favoritesOnly,settingsPage,moving,dragging,previousMouse,dragMoved;
+    private static bool refreshing,cursorVisible,favoritesOnly,settingsPage,dragging,previousMouse,dragMoved;
     private static CursorLockMode cursorLock;
     private static string capture;
     private static int categoryIndex;
     private static readonly string[] categories=new[]{"Все категории"}.Concat(FeatureCatalog.All.Select(f=>f.Category).Distinct()).ToArray();
     private static TextMeshProUGUI categoryLabel;
     private static long revision=-1;
-    private static int width,height,layoutFrames;
+    private static int width,height,layoutFrames,blockedReleaseFrame=-1;
     private static float transition=-1,fromAlpha,toAlpha;
     private static Vector2 dragOffset,dragOrigin;
     internal static bool Open{get;private set;}
-    internal static bool BlocksGameInput=>Open||moving||dragging||PointerOnWidget;
+    internal static bool BlocksGameInput=>Open||dragging||Time.frameCount==blockedReleaseFrame||PointerOnWidget;
     private static bool PointerOnWidget=>widget!=null&&widget.activeInHierarchy&&RectTransformUtility.RectangleContainsScreenPoint(widgetRect,Input.mousePosition,null);
     private sealed class Card
     {
@@ -66,7 +65,7 @@ internal static class GameMenu
         Label(preferences.transform,"Настройки",0,0,600,40,29,Color.white);
         Label(preferences.transform,"КЛАВИШИ",0,58,300,26,14,Accent);
         for(int i=0;i<FeatureCatalog.Actions.Length;i++){
-            string action=FeatureCatalog.Actions[i];float y=94+i*57;
+            string action=FeatureCatalog.Actions[i];float y=94+i*48;
             Label(preferences.transform,FeatureCatalog.ActionTitle(action),0,y,164,38,17,Color.white);
             bindLabels[action]=Button(preferences.transform,"",166,y,170,38,()=>Capture(action)).GetComponentInChildren<TextMeshProUGUI>();
         }
@@ -79,13 +78,17 @@ internal static class GameMenu
         scaleText=Label(preferences.transform,"",366,242,220,30,17,Color.white);
         Button(preferences.transform,"−",588,238,38,36,()=>Mod.Change(c=>c.UiScale=Math.Clamp(c.UiScale-.05f,.75f,1.5f)));
         Button(preferences.transform,"+",636,238,38,36,()=>Mod.Change(c=>c.UiScale=Math.Clamp(c.UiScale+.05f,.75f,1.5f)));
-        moveText=Button(preferences.transform,"Переместить виджет",366,294,310,38,BeginMove).GetComponentInChildren<TextMeshProUGUI>();
+        activeListToggle=Button(preferences.transform,"",366,294,310,38,()=>Mod.Change(c=>c.ActiveListVisible=!c.ActiveListVisible)).GetComponentInChildren<TextMeshProUGUI>();
         Button(preferences.transform,"Сбросить расположение",366,342,310,38,()=>Mod.Change(c=>{c.WidgetX=1;c.WidgetY=0;}));
         Label(preferences.transform,"Esc — отмена записи клавиши.\nBackspace — убрать назначение.",0,396,660,58,15,Muted);
         status=Label(body.transform,"Изменения применяются автоматически.",208,552,680,38,15,Muted);
         widget=Node(widgetRoot.transform,"Widget",0,0,138,46);widgetRect=widget.GetComponent<RectTransform>();var widgetImage=widget.AddComponent<Image>();widgetImage.color=Background;GameVisuals.Round(widgetImage);
         widgetFade=widget.AddComponent<CanvasGroup>();GameVisuals.Logo(widget.transform,10,3,40);
-        Button(widget.transform,"≡",82,5,48,36,()=>{if(!moving&&!dragMoved)Toggle();});
+        Button(widget.transform,"≡",82,5,48,36,()=>{if(!dragMoved)Toggle();});
+        activeList=Node(widgetRoot.transform,"ActiveFunctions",0,0,284,100);activeListRect=activeList.GetComponent<RectTransform>();
+        var listBackground=activeList.AddComponent<Image>();listBackground.color=Background;listBackground.raycastTarget=false;GameVisuals.Round(listBackground);
+        activeList.AddComponent<CanvasGroup>().alpha=Mod.Config.WidgetOpacity;
+        activeListText=Label(activeList.transform,"",12,8,260,84,15,Color.white);activeListText.enableWordWrapping=false;
         Open=false;overlay.SetActive(false);ShowPage(false);WindowHotkey.Initialize();Refresh();
         Mod.Instance.LoggerInstance.Msg("Меню DivineLabs создано. Открыть: "+Mod.Config.Bindings["menu"]);
     }
@@ -95,7 +98,7 @@ internal static class GameMenu
         var card=new Card{Definition=def,Node=go};
         Label(go.transform,def.Title,20,16,400,30,24,Color.white);
         var favorite=Button(go.transform,"",550,12,46,36,()=>Mod.Change(c=>c.Favorites=c.Favorites.Contains(def.Id)?c.Favorites.Where(x=>x!=def.Id).ToArray():c.Favorites.Append(def.Id).ToArray()));card.Favorite=GameVisuals.Star(favorite.transform,10,5,26);
-        card.Toggle=Button(go.transform,"",600,12,58,36,()=>Mod.Change(c=>{if(def.Id=="coins")c.CoinsEnabled=!c.CoinsEnabled;else c.DamageEnabled=!c.DamageEnabled;})).GetComponentInChildren<TextMeshProUGUI>();
+        card.Toggle=Button(go.transform,"",600,12,58,36,()=>Mod.Change(c=>{c.SetFeatureEnabled(def.Id,!c.FeatureEnabled(def.Id));})).GetComponentInChildren<TextMeshProUGUI>();
         Label(go.transform,def.Description,20,56,634,48,16,Muted);
         card.Input=Field(go.transform,20,112,140,40,true);
         card.Input.onEndEdit.AddListener((UnityAction<string>)(text=>Commit(card,text)));
@@ -108,10 +111,10 @@ internal static class GameMenu
     private static void Commit(Card card,string text)
     {
         if(refreshing)return;
-        if(!double.TryParse(text.Replace(',','.'),NumberStyles.Float,CultureInfo.InvariantCulture,out double value)||!Settings.Valid(value)){card.Error.text="Число от 1 до 1 000 000";return;}
-        card.Error.text="";if(value!=(card.Definition.Id=="coins"?Mod.Config.CoinMultiplier:Mod.Config.DamageMultiplier))SetNumber(card.Definition.Id,value);
+        if(!double.TryParse(text.Replace(',','.'),NumberStyles.Float,CultureInfo.InvariantCulture,out double value)||!Settings.Valid(value)){card.Error.text="Число от 1, например 1e60";return;}
+        card.Error.text="";if(value!=Mod.Config.Multiplier(card.Definition.Id))SetNumber(card.Definition.Id,value);
     }
-    private static void SetNumber(string id,double value)=>Mod.Change(c=>{if(id=="coins")c.CoinMultiplier=value;else c.DamageMultiplier=value;});
+    private static void SetNumber(string id,double value)=>Mod.Change(c=>{c.SetMultiplier(id,value);});
     private static void Capture(string action){capture=action;status.text="Нажмите сочетание: "+FeatureCatalog.ActionTitle(action);WindowHotkey.Reset();}
     private static void Filter()
     {
@@ -132,9 +135,9 @@ internal static class GameMenu
         try{
             var c=Mod.Config;if(revision!=c.Revision)WindowHotkey.Reset();revision=c.Revision;
             global.text=c.Enabled?"● Все функции включены":"○ Все функции выключены";
-            foreach(var card in cards){bool enabled=card.Definition.Id=="coins"?c.CoinsEnabled:c.DamageEnabled;
+            foreach(var card in cards){bool enabled=c.FeatureEnabled(card.Definition.Id);
                 card.Toggle.text=enabled?"Вкл":"Выкл";card.Favorite.color=c.Favorites.Contains(card.Definition.Id)?Accent:Muted;
-                if(!card.Input.isFocused)card.Input.text=(card.Definition.Id=="coins"?c.CoinMultiplier:c.DamageMultiplier).ToString(CultureInfo.InvariantCulture);
+                if(!card.Input.isFocused)card.Input.text=c.Multiplier(card.Definition.Id).ToString(CultureInfo.InvariantCulture);
                 card.Key.text=c.Bindings[card.Definition.Action].ToString();
             }
             foreach(var action in FeatureCatalog.Actions)bindLabels[action].text=c.Bindings[action].ToString();
@@ -143,7 +146,13 @@ internal static class GameMenu
             opacityText.text="Прозрачность · "+Math.Round(c.WidgetOpacity*100)+"%";
             scaleText.text="Масштаб · "+Math.Round(c.UiScale*100)+"%";
             foreach(var button in buttons){var colors=button.colors;colors.fadeDuration=c.ReduceMotion||WindowHotkey.ReducedMotion?0:.12f;button.colors=colors;}
-            widget.SetActive(c.WidgetVisible||moving);widgetFade.alpha=c.WidgetOpacity;
+            widget.SetActive(c.WidgetVisible);widgetFade.alpha=c.WidgetOpacity;
+            activeListToggle.text=c.ActiveListVisible?"Активные функции: показаны":"Активные функции: скрыты";
+            var rows=FeatureCatalog.All.Where(f=>c.Enabled&&c.FeatureEnabled(f.Id)).Select(f=>FeatureCatalog.ActiveTitle(f.Id)+" — "+(f.HasMultiplier?"×"+FormatMultiplier(c.Multiplier(f.Id)):"вкл")).ToArray();
+            activeListText.text=string.Join("\n",rows);
+            float listHeight=16+rows.Length*24;activeListRect.sizeDelta=new Vector2(284,listHeight);activeListText.rectTransform.sizeDelta=new Vector2(260,rows.Length*24);
+            activeList.GetComponent<CanvasGroup>().alpha=c.WidgetOpacity;
+            activeList.SetActive(c.ActiveListVisible&&rows.Length>0);
             layoutFrames=3;Fit();Filter();
         }finally{refreshing=false;}
     }
@@ -154,7 +163,8 @@ internal static class GameMenu
         float scale=Math.Min(Mod.Config.UiScale,Math.Min((area.width-24)/920,(area.height-24)/600));
         panel.localScale=new Vector3(scale,scale,1);
         var wr=widgetRoot.GetComponent<RectTransform>().rect;
-        widgetRect.anchoredPosition=new Vector2(12+Mod.Config.WidgetX*Math.Max(0,wr.width-162),-12-Mod.Config.WidgetY*Math.Max(0,wr.height-70));
+        if(!dragging)widgetRect.anchoredPosition=new Vector2(12+Mod.Config.WidgetX*Math.Max(0,wr.width-162),-12-Mod.Config.WidgetY*Math.Max(0,wr.height-70));
+        PositionActiveList();
     }
     internal static void Tick()
     {
@@ -174,18 +184,17 @@ internal static class GameMenu
             if((actions&4)!=0)Mod.Change(c=>c.Enabled=!c.Enabled);
             if((actions&8)!=0)Mod.Change(c=>c.CoinsEnabled=!c.CoinsEnabled);
             if((actions&16)!=0)Mod.Change(c=>c.DamageEnabled=!c.DamageEnabled);
+            if((actions&32)!=0)Mod.Change(c=>c.SoulsEnabled=!c.SoulsEnabled);
         }
         if(transition>=0){
             transition+=Time.unscaledDeltaTime;float t=Math.Min(1,transition/.18f);t=1-(1-t)*(1-t)*(1-t);fade.alpha=Mathf.Lerp(fromAlpha,toAlpha,t);
             if(transition>=.18f){transition=-1;fade.alpha=toAlpha;if(!Open)overlay.SetActive(false);}
         }
-        if(moving)Drag();
-        else if(widget.activeSelf){bool held=Input.GetMouseButton(0);if(held&&!widgetHeld)dragMoved=false;widgetHeld=held;}
+        Drag();
         while(Mod.Messages.TryDequeue(out string message))status.text=message;
     }
     private static void Toggle()
     {
-        if(moving){EndMove();return;}
         Open=!Open;capture=null;
         if(Open){cursorVisible=Cursor.visible;cursorLock=Cursor.lockState;Cursor.lockState=CursorLockMode.None;Cursor.visible=true;overlay.SetActive(true);Refresh();}
         else{Cursor.visible=cursorVisible;Cursor.lockState=cursorLock;}
@@ -193,22 +202,44 @@ internal static class GameMenu
         if(Mod.Config.ReduceMotion||WindowHotkey.ReducedMotion){transition=-1;fade.alpha=Open?1:0;overlay.SetActive(Open);}
         else{fromAlpha=fade.alpha;toAlpha=Open?1:0;transition=0;}
     }
-    private static void BeginMove()
+    private static string FormatMultiplier(double value)
     {
-        moving=true;dragMoved=false;previousMouse=true;overlay.SetActive(false);widget.SetActive(true);Cursor.visible=true;Cursor.lockState=CursorLockMode.None;
-        // Insert (or the configured menu key) returns to settings.
-        status.text="Перетащите виджет. Клавиша меню завершает перемещение.";
+        try{return Il2Cpp.AbbreviationUtility.AbbreviateNumber(value,false,1000);}
+        catch{return value.ToString("G5",CultureInfo.InvariantCulture);}
     }
-    private static void EndMove(){moving=false;dragging=false;overlay.SetActive(true);Open=true;ShowPage(true);Refresh();}
+    private static void PositionActiveList()
+    {
+        var area=widgetRoot.GetComponent<RectTransform>().rect;
+        float listHeight=activeListRect.sizeDelta.y,top=-widgetRect.anchoredPosition.y;
+        float y=top+54;if(y+listHeight>area.height-12)y=top-listHeight-8;
+        activeListRect.anchoredPosition=new Vector2(Math.Clamp(widgetRect.anchoredPosition.x+138-284,12,Math.Max(12,area.width-296)),-Math.Clamp(y,12,Math.Max(12,area.height-listHeight-12)));
+    }
+    private static void SaveWidgetPosition()
+    {
+        var area=widgetRoot.GetComponent<RectTransform>().rect;
+        float x=(widgetRect.anchoredPosition.x-12)/Math.Max(1,area.width-162),y=(-widgetRect.anchoredPosition.y-12)/Math.Max(1,area.height-70);
+        Mod.Change(c=>{c.WidgetX=Math.Clamp(x,0,1);c.WidgetY=Math.Clamp(y,0,1);});
+    }
     private static void Drag()
     {
-        bool down=WindowHotkey.Foreground&&Input.GetMouseButton(0);
+        bool down=Input.GetMouseButton(0);
+        if(!WindowHotkey.Foreground||!widget.activeInHierarchy){
+            if(dragging){dragging=false;dragMoved=true;SaveWidgetPosition();}
+            previousMouse=down;return;
+        }
+        if(!down&&!dragging){previousMouse=false;return;}
         var parent=widgetRoot.GetComponent<RectTransform>();
         RectTransformUtility.ScreenPointToLocalPointInRectangle(parent,Input.mousePosition,null,out Vector2 local);
         Vector2 point=new(local.x+parent.rect.width/2,parent.rect.height/2-local.y);
-        if(down&&!previousMouse&&PointerOnWidget){dragging=true;dragOrigin=point;dragOffset=point-new Vector2(widgetRect.anchoredPosition.x,-widgetRect.anchoredPosition.y);}
-        if(dragging&&down){Vector2 p=point-dragOffset;dragMoved|=(point-dragOrigin).sqrMagnitude>16;widgetRect.anchoredPosition=new Vector2(Math.Clamp(p.x,12,Math.Max(12,parent.rect.width-150)),-Math.Clamp(p.y,12,Math.Max(12,parent.rect.height-58)));}
-        if(dragging&&!down){dragging=false;float x=(widgetRect.anchoredPosition.x-12)/Math.Max(1,parent.rect.width-162),y=(-widgetRect.anchoredPosition.y-12)/Math.Max(1,parent.rect.height-70);Mod.Change(c=>{c.WidgetX=Math.Clamp(x,0,1);c.WidgetY=Math.Clamp(y,0,1);});EndMove();}
+        if(down&&!previousMouse){
+            dragMoved=false;
+            if(PointerOnWidget){dragging=true;dragOrigin=point;dragOffset=point-new Vector2(widgetRect.anchoredPosition.x,-widgetRect.anchoredPosition.y);}
+        }
+        if(dragging){
+            dragMoved|=(point-dragOrigin).sqrMagnitude>16;
+            if(dragMoved){Vector2 p=point-dragOffset;widgetRect.anchoredPosition=new Vector2(Math.Clamp(p.x,12,Math.Max(12,parent.rect.width-150)),-Math.Clamp(p.y,12,Math.Max(12,parent.rect.height-58)));PositionActiveList();}
+            if(!down){dragging=false;blockedReleaseFrame=Time.frameCount;if(dragMoved)SaveWidgetPosition();}
+        }
         previousMouse=down;
     }
     private static GameObject Canvas(string name,int order)
@@ -230,6 +261,6 @@ internal static class GameMenu
         var go=Node(parent,"Input",x,y,w,h);var img=go.AddComponent<Image>();img.color=new Color(.06f,.09f,.13f,1);GameVisuals.Round(img);
         var viewport=Node(go.transform,"Viewport",10,3,w-20,h-6);viewport.AddComponent<RectMask2D>();
         var text=Label(viewport.transform,"",0,0,w-20,h-6,number?21:18,Color.white);text.alignment=TextAlignmentOptions.MidlineLeft;
-        var field=go.AddComponent<TMP_InputField>();field.textViewport=viewport.GetComponent<RectTransform>();field.textComponent=text;field.targetGraphic=img;field.contentType=number?TMP_InputField.ContentType.DecimalNumber:TMP_InputField.ContentType.Standard;field.characterLimit=number?12:80;field.caretColor=Accent;field.customCaretColor=true;fields.Add(field);return field;
+        var field=go.AddComponent<TMP_InputField>();field.textViewport=viewport.GetComponent<RectTransform>();field.textComponent=text;field.targetGraphic=img;field.contentType=TMP_InputField.ContentType.Standard;field.characterLimit=number?340:80;field.caretColor=Accent;field.customCaretColor=true;fields.Add(field);return field;
     }
 }

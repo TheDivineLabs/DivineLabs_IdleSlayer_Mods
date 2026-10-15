@@ -1,13 +1,15 @@
 namespace DivineLabs.IdleSlayer;
-public sealed record FeatureDefinition(string Id,string Title,string Category,string Description,string Action);
+public sealed record FeatureDefinition(string Id,string Title,string Category,string Description,string Action,bool HasMultiplier=true);
 public static class FeatureCatalog
 {
     public static readonly FeatureDefinition[] All = {
         new("coins","Монеты","Экономика","Умножает положительный доход. Стоимость покупок остаётся обычной.","coins"),
-        new("damage","Урон","Бой","Усиливает урон по обычным врагам.","damage")
+        new("damage","Урон","Бой","Усиливает урон по обычным врагам.","damage"),
+        new("souls","Души","Экономика","Умножает начисление душ после игровых бонусов. Не меняет предпросмотр и камни душ.","souls")
     };
-    public static readonly string[] Actions={"menu","widget","all","coins","damage"};
-    public static string ActionTitle(string id)=>id switch{"menu"=>"Открыть меню","widget"=>"Показать виджет","all"=>"Все функции","coins"=>"Монеты","damage"=>"Урон",_=>id};
+    public static readonly string[] Actions={"menu","widget","all","coins","damage","souls"};
+    public static string ActiveTitle(string id)=>id switch{"coins"=>"Множитель монет","damage"=>"Множитель урона","souls"=>"Множитель душ",_=>ActionTitle(id)};
+    public static string ActionTitle(string id)=>id switch{"menu"=>"Открыть меню","widget"=>"Показать виджет","all"=>"Все функции","coins"=>"Монеты","damage"=>"Урон","souls"=>"Души",_=>id};
 }
 public sealed record KeyBinding
 {
