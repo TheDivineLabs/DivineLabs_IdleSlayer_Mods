@@ -48,10 +48,14 @@ internal static class Program
                 }
             }
             string worker=Path.Combine(work,"worker.exe");File.Copy(Environment.ProcessPath!,worker);
-            var start=new ProcessStartInfo(Path.Combine(work,"App","Launcher","DivineLabs.IdleSlayer.Launcher.exe")){UseShellExecute=false};
+            var start=new ProcessStartInfo(Path.Combine(work,"App","Launcher","DivineLabs.IdleSlayer.Launcher.exe")){UseShellExecute=false,RedirectStandardError=!uninstall};
             foreach(string arg in new[]{"--maintenance","--worker",worker,"--dir",target,"--required-bytes",requiredBytes.ToString(System.Globalization.CultureInfo.InvariantCulture)})start.ArgumentList.Add(arg);
             if(uninstall)start.ArgumentList.Add("--uninstall");
-            using var ui=Process.Start(start)??throw new IOException("Не удалось открыть интерфейс обслуживания.");if(uninstall)return 0;ui.WaitForExit();return ui.ExitCode;
+            using var ui=Process.Start(start)??throw new IOException("Не удалось открыть интерфейс обслуживания.");if(uninstall)return 0;
+            var diagnostic=ui.StandardError.ReadToEndAsync();ui.WaitForExit();
+            string details=diagnostic.GetAwaiter().GetResult();
+            if(ui.ExitCode!=0)throw new IOException("Интерфейс обслуживания завершился с ошибкой (код "+ui.ExitCode+")."+Environment.NewLine+details);
+            return 0;
         }finally{
             // This directory is freshly created by this invocation and contains no user data.
             string full=Path.GetFullPath(work),parent=Path.GetFullPath(scratch).TrimEnd(Path.DirectorySeparatorChar)+Path.DirectorySeparatorChar;

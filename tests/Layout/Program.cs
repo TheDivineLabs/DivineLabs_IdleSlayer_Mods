@@ -22,7 +22,7 @@ internal static class Program
         foreach(bool uninstall in new[]{false,true}){
             var arguments=new List<string>{"--worker",Path.Combine(output,"unused.exe"),"--dir",DivineLabs.IdleSlayer.Maintenance.InstallTarget.DefaultDirectory};if(uninstall)arguments.Add("--uninstall");
             var window=new MaintenanceWindow(arguments.ToArray());
-            DivineLabs.DesktopUI.Motion.SetEnabled(window,false);
+            DivineLabs.DesktopUI.Motion.SetEnabled(window,args.Contains("--animations"));
             var show=typeof(MaintenanceWindow).GetMethod("ShowPage",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!;
             foreach(int page in uninstall?new[]{0,2,3,4}:new[]{0,1,2,3,4}){
                 if(page==4)typeof(MaintenanceWindow).GetField("done",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.SetValue(window,true);

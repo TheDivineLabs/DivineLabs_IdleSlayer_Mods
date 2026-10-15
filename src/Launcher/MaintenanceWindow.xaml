@@ -123,10 +123,7 @@
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
                   <StackPanel HorizontalAlignment="Center">
-                    <Border Width="38" Height="38" CornerRadius="19" Background="{Binding Background}" BorderBrush="{Binding Border}" BorderThickness="1" RenderTransformOrigin=".5,.5">
-                      <Border.RenderTransform>
-                        <ScaleTransform />
-                      </Border.RenderTransform>
+                    <Border Width="38" Height="38" CornerRadius="19" Background="{Binding Background}" BorderBrush="{Binding Border}" BorderThickness="1">
                       <TextBlock Text="{Binding Number}" Foreground="{Binding Foreground}" HorizontalAlignment="Center" FontSize="16" FontWeight="SemiBold" />
                       <Border.Style>
                         <Style TargetType="Border">
@@ -139,8 +136,7 @@
                               <MultiDataTrigger.EnterActions>
                                 <BeginStoryboard x:Name="StepPulse">
                                   <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" From=".87" To="1" Duration="0:0:0.20" />
-                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" From=".87" To="1" Duration="0:0:0.20" />
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From=".45" To="1" Duration="0:0:0.20" FillBehavior="Stop" />
                                   </Storyboard>
                                 </BeginStoryboard>
                               </MultiDataTrigger.EnterActions>
