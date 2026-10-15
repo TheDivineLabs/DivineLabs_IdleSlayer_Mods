@@ -9,7 +9,7 @@ namespace DivineLabs.IdleSlayer.Setup;
 internal sealed class Receipt
 {
     public string Product {get;set;}="DivineLabs.IdleSlayer";
-    public string Version {get;set;}="0.4.0";
+    public string Version {get;set;}="0.4.1";
     public string[] Files {get;set;}=Array.Empty<string>();
 }
 [JsonSerializable(typeof(Receipt))]
@@ -114,10 +114,10 @@ internal static class SetupOperations
     {string logs=Inside(root,"Data/Logs");Directory.CreateDirectory(logs);File.AppendAllText(Path.Combine(logs,"setup.log"),$"{DateTime.UtcNow:O} {error}{Environment.NewLine}");}
     private static void Register(string target,bool shortcuts)
     {
-        using var key=Registry.CurrentUser.CreateSubKey(RegistryKey);key.SetValue("DisplayName","DivineLabs IdleSlayer Mods");key.SetValue("DisplayVersion","0.4.0");key.SetValue("Publisher","DivineLabs");key.SetValue("InstallLocation",target);key.SetValue("DisplayIcon",Inside(target,"DivineLabs.IdleSlayer.exe"));key.SetValue("UninstallString","\""+Inside(target,Uninstaller)+"\" --uninstall");key.SetValue("NoModify",1);key.SetValue("NoRepair",1);
+        using var key=Registry.CurrentUser.CreateSubKey(RegistryKey);key.SetValue("DisplayName","DivineLabs Idle Slayer Mods");key.SetValue("DisplayVersion","0.4.1");key.SetValue("Publisher","DivineLabs");key.SetValue("InstallLocation",target);key.SetValue("DisplayIcon",Inside(target,"DivineLabs.IdleSlayer.exe"));key.SetValue("UninstallString","\""+Inside(target,Uninstaller)+"\" --uninstall");key.SetValue("NoModify",1);key.SetValue("NoRepair",1);
         if(!shortcuts)return;
         string Q(string text)=>"'"+text.Replace("'","''")+"'";
-        string desktop=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),"DivineLabs IdleSlayer Mods.lnk");
+        string desktop=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),"DivineLabs Idle Slayer Mods.lnk");
         string startMenu=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs),"DivineLabs","IdleSlayer Mods.lnk");
         string command="$ErrorActionPreference='Stop'; $shell=New-Object -ComObject WScript.Shell; foreach($file in @("+Q(desktop)+","+Q(startMenu)+")){[IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($file))|Out-Null;$link=$shell.CreateShortcut($file);$link.TargetPath="+Q(Inside(target,"DivineLabs.IdleSlayer.exe"))+";$link.WorkingDirectory="+Q(target)+";$link.IconLocation="+Q(Inside(target,"DivineLabs.IdleSlayer.exe"))+";$link.Save()}";
         var info=new ProcessStartInfo("powershell.exe"){UseShellExecute=false,CreateNoWindow=true};info.ArgumentList.Add("-NoProfile");info.ArgumentList.Add("-NonInteractive");info.ArgumentList.Add("-EncodedCommand");info.ArgumentList.Add(Convert.ToBase64String(Encoding.Unicode.GetBytes(command)));using var p=Process.Start(info)!;p.WaitForExit();if(p.ExitCode!=0)throw new IOException("Не удалось создать ярлыки. Программу можно открыть из папки установки.");
@@ -163,7 +163,7 @@ internal static class SetupOperations
         if(!filesOnly)
         {
             using var key=Registry.CurrentUser.OpenSubKey(RegistryKey);bool matches=string.Equals(key?.GetValue("InstallLocation") as string,root,StringComparison.OrdinalIgnoreCase);key?.Close();if(matches)Registry.CurrentUser.DeleteSubKeyTree(RegistryKey,false);
-            foreach(string shortcut in new[]{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),"DivineLabs IdleSlayer Mods.lnk"),Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs),"DivineLabs","IdleSlayer Mods.lnk")})if(File.Exists(shortcut))File.Delete(shortcut);
+            foreach(string shortcut in new[]{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),"DivineLabs Idle Slayer Mods.lnk"),Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs),"DivineLabs","IdleSlayer Mods.lnk")})if(File.Exists(shortcut))File.Delete(shortcut);
         }
         // Data, ownership, application/game/save backups and unowned files are retained.
     }

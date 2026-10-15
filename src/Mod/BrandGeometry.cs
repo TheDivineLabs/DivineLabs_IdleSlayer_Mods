@@ -1,0 +1,8 @@
+using UnityEngine;
+namespace DivineLabs.IdleSlayer;
+// Generated from assets/DivineLabs.svg by scripts/CreateBrandAssets.ps1.
+internal static class BrandGeometry { internal static readonly Vector2[][] Ribbons = {
+new Vector2[] {new(28f,38f),new(28.543f,32.461f),new(30.094f,27.813f),new(32.535f,24.008f),new(35.75f,21f),new(39.621f,18.742f),new(44.031f,17.188f),new(48.863f,16.289f),new(54f,16f),new(64f,16f),new(70.559f,16.461f),new(76.719f,17.813f),new(82.457f,20.008f),new(87.75f,23f),new(92.574f,26.742f),new(96.906f,31.188f),new(100.723f,36.289f),new(104f,42f),new(50f,42f),new(46.676f,42.229f),new(43.469f,42.891f),new(40.402f,43.951f),new(37.5f,45.375f),new(32.281f,49.172f),new(28f,54f),new(28f,38f)},
+new Vector2[] {new(28f,66f),new(28.539f,61.781f),new(30.063f,58.125f),new(32.43f,55.031f),new(35.5f,52.5f),new(39.133f,50.531f),new(43.188f,49.125f),new(47.523f,48.281f),new(52f,48f),new(106f,48f),new(107.688f,55.359f),new(108.25f,62.625f),new(107.688f,70.078f),new(106f,78f),new(50f,78f),new(46.676f,78.23f),new(43.469f,78.906f),new(40.402f,80.004f),new(37.5f,81.5f),new(32.281f,85.594f),new(28f,91f),new(28f,66f)},
+new Vector2[] {new(28f,102f),new(28.539f,97.781f),new(30.063f,94.125f),new(32.43f,91.031f),new(35.5f,88.5f),new(39.133f,86.531f),new(43.188f,85.125f),new(47.523f,84.281f),new(52f,84f),new(103f,84f),new(99.637f,90.457f),new(95.594f,96.281f),new(90.941f,101.402f),new(85.75f,105.75f),new(80.09f,109.254f),new(74.031f,111.844f),new(67.645f,113.449f),new(61f,114f),new(49f,114f),new(45.719f,114.225f),new(42.625f,114.859f),new(37f,117.125f),new(32.125f,120.328f),new(28f,124f),new(28f,102f)},
+}; }

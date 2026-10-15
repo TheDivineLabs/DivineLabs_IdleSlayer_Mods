@@ -10,7 +10,7 @@ internal static class Program
     {
         string output=args.Length>0?args[0]:@"W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\design-0.4";Directory.CreateDirectory(output);
         var app=new Application();
-        foreach(double scale in new[]{1d,1.5d,2d}){
+        if(!args.Contains("--maintenance-only")) foreach(double scale in new[]{1d,1.5d,2d}){
             var window=new MainWindow();
             foreach(string name in new[]{"HomePage","FeaturesPage","SettingsPage"}){
                 foreach(string other in new[]{"HomePage","FeaturesPage","SettingsPage"})((FrameworkElement)window.FindName(other)).Visibility=other==name?Visibility.Visible:Visibility.Collapsed;
@@ -21,7 +21,22 @@ internal static class Program
         }
         foreach(bool uninstall in new[]{false,true}){
             var arguments=new List<string>{"--worker",Path.Combine(output,"unused.exe"),"--dir",@"W:\DEV\tools\DivineLabs\IdleSlayer"};if(uninstall)arguments.Add("--uninstall");
-            var window=new MaintenanceWindow(arguments.ToArray());Render(window,760,600,1,Path.Combine(output,uninstall?"Uninstaller.png":"Installer.png"));window.Close();
+            var window=new MaintenanceWindow(arguments.ToArray());
+            var show=typeof(MaintenanceWindow).GetMethod("ShowPage",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!;
+            foreach(int page in uninstall?new[]{0,2,3,4}:new[]{0,1,2,3,4}){
+                if(page==4)typeof(MaintenanceWindow).GetField("done",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!.SetValue(window,true);
+                show.Invoke(window,new object[]{page,false});
+                if(!uninstall&&page==1){
+                    var primary=(Button)window.FindName("Primary");var accepted=(CheckBox)window.FindName("Accepted");
+                    if(primary.IsEnabled)throw new Exception("License consent gate is bypassed");
+                    accepted.IsChecked=true;if(!primary.IsEnabled)throw new Exception("License acceptance does not enable continuation");
+                    accepted.IsChecked=false;
+                    if(((TextBox)window.FindName("LicenseText")).Text.Length<1000)throw new Exception("License resource is missing");
+                }
+                foreach(double scale in new[]{1d,1.5d,2d})
+                    Render(window,1044,710,scale,Path.Combine(output,(uninstall?"Uninstaller":"Installer")+"-"+page+"-"+scale.ToString(System.Globalization.CultureInfo.InvariantCulture)+".png"));
+            }
+            window.Close();
         }
         Console.WriteLine("WPF layout renders complete: "+output);
         app.Shutdown();

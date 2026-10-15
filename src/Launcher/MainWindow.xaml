@@ -1,4 +1,4 @@
-<Window x:Class="DivineLabs.IdleSlayer.Launcher.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="DivineLabs · Idle Slayer" Width="1120" Height="800" MinWidth="900" MinHeight="640" WindowStartupLocation="CenterScreen">
+<Window x:Class="DivineLabs.IdleSlayer.Launcher.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="DivineLabs Idle Slayer Mods" Width="1120" Height="800" MinWidth="900" MinHeight="640" WindowStartupLocation="CenterScreen">
   <Window.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -16,7 +16,7 @@
         <StackPanel DockPanel.Dock="Top">
           <StackPanel Orientation="Horizontal" Margin="8,0,0,8">
             <Image Source="{StaticResource Logo}" Width="28" Height="28" Margin="0,0,8,0" />
-            <TextBlock Text="DIVINELABS" Foreground="{StaticResource Accent}" FontSize="15" FontWeight="Bold" />
+            <TextBlock Text="DivineLabs" Foreground="{StaticResource Accent}" FontSize="15" FontWeight="Bold" />
           </StackPanel>
           <TextBlock Text="IDLE SLAYER" Style="{StaticResource Caption}" Margin="8,0,0,32" />
           <Button x:Name="NavHome" Content="Главная" Tag="home" Click="Navigate" HorizontalContentAlignment="Left" />
@@ -25,7 +25,7 @@
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
           <TextBlock x:Name="Connection" Text="Нет связи" Foreground="{StaticResource Muted}" Margin="8,12" />
-          <TextBlock Text="DIVINELABS / 0.4.0" FontSize="11" Foreground="{StaticResource Muted}" Margin="8" />
+          <TextBlock Text="DivineLabs / 0.4.1" FontSize="11" Foreground="{StaticResource Muted}" Margin="8" />
         </StackPanel>
       </DockPanel>
     </Border>
@@ -148,7 +148,7 @@
             </StackPanel>
           </Expander>
           <Expander Header="Компоненты и лицензии" Foreground="{StaticResource Text}">
-            <TextBlock Margin="0,16" Style="{StaticResource Caption}" Text="DivineLabs 0.4.0. Собственные интерфейсы и игровые функции. DivineLabs_Loader основан на MelonLoader 0.7.3 (Apache-2.0). .NET, Unity, Harmony и Il2CppInterop сохраняют авторство. Полные лицензии: Docs/Licenses." />
+            <TextBlock Margin="0,16" Style="{StaticResource Caption}" Text="DivineLabs 0.4.1. Собственные интерфейсы и игровые функции. DivineLabs_Loader основан на MelonLoader 0.7.3 (Apache-2.0). .NET, Unity, Harmony и Il2CppInterop сохраняют авторство. Полные лицензии: Docs/Licenses." />
           </Expander>
         </StackPanel>
       </ScrollViewer>

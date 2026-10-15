@@ -1,7 +1,8 @@
-DivineLabs IdleSlayer Mods 0.4.0
+DivineLabs Idle Slayer Mods 0.4.1
 
 Начало работы
-Распакуйте portable ZIP целиком либо запустите Setup.exe и выберите папку.
+Распакуйте portable ZIP целиком либо запустите DivineLabs Idle Slayer Mods.exe.
+Мастер: начало → лицензии → параметры → установка → готово.
 Откройте DivineLabs.IdleSlayer.exe в корне папки или ярлык DivineLabs.
 Программа найдёт установленный Idle Slayer в Steam, проверит компоненты
 и при необходимости скачает их. Когда появится «Всё готово к игре»,

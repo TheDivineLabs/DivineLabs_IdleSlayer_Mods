@@ -18,6 +18,25 @@ if(args.Length>0&&args[0]=="--live"){
     return;
 }
 var root=Path.Combine(@"W:\DEV\.cache\temp","DivineLabs-checks-"+Guid.NewGuid());Directory.CreateDirectory(root);
+string progressFile=Path.Combine(root,"operation.txt");
+Check(DivineLabs.IdleSlayer.Maintenance.OperationReport.TryWrite(progressFile,"Распаковка",10),"Первый статус установки опубликован");
+using(var heldReport=new FileStream(progressFile,FileMode.Open,FileAccess.Read,FileShare.Read)){
+    Check(!DivineLabs.IdleSlayer.Maintenance.OperationReport.TryWrite(progressFile,"Занято",20),"Заблокированный статус не прерывает установку исключением");
+}
+using(var sharedReport=new FileStream(progressFile,FileMode.Open,FileAccess.Read,FileShare.ReadWrite|FileShare.Delete)){
+    Check(DivineLabs.IdleSlayer.Maintenance.OperationReport.TryWrite(progressFile,"Новый статус",30),"Чтение статуса не блокирует атомарную замену");
+}
+int invalidProgress=0,observedProgress=0;
+var progressWriter=Task.Run(()=>{for(int i=0;i<500;i++)DivineLabs.IdleSlayer.Maintenance.OperationReport.TryWrite(progressFile,"Этап "+i,i%101);});
+while(!progressWriter.IsCompleted){
+    if(DivineLabs.IdleSlayer.Maintenance.OperationReport.TryRead(progressFile,out int percent,out string message)){
+        observedProgress++;if(percent<0||percent>100||message.Length==0)invalidProgress++;
+    }
+    await Task.Delay(1);
+}
+await progressWriter;
+Check(observedProgress>0&&invalidProgress==0,"Параллельный опрос получает только целые статусы без конфликта доступа");
+Check(DivineLabs.IdleSlayer.Maintenance.OperationReport.TryWrite(progressFile,"Готово",100)&&DivineLabs.IdleSlayer.Maintenance.OperationReport.TryRead(progressFile,out int finalPercent,out string finalMessage)&&finalPercent==100&&finalMessage=="Готово","Финальный статус доступен после операции");
 Check(Settings.MultiplyIncome(-200,100)==-200,"Покупка не умножает расход");
 Check(10+Settings.MultiplyIncome(2,100)+Settings.MultiplyIncome(-200,100)==10,"Доход и покупка сохраняют верный баланс");
 Check(Settings.MultiplyIncome(double.MaxValue,100)==double.MaxValue,"Защита от переполнения");

@@ -1,5 +1,5 @@
 param(
- [string]$Setup='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.4.0\DivineLabs-IdleSlayer-0.4.0-Setup.exe',
+ [string]$Setup='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.4.1\DivineLabs Idle Slayer Mods.exe',
  [string]$LegacySetup='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.2.0\DivineLabs-IdleSlayer-0.2.0-Setup.exe'
 )
 $ErrorActionPreference='Stop'

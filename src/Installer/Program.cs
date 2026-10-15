@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using DivineLabs.IdleSlayer.Maintenance;
 using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -10,7 +11,7 @@ internal static class Program
         string Arg(string name,string fallback=""){int i=Array.IndexOf(args,name);return i>=0&&i+1<args.Length?args[i+1]:fallback;}
         bool silent=args.Contains("--silent"),filesOnly=args.Contains("--files-only"),uninstall=args.Contains("--uninstall");
         string target=Arg("--dir",uninstall?SetupOperations.UninstallRoot():SetupOperations.DefaultDirectory),report=Arg("--report");
-        void Report(string message,int percent){if(report.Length>0)File.WriteAllText(report,percent+Environment.NewLine+message);}
+        void Report(string message,int percent) => OperationReport.TryWrite(report,message,percent);
         try{
             if(args.Contains("--cleanup")){SetupOperations.Cleanup(target,int.Parse(Arg("--parent")),filesOnly);return 0;}
             if(args.Contains("--uninstall-now")){Report("Отключение компонентов и удаление программы…",-1);SetupOperations.UninstallNow(target,filesOnly);Report("Программа удалена.",100);return 0;}
@@ -19,7 +20,7 @@ internal static class Program
             SetupOperations.Install(target,!args.Contains("--no-integrations"),Report,!args.Contains("--no-shortcuts"));
             if(!args.Contains("--no-launch"))SetupOperations.Launch(target);return 0;
         }catch(Exception e){try{SetupOperations.Log(target,e);Report("Не удалось завершить операцию. Подробности в журнале.",-1);}catch{}
-            if(!silent)MessageBoxW(0,"Не удалось открыть интерфейс обслуживания. Подробности в Data/Logs/setup.log.","DivineLabs",0x10);return 2;
+            if(!silent)MessageBoxW(0,"Не удалось открыть интерфейс обслуживания. Подробности в Data/Logs/setup.log.","DivineLabs Idle Slayer Mods",0x10);return 2;
         }
     }
     private static int RunInterface(string target,bool uninstall)

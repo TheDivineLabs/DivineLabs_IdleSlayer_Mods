@@ -46,13 +46,13 @@ internal static class GameMenu
         overlay=Node(root.transform,"Overlay",0,0,0,0);Stretch(overlay);overlay.AddComponent<Image>().color=new Color(0,0,0,.60f);
         var body=Node(overlay.transform,"Panel",0,0,920,600);panel=body.GetComponent<RectTransform>();panel.anchorMin=panel.anchorMax=panel.pivot=new Vector2(.5f,.5f);panel.anchoredPosition=Vector2.zero;var panelImage=body.AddComponent<Image>();panelImage.color=Background;GameVisuals.Round(panelImage);
         fade=overlay.AddComponent<CanvasGroup>();fade.alpha=0;
-        GameVisuals.Logo(body.transform,24,15,42);Label(body.transform,"DIVINELABS",78,18,700,32,23,Accent);
+        GameVisuals.Logo(body.transform,24,15,42);Label(body.transform,"DivineLabs",78,18,700,32,23,Accent);
         Button(body.transform,"×",854,16,42,38,Toggle);
         var sidebar=Node(body.transform,"Sidebar",0,74,184,526);sidebar.AddComponent<Image>().color=new Color(.05f,.065f,.09f,1);
         Button(sidebar.transform,"Функции",16,20,152,42,()=>ShowPage(false));
         Button(sidebar.transform,"Настройки",16,72,152,42,()=>ShowPage(true));
         Button(sidebar.transform,"Избранное",16,136,152,42,()=>{favoritesOnly=!favoritesOnly;ShowPage(false);Filter();});
-        Label(sidebar.transform,"IDLE SLAYER\nDIVINELABS 0.4.0",18,434,150,58,13,Muted);
+        Label(sidebar.transform,"IDLE SLAYER\nDivineLabs 0.4.1",18,434,150,58,13,Muted);
         functions=Node(body.transform,"Functions",208,76,688,470);
         Label(functions.transform,"Функции",0,0,320,40,29,Color.white);
         global=Button(functions.transform,"",440,0,248,38,()=>Mod.Change(c=>c.Enabled=!c.Enabled)).GetComponentInChildren<TextMeshProUGUI>();

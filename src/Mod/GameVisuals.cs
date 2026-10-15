@@ -20,12 +20,10 @@ internal static class GameVisuals
         starTexture.Apply(false,true);star=Sprite.Create(starTexture,new Rect(0,0,32,32),new Vector2(.5f,.5f));
         // Rasterize our own vector mark once; stripped Unity span overloads cannot decode PNG reliably.
         var brand=new Texture2D(128,128,TextureFormat.RGBA32,false);
-        Vector2[] outer={new(30,30),new(62,30),new(86,54),new(86,74),new(62,98),new(30,98)};
-        Vector2[] inner={new(47,47),new(47,81),new(55,81),new(69,67),new(69,61),new(55,47)};
-        Vector2[] second={new(86,30),new(100,30),new(100,98),new(74,98),new(88,84),new(86,84)};
         for(int y=0;y<128;y++)for(int x=0;x<128;x++){
-            bool d=Inside(outer,x+.5f,y+.5f)&&!Inside(inner,x+.5f,y+.5f),l=Inside(second,x+.5f,y+.5f);
-            brand.SetPixel(x,127-y,l?new Color(.933f,.949f,.973f,1):d?new Color(.447f,.812f,1,1):Color.clear);
+            bool filled=false;
+            foreach(var ribbon in BrandGeometry.Ribbons)if(Inside(ribbon,x+.5f,y+.5f)){filled=true;break;}
+            brand.SetPixel(x,127-y,filled?new Color(.65f,.60f,1,1):Color.clear);
         }
         brand.Apply(false,true);logo=Sprite.Create(brand,new Rect(0,0,128,128),new Vector2(.5f,.5f));
     }
