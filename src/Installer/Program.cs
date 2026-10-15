@@ -14,23 +14,34 @@ internal static class Program
         void Report(string message,int percent) => OperationReport.TryWrite(report,message,percent);
         try{
             if(args.Contains("--cleanup")){SetupOperations.Cleanup(target,int.Parse(Arg("--parent")),filesOnly);return 0;}
-            if(args.Contains("--uninstall-now")){Report("Отключение компонентов и удаление программы…",-1);SetupOperations.UninstallNow(target,filesOnly);Report("Программа удалена.",100);return 0;}
+            if(args.Contains("--uninstall-now")){Report("Отключение компонентов и удаление программы…",-1);SetupOperations.UninstallNow(target,filesOnly,Report);Report("Программа удалена.",100);return 0;}
             if(!silent)return RunInterface(target,uninstall);
             if(uninstall){SetupOperations.BeginUninstall(target,filesOnly,true);return 0;}
-            SetupOperations.Install(target,!args.Contains("--no-integrations"),Report,!args.Contains("--no-shortcuts"));
+            SetupOperations.Install(target,!args.Contains("--no-integrations"),Report,!args.Contains("--no-shortcuts"),!args.Contains("--no-desktop-shortcut"),!args.Contains("--no-start-menu-shortcut"));
             if(!args.Contains("--no-launch"))SetupOperations.Launch(target);return 0;
-        }catch(Exception e){try{SetupOperations.Log(target,e);Report("Не удалось завершить операцию. Подробности в журнале.",-1);}catch{}
+        }catch(Exception e){try{SetupOperations.Log(target,e);Report("Ошибка: "+Explain(e),-1);}catch{}
             if(!silent)MessageBoxW(0,"Не удалось открыть интерфейс обслуживания. Подробности в Data/Logs/setup.log.","DivineLabs Idle Slayer Mods",0x10);return 2;
         }
+    }
+    private static string Explain(Exception error)
+    {
+        if(error is UnauthorizedAccessException)return "Нет доступа к выбранной папке. Выберите пользовательскую папку программы или проверьте права.";
+        int code=error.HResult&0xffff;
+        if(code is 32 or 33)return "Файл занят другой программой. Закройте лаунчер и повторите установку.";
+        if(code==112)return "Недостаточно свободного места на выбранном диске.";
+        if(error.Message.Length>0&&error.Message[0]>='А'&&error.Message[0]<='я')return error.Message;
+        return "Не удалось завершить операцию. Откройте журнал текущей установки.";
     }
     private static int RunInterface(string target,bool uninstall)
     {
         string scratch=Directory.Exists(@"W:\DEV\.cache\temp")?@"W:\DEV\.cache\temp":Path.GetTempPath();
         CleanCompleted(scratch);
         string work=Path.Combine(scratch,"DivineLabs-maintenance-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(work);
+        long requiredBytes=0;
         try{
             using(var resource=Assembly.GetExecutingAssembly().GetManifestResourceStream("DivineLabs.ApplicationPackage")??throw new IOException("В установщике нет пакета программы."))
             using(var zip=new ZipArchive(resource,ZipArchiveMode.Read)){
+                requiredBytes=zip.Entries.Sum(entry=>entry.Length)+new FileInfo(Environment.ProcessPath!).Length;
                 foreach(var entry in zip.Entries){
                     if(!entry.FullName.StartsWith("App/Launcher/",StringComparison.Ordinal)||entry.FullName.EndsWith('/'))continue;
                     string path=SetupOperations.Inside(work,entry.FullName);Directory.CreateDirectory(Path.GetDirectoryName(path)!);entry.ExtractToFile(path);
@@ -38,7 +49,7 @@ internal static class Program
             }
             string worker=Path.Combine(work,"worker.exe");File.Copy(Environment.ProcessPath!,worker);
             var start=new ProcessStartInfo(Path.Combine(work,"App","Launcher","DivineLabs.IdleSlayer.Launcher.exe")){UseShellExecute=false};
-            foreach(string arg in new[]{"--maintenance","--worker",worker,"--dir",target})start.ArgumentList.Add(arg);
+            foreach(string arg in new[]{"--maintenance","--worker",worker,"--dir",target,"--required-bytes",requiredBytes.ToString(System.Globalization.CultureInfo.InvariantCulture)})start.ArgumentList.Add(arg);
             if(uninstall)start.ArgumentList.Add("--uninstall");
             using var ui=Process.Start(start)??throw new IOException("Не удалось открыть интерфейс обслуживания.");if(uninstall)return 0;ui.WaitForExit();return ui.ExitCode;
         }finally{

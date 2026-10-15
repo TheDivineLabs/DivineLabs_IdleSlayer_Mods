@@ -1,4 +1,4 @@
-param([string]$Setup='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.4.1\DivineLabs Idle Slayer Mods.exe')
+param([string]$Setup='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.4.2\DivineLabs Idle Slayer Mods.exe')
 $ErrorActionPreference='Stop'
 $work=Join-Path 'W:\DEV\.cache\temp' ('DivineLabs-progress-check-'+[Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $work|Out-Null
@@ -9,6 +9,10 @@ function StartWorker([string]$File,[string[]]$Arguments){
  foreach($argument in $Arguments){$start.ArgumentList.Add($argument)}
  return [Diagnostics.Process]::Start($start)
 }
+$oldStage=Join-Path $target ('Data\Cache\Work\setup-'+[Guid]::NewGuid().ToString('N')+'\App\Components')
+New-Item -ItemType Directory -Path $oldStage,(Join-Path $target 'Data\Logs') -Force|Out-Null
+Set-Content -LiteralPath (Join-Path $oldStage 'manifest.json') -Value '{"Files":{"Mods/DivineLabs.IdleSlayer.Mod.dll":"fixture"}}'
+Set-Content -LiteralPath (Join-Path $target 'Data\Logs\setup.log') -Value 'at DivineLabs.IdleSlayer.Setup.SetupOperations.Install'
 $arguments=@('--silent','--no-integrations','--no-launch','--dir',$target,'--report',$report)
 [IO.File]::WriteAllText($report,('0'+[Environment]::NewLine+'Исходный статус'))
 $held=[IO.FileStream]::new($report,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::Read)
@@ -18,7 +22,7 @@ try{
  if($process.ExitCode-ne 0){throw "Установка с занятым статусом завершилась с кодом $($process.ExitCode). $target\Data\Logs\setup.log"}
 }finally{$held.Dispose()}
 if(-not(Test-Path -LiteralPath "$target\App\Setup\installation.json")){throw 'Нет результата установки'}
-Write-Output 'ПРОЙДЕНО: реальный установщик завершил установку при постоянно заблокированном файле прогресса'
+Write-Output 'ПРОЙДЕНО: реальный установщик восстановил старую прерванную установку при заблокированном файле прогресса'
 $preserved=Join-Path $target 'Data\Config\acceptance.txt';Set-Content -LiteralPath $preserved -Value 'retained'
 $process=StartWorker $Setup $arguments
 $samples=0

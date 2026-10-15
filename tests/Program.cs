@@ -18,6 +18,22 @@ if(args.Length>0&&args[0]=="--live"){
     return;
 }
 var root=Path.Combine(@"W:\DEV\.cache\temp","DivineLabs-checks-"+Guid.NewGuid());Directory.CreateDirectory(root);
+string retryRoot=Path.Combine(root,"interrupted");
+Directory.CreateDirectory(Path.Combine(retryRoot,"Data","Logs"));
+File.WriteAllText(Path.Combine(retryRoot,"Data","Logs","setup.log"),"at DivineLabs.IdleSlayer.Setup.SetupOperations.Install");
+string retryStage=Path.Combine(retryRoot,"Data","Cache","Work","setup-"+Guid.NewGuid().ToString("N"),"App","Components");
+Directory.CreateDirectory(retryStage);
+File.WriteAllText(Path.Combine(retryStage,"manifest.json"),"{\"Files\":{\"Mods/DivineLabs.IdleSlayer.Mod.dll\":\"hash\"}}");
+Check(DivineLabs.IdleSlayer.Maintenance.InstallTarget.Inspect(retryRoot)==DivineLabs.IdleSlayer.Maintenance.InstallTargetKind.Recoverable,"Остатки установки 0.4.0 распознаются без удаления");
+File.WriteAllText(Path.Combine(retryRoot,"personal.txt"),"preserve");
+Check(DivineLabs.IdleSlayer.Maintenance.InstallTarget.Inspect(retryRoot)==DivineLabs.IdleSlayer.Maintenance.InstallTargetKind.Occupied,"Посторонние файлы исключают автоматическое принятие папки");
+File.Delete(Path.Combine(retryRoot,"personal.txt"));
+string marked=Path.Combine(root,"marked","Data","Config");
+Directory.CreateDirectory(marked);File.WriteAllText(Path.Combine(marked,".divinelabs-owner"),DivineLabs.IdleSlayer.Maintenance.InstallTarget.ProductId);
+Check(DivineLabs.IdleSlayer.Maintenance.InstallTarget.Inspect(Path.Combine(root,"marked"))==DivineLabs.IdleSlayer.Maintenance.InstallTargetKind.Installed,"Отмеченная прерванная установка допускает повтор");
+string foreign=Path.Combine(root,"foreign","Data","Logs");Directory.CreateDirectory(foreign);File.WriteAllText(Path.Combine(foreign,"setup.log"),"unrelated");
+Check(DivineLabs.IdleSlayer.Maintenance.InstallTarget.Inspect(Path.Combine(root,"foreign"))==DivineLabs.IdleSlayer.Maintenance.InstallTargetKind.Occupied,"Произвольный Data с чужим журналом не считается нашей установкой");
+Check(DivineLabs.IdleSlayer.Maintenance.InstallTarget.DefaultDirectory.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)+Path.DirectorySeparatorChar),"Новая установка предлагается в пользовательской папке программ");
 string progressFile=Path.Combine(root,"operation.txt");
 Check(DivineLabs.IdleSlayer.Maintenance.OperationReport.TryWrite(progressFile,"Распаковка",10),"Первый статус установки опубликован");
 using(var heldReport=new FileStream(progressFile,FileMode.Open,FileAccess.Read,FileShare.Read)){
