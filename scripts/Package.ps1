@@ -1,4 +1,4 @@
-param([string]$Portable='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.3.1\portable',[string]$Destination='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.3.1\DivineLabs-IdleSlayer-0.3.1-portable.zip')
+param([string]$Portable='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.4.0\portable',[string]$Destination='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.4.0\DivineLabs-IdleSlayer-0.4.0-portable.zip')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath($Portable)
 if(Test-Path -LiteralPath $Destination){throw 'Архив уже существует: выберите новое имя.'}
