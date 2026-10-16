@@ -35,5 +35,10 @@
     "sha256": "a9cd40df818845456be6d696de6110c89edf4b0a0580cb83438ed6b25a366e67",
     "source": "https://github.com/REAndroid/APKEditor/tree/V1.4.9",
     "license": "Apache-2.0"
+  },
+  "patcherLinux": {
+    "version": "v2.1.0",
+    "url": "https://github.com/LemonLoaderX/LemonLoader.Patcher/releases/download/v2.1.0/LemonLoader.Patcher.CLI-linux-x64.tar.gz",
+    "sha256": "7a7175bbc34aa31e0338deadc471ef924bfbc580f23711e6633d10716da97c3c"
   }
 }

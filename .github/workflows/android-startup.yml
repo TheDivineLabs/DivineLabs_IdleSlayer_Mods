@@ -1,0 +1,60 @@
+name: Android startup probe
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: android-startup-probe
+  cancel-in-progress: false
+jobs:
+  startup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TEMP: ${{ runner.temp }}
+      TMP: ${{ runner.temp }}
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Check focused Android contracts
+        run: |
+          python -B -m unittest discover -s tests -p 'Android*Checks.py'
+          dotnet run --project tests/AndroidInput -c Release
+      - name: Prepare SDK and KVM
+        run: |
+          sdkmanager 'build-tools;37.0.0'
+          test -e /dev/kvm
+          if ! test -w /dev/kvm; then sudo chown "$(id -u):$(id -g)" /dev/kvm; fi
+      - name: Build isolated test APK with ephemeral certificate
+        run: python -B scripts/android/ci_android.py build
+      - name: Probe Android startup
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          cores: 2
+          ram-size: 2048M
+          heap-size: 256M
+          disk-size: 2G
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader -no-snapshot -no-audio -no-boot-anim -no-metrics -camera-back none -camera-front none
+          disable-animations: true
+          script: python -B scripts/android/ci_android.py probe
+      - name: Upload reports only
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: android-startup-report
+          path: ${{ runner.temp }}/divinelabs-android/reports/
+          if-no-files-found: warn
+          retention-days: 7
