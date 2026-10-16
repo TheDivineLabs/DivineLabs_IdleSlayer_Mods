@@ -13,6 +13,7 @@ public sealed class Mod : MelonMod
     internal static string ConfigPath;
     internal static Mod Instance;
     internal static bool Ready;
+    internal static bool GameSceneReady;
     public override void OnInitializeMelon()
     {
         Instance = this;
@@ -21,11 +22,12 @@ public sealed class Mod : MelonMod
             string game = Path.GetDirectoryName(Environment.ProcessPath)!;
             if (!Compatibility.Supported(game)) { LoggerInstance.Warning("Версия игры не проверена. Модификации отключены; запустите обычную игру через лаунчер."); return; }
             ConfigPath = Path.Combine(game, "UserData", SettingsStore.FileName);
-            Session = new SessionHost(ConfigPath,e=>LoggerInstance.Error(e.ToString()));
+            Session = new SessionHost(ConfigPath,e=>LoggerInstance.Error(e.ToString()),GameActions.Submit,GameActions.PrepareSettings);
             StartupCompatibility.Install(HarmonyInstance, game);
             Patch("PlayerInventory", "AddCoins", nameof(Coins));
             Patch("SlayerPoints", "AddSouls", nameof(Souls));
             Patch("EnemyGameObject", "TakeDamage", nameof(Damage));
+            FreePurchases.Install(HarmonyInstance);
             var input = AccessTools.Method(typeof(Il2Cpp.InputManager), "Update");
             if (input == null) throw new MissingMethodException("InputManager.Update");
             HarmonyInstance.Patch(input, prefix: new HarmonyMethod(typeof(Mod), nameof(InputAllowed)));
@@ -45,7 +47,7 @@ public sealed class Mod : MelonMod
     }
     private static void Coins(Il2Cpp.PlayerInventory __instance,ref double __0)
     {
-        var c=Config;if(!c.Enabled||!c.CoinsEnabled)return;
+        var c=Config;if(GameActions.InGrant||!c.Enabled||!c.CoinsEnabled)return;
         // AddCoins adds the award to both balances; test both sums before handing it back.
         double available=Math.Min(double.MaxValue-Math.Max(0,__instance.coins),double.MaxValue-Math.Max(0,__instance.lifetimeCoins));
         __0=Settings.MultiplyIncome(__0,c.CoinMultiplier,available);
@@ -59,13 +61,18 @@ public sealed class Mod : MelonMod
     }
     private static bool InputAllowed() => !GameMenu.BlocksGameInput;
     public override void OnSceneWasInitialized(int index, string name)
-    { if(Ready && name=="Game") { try { GameMenu.Create(); } catch(Exception e) { LoggerInstance.Error("Ошибка создания меню: "+e); } } }
+    {
+        if(!Ready)return;
+        if(name=="Game"){GameSceneReady=true;try{GameMenu.Create();GameMenu.SetAvailable(true);}catch(Exception e){LoggerInstance.Error("Ошибка создания меню: "+e);}}
+    }
+    public override void OnSceneWasUnloaded(int index,string name)
+    {if(name=="Game"){GameSceneReady=false;GameActions.SceneExited();GameMenu.SetAvailable(false);FreePurchases.Restore();}}
     public override void OnUpdate()
-    { if(Ready) GameMenu.Tick(); }
+    { if(Ready){GameActions.Tick();FreePurchases.Tick();GameMenu.Tick();} }
     internal static async void Change(Action<Settings> action)
     {
         try{var c=Config.Copy();long revision=c.Revision;action(c);c.Validate();var result=await Session.Apply(new(){Revision=revision,Settings=c});Messages.Enqueue(result.Error??"Настройки применены.");}
         catch(Exception e){Messages.Enqueue(e.Message);Instance.LoggerInstance.Error(e.ToString());}
     }
-    public override void OnApplicationQuit(){Ready=false;Session?.Dispose();}
+    public override void OnApplicationQuit(){Ready=false;GameSceneReady=false;GameActions.Stop();FreePurchases.Restore();Session?.Dispose();}
 }

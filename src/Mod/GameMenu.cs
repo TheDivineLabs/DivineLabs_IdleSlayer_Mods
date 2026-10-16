@@ -49,8 +49,9 @@ internal static class GameMenu
         Button(body.transform,"×",854,16,42,38,Toggle);
         var sidebar=Node(body.transform,"Sidebar",0,74,184,526);sidebar.AddComponent<Image>().color=new Color(.05f,.065f,.09f,1);
         Button(sidebar.transform,"Функции",16,20,152,42,()=>ShowPage(false));
-        Button(sidebar.transform,"Настройки",16,72,152,42,()=>ShowPage(true));
-        Button(sidebar.transform,"Избранное",16,136,152,42,()=>{favoritesOnly=!favoritesOnly;ShowPage(false);Filter();});
+        Button(sidebar.transform,"Ресурсы",16,72,152,42,ShowResources);
+        Button(sidebar.transform,"Настройки",16,124,152,42,()=>ShowPage(true));
+        Button(sidebar.transform,"Избранное",16,196,152,42,()=>{favoritesOnly=!favoritesOnly;ShowPage(false);Filter();});
         Label(sidebar.transform,"IDLE SLAYER\nDivineLabs 0.4.2",18,434,150,58,13,Muted);
         functions=Node(body.transform,"Functions",208,76,688,470);
         Label(functions.transform,"Функции",0,0,320,40,29,Color.white);
@@ -61,13 +62,17 @@ internal static class GameMenu
         content=Node(viewport.transform,"Cards",0,0,676,500);
         var scroll=viewport.AddComponent<ScrollRect>();scroll.viewport=viewport.GetComponent<RectTransform>();scroll.content=content.GetComponent<RectTransform>();scroll.horizontal=false;scroll.vertical=true;scroll.movementType=ScrollRect.MovementType.Clamped;scroll.scrollSensitivity=30;
         foreach(var def in FeatureCatalog.All)BuildCard(def);
+        ResourcePanel.Create(body.transform);
         preferences=Node(body.transform,"Settings",208,76,688,470);
         Label(preferences.transform,"Настройки",0,0,600,40,29,Color.white);
         Label(preferences.transform,"КЛАВИШИ",0,58,300,26,14,Accent);
+        var keyViewport=Node(preferences.transform,"Keys",0,94,342,284);keyViewport.AddComponent<RectMask2D>();keyViewport.AddComponent<Image>().color=Background;
+        var keyContent=Node(keyViewport.transform,"Bindings",0,0,338,FeatureCatalog.Actions.Length*48);
+        var keyScroll=keyViewport.AddComponent<ScrollRect>();keyScroll.viewport=keyViewport.GetComponent<RectTransform>();keyScroll.content=keyContent.GetComponent<RectTransform>();keyScroll.horizontal=false;keyScroll.movementType=ScrollRect.MovementType.Clamped;
         for(int i=0;i<FeatureCatalog.Actions.Length;i++){
-            string action=FeatureCatalog.Actions[i];float y=94+i*48;
-            Label(preferences.transform,FeatureCatalog.ActionTitle(action),0,y,164,38,17,Color.white);
-            bindLabels[action]=Button(preferences.transform,"",166,y,170,38,()=>Capture(action)).GetComponentInChildren<TextMeshProUGUI>();
+            string action=FeatureCatalog.Actions[i];float y=i*48;
+            Label(keyContent.transform,FeatureCatalog.ActionTitle(action),0,y,164,44,14,Color.white);
+            bindLabels[action]=Button(keyContent.transform,"",166,y,170,38,()=>Capture(action)).GetComponentInChildren<TextMeshProUGUI>();
         }
         Label(preferences.transform,"ВИДЖЕТ И ИНТЕРФЕЙС",366,58,310,26,14,Accent);
         visibleText=Button(preferences.transform,"",366,94,310,38,()=>Mod.Change(c=>c.WidgetVisible=!c.WidgetVisible)).GetComponentInChildren<TextMeshProUGUI>();
@@ -94,18 +99,20 @@ internal static class GameMenu
     }
     private static void BuildCard(FeatureDefinition def)
     {
-        var go=Node(content.transform,def.Id,0,0,676,230);var surface=go.AddComponent<Image>();surface.color=Surface;GameVisuals.Round(surface);
+        var go=Node(content.transform,def.Id,0,0,676,def.HasMultiplier?230:170);var surface=go.AddComponent<Image>();surface.color=Surface;GameVisuals.Round(surface);
         var card=new Card{Definition=def,Node=go};
         Label(go.transform,def.Title,20,16,400,30,24,Color.white);
         var favorite=Button(go.transform,"",550,12,46,36,()=>Mod.Change(c=>c.Favorites=c.Favorites.Contains(def.Id)?c.Favorites.Where(x=>x!=def.Id).ToArray():c.Favorites.Append(def.Id).ToArray()));card.Favorite=GameVisuals.Star(favorite.transform,10,5,26);
         card.Toggle=Button(go.transform,"",600,12,58,36,()=>Mod.Change(c=>{c.SetFeatureEnabled(def.Id,!c.FeatureEnabled(def.Id));})).GetComponentInChildren<TextMeshProUGUI>();
         Label(go.transform,def.Description,20,56,634,48,16,Muted);
+        if(def.HasMultiplier){
         card.Input=Field(go.transform,20,112,140,40,true);
         card.Input.onEndEdit.AddListener((UnityAction<string>)(text=>Commit(card,text)));
         double[] presets={1,10,100,1000};
         for(int i=0;i<presets.Length;i++){double value=presets[i];Button(go.transform,"×"+value,178+i*120,112,110,40,()=>SetNumber(def.Id,value));}
-        card.Key=Button(go.transform,"",20,170,300,36,()=>Capture(def.Action)).GetComponentInChildren<TextMeshProUGUI>();
-        card.Error=Label(go.transform,"",332,170,324,42,14,new Color(1,.67f,.72f,1));
+        }
+        card.Key=Button(go.transform,"",20,def.HasMultiplier?170:112,300,36,()=>Capture(def.Action)).GetComponentInChildren<TextMeshProUGUI>();
+        card.Error=Label(go.transform,"",332,def.HasMultiplier?170:112,324,42,14,new Color(1,.67f,.72f,1));
         cards.Add(card);
     }
     private static void Commit(Card card,string text)
@@ -121,14 +128,15 @@ internal static class GameMenu
         string query=search.text?.Trim()??"";float y=0;
         foreach(var card in cards){
             bool show=(categoryIndex==0||card.Definition.Category==categories[categoryIndex])&&(!favoritesOnly||Mod.Config.Favorites.Contains(card.Definition.Id))&&(card.Definition.Title.Contains(query,StringComparison.OrdinalIgnoreCase)||card.Definition.Category.Contains(query,StringComparison.OrdinalIgnoreCase));
-            card.Node.SetActive(show);if(show){card.Node.GetComponent<RectTransform>().anchoredPosition=new Vector2(0,-y);y+=246;}
+            card.Node.SetActive(show);if(show){card.Node.GetComponent<RectTransform>().anchoredPosition=new Vector2(0,-y);y+=card.Node.GetComponent<RectTransform>().rect.height+16;}
         }
         content.GetComponent<RectTransform>().sizeDelta=new Vector2(676,Math.Max(y,354));
     }
     private static void ShowPage(bool settings)
     {
-        settingsPage=settings;functions.SetActive(!settings);preferences.SetActive(settings);
+        settingsPage=settings;functions.SetActive(!settings);preferences.SetActive(settings);ResourcePanel.Hide();
     }
+    private static void ShowResources(){functions.SetActive(false);preferences.SetActive(false);ResourcePanel.Show();}
     private static void Refresh()
     {
         if(root==null)return;refreshing=true;
@@ -137,7 +145,7 @@ internal static class GameMenu
             global.text=c.Enabled?"● Все функции включены":"○ Все функции выключены";
             foreach(var card in cards){bool enabled=c.FeatureEnabled(card.Definition.Id);
                 card.Toggle.text=enabled?"Вкл":"Выкл";card.Favorite.color=c.Favorites.Contains(card.Definition.Id)?Accent:Muted;
-                if(!card.Input.isFocused)card.Input.text=c.Multiplier(card.Definition.Id).ToString(CultureInfo.InvariantCulture);
+                if(card.Input!=null&&!card.Input.isFocused)card.Input.text=c.Multiplier(card.Definition.Id).ToString(CultureInfo.InvariantCulture);
                 card.Key.text=c.Bindings[card.Definition.Action].ToString();
             }
             foreach(var action in FeatureCatalog.Actions)bindLabels[action].text=c.Bindings[action].ToString();
@@ -166,9 +174,16 @@ internal static class GameMenu
         if(!dragging)widgetRect.anchoredPosition=new Vector2(12+Mod.Config.WidgetX*Math.Max(0,wr.width-162),-12-Mod.Config.WidgetY*Math.Max(0,wr.height-70));
         PositionActiveList();
     }
-    internal static void Tick()
+    internal static void SetAvailable(bool available)
     {
         if(root==null)return;
+        if(!available){if(Open)Toggle();dragging=false;capture=null;}
+        root.SetActive(available);widgetRoot.SetActive(available);
+        if(available){WindowHotkey.Reset();Refresh();}
+    }
+    internal static void Tick()
+    {
+        if(root==null||!Mod.GameSceneReady)return;
         if(revision!=Mod.Config.Revision)Refresh();
         if(width!=Screen.width||height!=Screen.height){width=Screen.width;height=Screen.height;layoutFrames=3;}
         if(layoutFrames>0){Fit();layoutFrames--;}
@@ -182,15 +197,13 @@ internal static class GameMenu
             if((actions&1)!=0)Toggle();
             if((actions&2)!=0)Mod.Change(c=>c.WidgetVisible=!c.WidgetVisible);
             if((actions&4)!=0)Mod.Change(c=>c.Enabled=!c.Enabled);
-            if((actions&8)!=0)Mod.Change(c=>c.CoinsEnabled=!c.CoinsEnabled);
-            if((actions&16)!=0)Mod.Change(c=>c.DamageEnabled=!c.DamageEnabled);
-            if((actions&32)!=0)Mod.Change(c=>c.SoulsEnabled=!c.SoulsEnabled);
+            for(int i=3;i<FeatureCatalog.Actions.Length;i++){string id=FeatureCatalog.Actions[i];if((actions&(1<<i))!=0)Mod.Change(c=>c.SetFeatureEnabled(id,!c.FeatureEnabled(id)));}
         }
         if(transition>=0){
             transition+=Time.unscaledDeltaTime;float t=Math.Min(1,transition/.18f);t=1-(1-t)*(1-t)*(1-t);fade.alpha=Mathf.Lerp(fromAlpha,toAlpha,t);
             if(transition>=.18f){transition=-1;fade.alpha=toAlpha;if(!Open)overlay.SetActive(false);}
         }
-        Drag();
+        ResourcePanel.Tick();Drag();
         while(Mod.Messages.TryDequeue(out string message))status.text=message;
     }
     private static void Toggle()
@@ -248,15 +261,15 @@ internal static class GameMenu
         var scaler=go.AddComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1280,720);scaler.matchWidthOrHeight=.5f;go.AddComponent<GraphicRaycaster>();return go;
     }
     private static void Stretch(GameObject go){var r=go.GetComponent<RectTransform>();r.anchorMin=Vector2.zero;r.anchorMax=Vector2.one;r.offsetMin=r.offsetMax=Vector2.zero;}
-    private static GameObject Node(Transform parent,string name,float x,float y,float w,float h){var go=new GameObject(name);var r=go.AddComponent<RectTransform>();r.SetParent(parent,false);r.anchorMin=r.anchorMax=r.pivot=new Vector2(0,1);r.anchoredPosition=new Vector2(x,-y);r.sizeDelta=new Vector2(w,h);return go;}
-    private static TextMeshProUGUI Label(Transform parent,string text,float x,float y,float w,float h,float size,Color color){var go=Node(parent,"Text",x,y,w,h);var t=go.AddComponent<TextMeshProUGUI>();t.font=font;t.text=text;t.fontSize=size;t.color=color;t.raycastTarget=false;t.enableWordWrapping=true;return t;}
-    private static GameObject Button(Transform parent,string text,float x,float y,float w,float h,Action action)
+    internal static GameObject Node(Transform parent,string name,float x,float y,float w,float h){var go=new GameObject(name);var r=go.AddComponent<RectTransform>();r.SetParent(parent,false);r.anchorMin=r.anchorMax=r.pivot=new Vector2(0,1);r.anchoredPosition=new Vector2(x,-y);r.sizeDelta=new Vector2(w,h);return go;}
+    internal static TextMeshProUGUI Label(Transform parent,string text,float x,float y,float w,float h,float size,Color color){var go=Node(parent,"Text",x,y,w,h);var t=go.AddComponent<TextMeshProUGUI>();t.font=font;t.text=text;t.fontSize=size;t.color=color;t.raycastTarget=false;t.enableWordWrapping=true;return t;}
+    internal static GameObject Button(Transform parent,string text,float x,float y,float w,float h,Action action)
     {
         var go=Node(parent,"Button",x,y,w,h);var image=go.AddComponent<Image>();image.color=Surface;GameVisuals.Round(image);var b=go.AddComponent<Button>();b.targetGraphic=image;
         var colors=b.colors;colors.m_NormalColor=Color.white;colors.m_HighlightedColor=new Color(.7f,.85f,1,1);colors.m_PressedColor=new Color(.45f,.65f,.8f,1);colors.fadeDuration=.12f;b.colors=colors;
         buttons.Add(b);b.onClick.AddListener((UnityAction)action);var label=Label(go.transform,text,6,2,w-12,h-4,16,Color.white);label.alignment=TextAlignmentOptions.Center;return go;
     }
-    private static TMP_InputField Field(Transform parent,float x,float y,float w,float h,bool number)
+    internal static TMP_InputField Field(Transform parent,float x,float y,float w,float h,bool number)
     {
         var go=Node(parent,"Input",x,y,w,h);var img=go.AddComponent<Image>();img.color=new Color(.06f,.09f,.13f,1);GameVisuals.Round(img);
         var viewport=Node(go.transform,"Viewport",10,3,w-20,h-6);viewport.AddComponent<RectMask2D>();

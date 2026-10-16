@@ -9,6 +9,11 @@ public sealed class Settings
     public bool CoinsEnabled {get;set;}=true;
     public bool DamageEnabled {get;set;}=true;
     public bool SoulsEnabled {get;set;}
+    public bool FreeCoins {get;set;}
+    public bool FreeSP {get;set;}
+    public bool FreeDP {get;set;}
+    public bool FreeUSP {get;set;}
+    public bool FreeCraft {get;set;}
     public double CoinMultiplier {get;set;}=100;
     public double DamageMultiplier {get;set;}=1000;
     public double SoulMultiplier {get;set;}=100;
@@ -37,9 +42,9 @@ public sealed class Settings
         if(Bindings.Values.Where(b=>b.Key!=0).GroupBy(b=>(b.Key,b.Modifiers)).Any(g=>g.Count()>1))throw new InvalidDataException("Сочетание уже назначено другому действию.");
     }
     public const string MultiplierHint="Введите конечное число от 1, например 1000 или 1e60.";
-    public bool FeatureEnabled(string id)=>id switch{"coins"=>CoinsEnabled,"damage"=>DamageEnabled,"souls"=>SoulsEnabled,_=>throw new ArgumentException("Неизвестная функция.",nameof(id))};
+    public bool FeatureEnabled(string id)=>id switch{"coins"=>CoinsEnabled,"damage"=>DamageEnabled,"souls"=>SoulsEnabled,"free-coins"=>FreeCoins,"free-sp"=>FreeSP,"free-dp"=>FreeDP,"free-usp"=>FreeUSP,"free-craft"=>FreeCraft,_=>throw new ArgumentException("Неизвестная функция.",nameof(id))};
     public double Multiplier(string id)=>id switch{"coins"=>CoinMultiplier,"damage"=>DamageMultiplier,"souls"=>SoulMultiplier,_=>throw new ArgumentException("Неизвестная функция.",nameof(id))};
-    public void SetFeatureEnabled(string id,bool value){switch(id){case "coins":CoinsEnabled=value;break;case "damage":DamageEnabled=value;break;case "souls":SoulsEnabled=value;break;default:throw new ArgumentException("Неизвестная функция.",nameof(id));}}
+    public void SetFeatureEnabled(string id,bool value){switch(id){case "coins":CoinsEnabled=value;break;case "damage":DamageEnabled=value;break;case "souls":SoulsEnabled=value;break;case "free-coins":FreeCoins=value;break;case "free-sp":FreeSP=value;break;case "free-dp":FreeDP=value;break;case "free-usp":FreeUSP=value;break;case "free-craft":FreeCraft=value;break;default:throw new ArgumentException("Неизвестная функция.",nameof(id));}}
     public void SetMultiplier(string id,double value){switch(id){case "coins":CoinMultiplier=value;break;case "damage":DamageMultiplier=value;break;case "souls":SoulMultiplier=value;break;default:throw new ArgumentException("Неизвестная функция.",nameof(id));}}
     public static bool Valid(double v)=>double.IsFinite(v)&&v>=1;
     public static double MultiplyIncome(double amount,double factor,double available=double.MaxValue)
@@ -61,7 +66,7 @@ public static class SettingsStore
         if(schema is not (1 or 2))throw new InvalidDataException("Неизвестная версия настроек.");
         var value=JsonSerializer.Deserialize<Settings>(text)??throw new InvalidDataException("Пустые настройки.");
         // Extend the existing v2 binding map only for the newly introduced action.
-        if(value.Bindings!=null&&!value.Bindings.ContainsKey("souls"))value.Bindings.Add("souls",new KeyBinding());
+        if(value.Bindings!=null)foreach(string action in new[]{"souls"}.Concat(FeatureCatalog.FreeIds))if(!value.Bindings.ContainsKey(action))value.Bindings.Add(action,new KeyBinding());
         value.SchemaVersion=2;value.Validate();return value;
     }
     public static Settings Load(string path,Action<string> report=null)
@@ -73,6 +78,9 @@ public static class SettingsStore
                 if(!doc.RootElement.TryGetProperty("SchemaVersion",out var v)||v.GetInt32()==1){if(!File.Exists(path+".v1.bak"))File.Copy(path,path+".v1.bak");Save(path,s);}
                 else if(doc.RootElement.TryGetProperty("Bindings",out var bindings)&&bindings.ValueKind==JsonValueKind.Object&&!bindings.TryGetProperty("souls",out _)){
                     if(!File.Exists(path+".pre-souls.bak"))File.Copy(path,path+".pre-souls.bak");Save(path,s);
+                }
+                else if(doc.RootElement.TryGetProperty("Bindings",out var oldBindings)&&oldBindings.ValueKind==JsonValueKind.Object&&FeatureCatalog.FreeIds.Any(id=>!oldBindings.TryGetProperty(id,out _))){
+                    if(!File.Exists(path+".pre-resources.bak"))File.Copy(path,path+".pre-resources.bak");Save(path,s);
                 }
                 return s;
             }catch(Exception e) when(e is JsonException or InvalidDataException or IOException){

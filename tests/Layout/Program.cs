@@ -9,16 +9,17 @@ internal static class Program
     [STAThread]static void Main(string[] args)
     {
         string output=args.Length>0?args[0]:@"W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\design-0.4";Directory.CreateDirectory(output);
-        var app=new Application();
+        var app=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
         if(!args.Contains("--maintenance-only")) foreach(double scale in new[]{1d,1.5d,2d}){
             var window=new MainWindow();
-            foreach(string name in new[]{"HomePage","FeaturesPage","SettingsPage"}){
-                foreach(string other in new[]{"HomePage","FeaturesPage","SettingsPage"})((FrameworkElement)window.FindName(other)).Visibility=other==name?Visibility.Visible:Visibility.Collapsed;
+            foreach(string name in new[]{"HomePage","FeaturesPage","ResourcesPage","SettingsPage"}){
+                foreach(string other in new[]{"HomePage","FeaturesPage","ResourcesPage","SettingsPage"})((FrameworkElement)window.FindName(other)).Visibility=other==name?Visibility.Visible:Visibility.Collapsed;
                 ((FrameworkElement)window.FindName(name)).IsEnabled=true;
                 Render(window,1100,740,scale,Path.Combine(output,name+"-"+scale.ToString(System.Globalization.CultureInfo.InvariantCulture)+".png"));
             }
             window.Close();
         }
+        if(args.Contains("--launcher-only")){Console.WriteLine("WPF launcher layouts complete: "+output);app.Shutdown();return;}
         foreach(bool uninstall in new[]{false,true}){
             var arguments=new List<string>{"--worker",Path.Combine(output,"unused.exe"),"--dir",DivineLabs.IdleSlayer.Maintenance.InstallTarget.DefaultDirectory};if(uninstall)arguments.Add("--uninstall");
             var window=new MaintenanceWindow(arguments.ToArray());

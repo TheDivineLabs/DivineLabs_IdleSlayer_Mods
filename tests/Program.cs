@@ -89,9 +89,30 @@ using(var session=new SessionHost(live)){
     var stale=await SessionWire.Send(live,new(){Revision=initial.Settings.Revision,Settings=next});
     Check(stale.Error!=null&&stale.Settings.Revision==update.Settings.Revision,"Устаревшая команда не перезаписывает новое состояние");
     bool owned=false;try{using var other=SettingsStore.AcquireOwner(live);}catch(IOException){owned=true;}Check(owned,"Игра владеет записью настроек всю сессию");
-    var incompatible=await SessionWire.Send(live,new(){Protocol=2});Check(incompatible.Error!=null,"Несовместимый протокол отклонён");
+    var incompatible=await SessionWire.Send(live,new(){Protocol=99});Check(incompatible.Error!=null,"Несовместимый протокол отклонён");
 }
 using(var after=SettingsStore.AcquireOwner(live)){Check(after.CanWrite,"Владение возвращается после завершения игры");}
+
+// Resource commands are one-shot operations, fenced by game session and request ID.
+bool Reject(Action action){try{action();return false;}catch(InvalidDataException){return true;}}
+Check(Reject(()=>new GameCommand{Operation="grant",Amount=double.PositiveInfinity}.Validate())&&Reject(()=>new GameCommand{Operation="grant",Amount=1.5}.Validate())&&Reject(()=>new GameCommand{Operation="grant",Resource=(ResourceKind)99,Amount=1}.Validate()),"Некорректная выдача отклонена до игрового потока");
+Check(Reject(()=>GrantMath.Add(double.MaxValue,double.MaxValue))&&Reject(()=>GrantMath.Add(1e100,1))&&GrantMath.Add(20,3)==23,"Выдача защищена от переполнения и потери значения при округлении");
+Check(GrantMath.SameSerializedNumber(1234567890123456,1234567890123460)&&!GrantMath.SameSerializedNumber(1e30,1e30+1e20),"Проверка сохранения учитывает G15 игры, но отвергает устаревший баланс");
+Check(Reject(()=>GrantMath.CheckUltraTotal(10000)),"USP ограничен конечностью формулы игры");
+string resourceFile=Path.Combine(root,"commands.json");int grants=0;
+string firstSession;
+using(var commands=new SessionHost(resourceFile,gameCommands:(command,cancel)=>Task.FromResult(new GameCommandResult{Changed=true,Saved=true,Granted=++grants}))){
+    firstSession=commands.SessionId;
+    var request=new SessionRequest{Session=commands.SessionId,Revision=commands.Snapshot.Revision,Command=new(){Operation="grant",Amount=7}};
+    var first=await commands.Apply(request);var repeat=await commands.Apply(request);
+    Check(first.Error==null&&repeat.Result.Granted==first.Result.Granted&&grants==1,"Повтор номера команды возвращает квитанцию без повторной выдачи");
+    request.Command=request.Command with{Amount=8};Check((await commands.Apply(request)).Error!=null&&grants==1,"Тот же номер с другим количеством отклонён");
+    var old=new SessionRequest{Session="old",Command=new(){Operation="grant",Amount=1}};Check((await commands.Apply(old)).Error!=null&&grants==1,"Чужая игровая сессия не может повторить выдачу");
+    var staleCommand=new SessionRequest{Session=commands.SessionId,Revision=99,Command=new(){Operation="grant",Amount=1}};Check((await commands.Apply(staleCommand)).Error!=null&&grants==1,"Команда со старой ревизией не выполняется");
+}
+using(var restarted=new SessionHost(resourceFile,gameCommands:(command,cancel)=>Task.FromResult(new GameCommandResult{Granted=++grants}))){Check((await restarted.Apply(new(){Session=firstSession,Command=new(){Operation="grant",Amount=1}})).Error!=null&&grants==1,"После перезапуска старая команда не выдаёт ресурс заново");}
+string oldResources=Path.Combine(root,"old-resources.json");var resourceMap=System.Text.Json.Nodes.JsonNode.Parse(JsonSerializer.Serialize(new Settings()))!;foreach(string id in FeatureCatalog.FreeIds)resourceMap["Bindings"]!.AsObject().Remove(id);File.WriteAllText(oldResources,resourceMap.ToJsonString());var resourceSettings=SettingsStore.Load(oldResources);
+Check(FeatureCatalog.FreeIds.All(id=>!resourceSettings.FeatureEnabled(id)&&resourceSettings.Bindings.ContainsKey(id))&&File.Exists(oldResources+".pre-resources.bak"),"Настройки до ресурсов мигрируют с резервной копией; бесплатные покупки выключены");
 
 string shutdownFile=Path.Combine(root,"shutdown.json");
 using(var shutdownSession=new SessionHost(shutdownFile)){

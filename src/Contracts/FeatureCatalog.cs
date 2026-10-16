@@ -5,11 +5,17 @@ public static class FeatureCatalog
     public static readonly FeatureDefinition[] All = {
         new("coins","Монеты","Экономика","Умножает положительный доход. Стоимость покупок остаётся обычной.","coins"),
         new("damage","Урон","Бой","Усиливает урон по обычным врагам.","damage"),
-        new("souls","Души","Экономика","Умножает начисление душ после игровых бонусов. Не меняет предпросмотр и камни душ.","souls")
+        new("souls","Души","Экономика","Умножает начисление душ после игровых бонусов. Не меняет предпросмотр и камни душ.","souls"),
+        new("free-coins","Бесплатные покупки за монеты","Покупки","Оборудование и обычные улучшения. Максимальная пачка — 100 уровней.","free-coins",false),
+        new("free-sp","Бесплатные навыки за SP","Покупки","Снимает стоимость дерева навыков, сохраняя требования открытия.","free-sp",false),
+        new("free-dp","Бесплатные божественности","Покупки","Компенсирует стоимость DP с сохранением учёта купленных божественностей.","free-dp",false),
+        new("free-usp","Бесплатные улучшения времени","Покупки","Улучшения за USP. Распределение очков по камням времени остаётся отдельным действием.","free-usp",false),
+        new("free-craft","Бесплатный крафт","Покупки","Обычные и временные рецепты без расходов монет и материалов; требования открытия сохраняются.","free-craft",false)
     };
-    public static readonly string[] Actions={"menu","widget","all","coins","damage","souls"};
-    public static string ActiveTitle(string id)=>id switch{"coins"=>"Множитель монет","damage"=>"Множитель урона","souls"=>"Множитель душ",_=>ActionTitle(id)};
-    public static string ActionTitle(string id)=>id switch{"menu"=>"Открыть меню","widget"=>"Показать виджет","all"=>"Все функции","coins"=>"Монеты","damage"=>"Урон","souls"=>"Души",_=>id};
+    public static readonly string[] FreeIds={"free-coins","free-sp","free-dp","free-usp","free-craft"};
+    public static readonly string[] Actions=new[]{"menu","widget","all"}.Concat(All.Select(f=>f.Action)).ToArray();
+    public static string ActiveTitle(string id)=>id switch{"coins"=>"Множитель монет","damage"=>"Множитель урона","souls"=>"Множитель душ","free-coins"=>"Покупки за монеты","free-sp"=>"Навыки за SP","free-dp"=>"Божественности за DP","free-usp"=>"Улучшения за USP","free-craft"=>"Бесплатный крафт",_=>ActionTitle(id)};
+    public static string ActionTitle(string id)=>id switch{"menu"=>"Открыть меню","widget"=>"Показать виджет","all"=>"Все функции","coins"=>"Монеты","damage"=>"Урон","souls"=>"Души",_=>All.FirstOrDefault(f=>f.Id==id)?.Title??id};
 }
 public sealed record KeyBinding
 {

@@ -1,4 +1,4 @@
-<Window x:Class="DivineLabs.IdleSlayer.Launcher.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="DivineLabs Idle Slayer Mods" Width="1120" Height="800" MinWidth="900" MinHeight="640" WindowStartupLocation="CenterScreen">
+<Window x:Class="DivineLabs.IdleSlayer.Launcher.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:DivineLabs.IdleSlayer.Launcher" Title="DivineLabs Idle Slayer Mods" Width="1120" Height="800" MinWidth="900" MinHeight="640" WindowStartupLocation="CenterScreen">
   <Window.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -21,6 +21,7 @@
           <TextBlock Text="IDLE SLAYER" Style="{StaticResource Caption}" Margin="8,0,0,32" />
           <Button x:Name="NavHome" Content="Главная" Tag="home" Click="Navigate" HorizontalContentAlignment="Left" />
           <Button x:Name="NavFeatures" Content="Функции" Tag="features" Click="Navigate" HorizontalContentAlignment="Left" />
+          <Button x:Name="NavResources" Content="Ресурсы" Tag="resources" Click="Navigate" HorizontalContentAlignment="Left" />
           <Button x:Name="NavSettings" Content="Настройки" Tag="settings" Click="Navigate" HorizontalContentAlignment="Left" />
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
@@ -53,7 +54,7 @@
           <Border Style="{StaticResource Card}">
             <StackPanel>
               <TextBlock Text="Ваши функции" FontSize="19" Margin="0,0,0,16" />
-              <TextBlock x:Name="Summary" FontSize="23" />
+              <TextBlock x:Name="Summary" FontSize="19" TextWrapping="Wrap" />
               <TextBlock x:Name="MenuHint" Style="{StaticResource Caption}" />
               <Button Content="Настроить функции" Tag="features" Click="Navigate" HorizontalAlignment="Left" />
             </StackPanel>
@@ -75,6 +76,7 @@
             <Button Content="Избранное" Tag="favorites" Click="CategoryClick" />
             <Button Content="Экономика" Tag="Экономика" Click="CategoryClick" />
             <Button Content="Бой" Tag="Бой" Click="CategoryClick" />
+            <Button Content="Покупки" Tag="Покупки" Click="CategoryClick" />
           </WrapPanel>
         </StackPanel>
         <ListBox x:Name="FeatureList" Grid.Row="1">
@@ -88,7 +90,7 @@
                   </DockPanel>
                   <TextBlock Text="{Binding Description}" Style="{StaticResource Caption}" />
                   <CheckBox Content="Включено" IsChecked="{Binding Enabled,Mode=OneWay}" Tag="{Binding Id}" Click="FeatureEnabledClick" />
-                  <WrapPanel>
+                  <WrapPanel Visibility="{Binding MultiplierVisibility}">
                     <TextBox Text="{Binding Value,Mode=OneWay}" Width="150" FontSize="22" Tag="{Binding Id}" LostKeyboardFocus="NumberCommit" KeyDown="NumberKey" />
                     <Button Content="×1" Tag="{Binding Id}" Click="PresetClick" />
                     <Button Content="×10" Tag="{Binding Id}" Click="PresetClick" />
@@ -103,6 +105,7 @@
           </ListBox.ItemTemplate>
         </ListBox>
       </Grid>
+      <local:ResourceView x:Name="ResourcesPage" Visibility="Collapsed" />
       <ScrollViewer x:Name="SettingsPage" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
         <StackPanel>
           <TextBlock Text="Настройки" Style="{StaticResource Heading}" />
