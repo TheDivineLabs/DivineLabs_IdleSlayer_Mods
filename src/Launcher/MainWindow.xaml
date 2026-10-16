@@ -26,7 +26,7 @@
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
           <TextBlock x:Name="Connection" Text="Нет связи" Foreground="{StaticResource Muted}" Margin="8,12" />
-          <TextBlock Text="DivineLabs / 0.4.2" FontSize="11" Foreground="{StaticResource Muted}" Margin="8" />
+          <TextBlock Text="DivineLabs / 0.5.0" FontSize="11" Foreground="{StaticResource Muted}" Margin="8" />
         </StackPanel>
       </DockPanel>
     </Border>
@@ -152,7 +152,7 @@
             </StackPanel>
           </Expander>
           <Expander Header="Компоненты и лицензии" Foreground="{StaticResource Text}">
-            <TextBlock Margin="0,16" Style="{StaticResource Caption}" Text="DivineLabs 0.4.2. Собственные интерфейсы и игровые функции. DivineLabs_Loader основан на MelonLoader 0.7.3 (Apache-2.0). .NET, Unity, Harmony и Il2CppInterop сохраняют авторство. Полные лицензии: Docs/Licenses." />
+            <TextBlock Margin="0,16" Style="{StaticResource Caption}" Text="DivineLabs 0.5.0. Собственные интерфейсы и игровые функции. DivineLabs_Loader основан на MelonLoader 0.7.3 (Apache-2.0). .NET, Unity, Harmony и Il2CppInterop сохраняют авторство. Полные лицензии: Docs/Licenses." />
           </Expander>
         </StackPanel>
       </ScrollViewer>

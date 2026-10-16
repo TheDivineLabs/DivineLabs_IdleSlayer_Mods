@@ -1,4 +1,4 @@
-DivineLabs Idle Slayer Mods 0.4.2
+DivineLabs Idle Slayer Mods 0.5.0
 
 Начало работы
 Распакуйте portable ZIP целиком либо запустите DivineLabs Idle Slayer Mods.exe.

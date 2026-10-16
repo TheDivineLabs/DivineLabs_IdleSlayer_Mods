@@ -2,7 +2,7 @@ using System.Reflection;
 using HarmonyLib;
 using MelonLoader;
 using UnityEngine;
-[assembly: MelonInfo(typeof(DivineLabs.IdleSlayer.Mod), "DivineLabs • Idle Slayer", "0.4.2", "DivineLabs")]
+[assembly: MelonInfo(typeof(DivineLabs.IdleSlayer.Mod), "DivineLabs • Idle Slayer", "0.5.0", "DivineLabs")]
 #if !DIVINELABS_ANDROID
 [assembly: MelonGame("Pablo Leban", "Idle Slayer")]
 #endif

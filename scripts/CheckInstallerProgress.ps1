@@ -1,4 +1,4 @@
-param([string]$Setup='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.4.2\DivineLabs Idle Slayer Mods.exe')
+param([string]$Setup='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.0\DivineLabs Idle Slayer Mods.exe')
 $ErrorActionPreference='Stop'
 $work=Join-Path 'W:\DEV\.cache\temp' ('DivineLabs-progress-check-'+[Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $work|Out-Null

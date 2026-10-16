@@ -52,7 +52,7 @@ internal static class GameMenu
         Button(sidebar.transform,"Ресурсы",16,72,152,42,ShowResources);
         Button(sidebar.transform,"Настройки",16,124,152,42,()=>ShowPage(true));
         Button(sidebar.transform,"Избранное",16,196,152,42,()=>{favoritesOnly=!favoritesOnly;ShowPage(false);Filter();});
-        Label(sidebar.transform,"IDLE SLAYER\nDivineLabs 0.4.2",18,434,150,58,13,Muted);
+        Label(sidebar.transform,"IDLE SLAYER\nDivineLabs 0.5.0",18,434,150,58,13,Muted);
         functions=Node(body.transform,"Functions",208,76,688,470);
         Label(functions.transform,"Функции",0,0,320,40,29,Color.white);
         global=Button(functions.transform,"",440,0,248,38,()=>Mod.Change(c=>c.Enabled=!c.Enabled)).GetComponentInChildren<TextMeshProUGUI>();

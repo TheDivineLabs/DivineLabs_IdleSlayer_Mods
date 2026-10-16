@@ -1,6 +1,6 @@
 param(
  [string]$GamePath='W:\steam\steamapps\common\Idle Slayer',
- [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.4.2',
+ [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.0',
  [string]$Dotnet='dotnet', [switch]$SkipLoader, [switch]$SkipInstaller,
  [string]$NativeBin='', [string]$NativeLib=''
 )
@@ -40,11 +40,11 @@ Copy-Item -LiteralPath "$fork\LICENSE.md","$fork\NOTICE.txt" -Destination "$payl
 if(-not([IO.Path]::GetFullPath($payload).StartsWith([IO.Path]::GetFullPath($stage)+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase))){throw 'Неверная папка сборки'}
 Get-ChildItem -LiteralPath $payload -Recurse -File -Filter '*.pdb'|Remove-Item
 $files=[ordered]@{};Get-ChildItem -LiteralPath $payload -Recurse -File|ForEach-Object{$relative=[IO.Path]::GetRelativePath($payload,$_.FullName).Replace('\','/');$files[$relative]=(Get-FileHash $_.FullName).Hash}
-@{SchemaVersion=1;Version='0.4.2';Files=$files}|ConvertTo-Json -Depth 5|Set-Content "$payload\manifest.json"
-$components=Join-Path $Output 'DivineLabs-IdleSlayer-0.4.2-components.zip'
+@{SchemaVersion=1;Version='0.5.0';Files=$files}|ConvertTo-Json -Depth 5|Set-Content "$payload\manifest.json"
+$components=Join-Path $Output 'DivineLabs-IdleSlayer-0.5.0-components.zip'
 if(Test-Path $components){throw 'Комплект этой версии уже собран; выберите новый каталог Output.'}
 [IO.Compression.ZipFile]::CreateFromDirectory($payload,$components,[IO.Compression.CompressionLevel]::Optimal,$false)
-$index=@{version='0.4.2';url='https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/download/v0.4.2/DivineLabs-IdleSlayer-0.4.2-components.zip';sha256=(Get-FileHash $components).Hash}
+$index=@{version='0.5.0';url='https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/download/v0.5.0/DivineLabs-IdleSlayer-0.5.0-components.zip';sha256=(Get-FileHash $components).Hash}
 $index|ConvertTo-Json|Set-Content "$root\src\Runtime\Resources\package-index.json"
 $launcher=Join-Path $portable 'App\Launcher'
 RunDotnet @('publish',"$root\src\Launcher\Launcher.csproj",'-c','Release','-r','win-x64','--self-contained','true','-p:PublishSingleFile=true','-p:IncludeNativeLibrariesForSelfExtract=false','-p:DebugType=None','-p:DebugSymbols=false','-o',$launcher)
@@ -58,7 +58,7 @@ Copy-Item -Path "$root\licenses\*" -Destination "$docs\Licenses" -Recurse
 $dotnetDir=Split-Path (Get-Command $Dotnet).Source -Parent
 foreach($notice in @('LICENSE.txt','ThirdPartyNotices.txt')){if(Test-Path "$dotnetDir\$notice"){Copy-Item "$dotnetDir\$notice" (Join-Path "$docs\Licenses" "DOTNET-$notice")}}
 $portableOutput=Join-Path $Output 'portable';Move-Item -LiteralPath $portable -Destination $portableOutput
-$archive=Join-Path $Output 'DivineLabs-IdleSlayer-0.4.2-portable.zip'
+$archive=Join-Path $Output 'DivineLabs-IdleSlayer-0.5.0-portable.zip'
 & "$PSScriptRoot\Package.ps1" -Portable $portableOutput -Destination $archive
 if(-not $SkipInstaller){
  $installer=@('publish',"$root\src\Installer\Installer.csproj",'-c','Release','-r','win-x64',"-p:PackageArchive=$archive",'-p:DebugType=None','-p:DebugSymbols=false','-o',(Join-Path $stage 'installer'))
