@@ -25,6 +25,9 @@ def manifest_values(data, locations=None):
         if root.tag != 'manifest':
             raise InvalidApk('Не найден manifest.')
         values = {'Package': root.get('package'), 'VersionName': root.get(ANDROID_NS+'versionName'), 'VersionCode': root.get(ANDROID_NS+'versionCode')}
+        application = root.find('application')
+        if application is not None:
+            values['ApplicationClass'] = application.get(ANDROID_NS+'name')
         sdk = root.find('uses-sdk')
         if sdk is not None:
             values.update(MinSdk=sdk.get(ANDROID_NS+'minSdkVersion'), TargetSdk=sdk.get(ANDROID_NS+'targetSdkVersion'))
@@ -87,7 +90,7 @@ def manifest_values(data, locations=None):
                     key = string_at(key); namespace = string_at(ns)
                     value_type = data[at+15]; typed = struct.unpack_from('<I', data, at+16)[0]
                     value = string_at(raw) if raw != 0xffffffff else string_at(typed) if value_type == 3 else typed
-                    mapping = {'package':'Package','versionName':'VersionName','versionCode':'VersionCode'} if name == 'manifest' else {'minSdkVersion':'MinSdk','targetSdkVersion':'TargetSdk'} if name == 'uses-sdk' else {}
+                    mapping = {'package':'Package','versionName':'VersionName','versionCode':'VersionCode'} if name == 'manifest' else {'minSdkVersion':'MinSdk','targetSdkVersion':'TargetSdk'} if name == 'uses-sdk' else {'name':'ApplicationClass'} if name == 'application' else {}
                     if key in mapping and ((namespace is None) if key == 'package' else namespace == ANDROID_NS[1:-1]):
                         values[mapping[key]] = value
                         if locations is not None:

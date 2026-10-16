@@ -12,6 +12,14 @@
 подробный отчёт — artifact-validation.json, инструкция — README.ru.txt.
 Телефон через ADB пока не обнаружен, запуск/установка на устройстве не проверены.
 
+**Обнаружена оболочка PairIP**: `com.pairip.application.Application`,
+`libpairipcore.so` и классы SignatureCheck/VMRunner присутствуют в исходной игре
+и в предварительном APK. Изменение подписи/содержимого может быть отклонено
+проверкой целостности до загрузки меню. Фактическое отклонение или вылет на
+устройстве пока не наблюдались. Корректная APK-подпись, Interop и компиляция
+этого не исключают; текущий APK не считается подтверждённо запускаемым.
+
+
 ## Какой продукт делаем
 
 Вариант без обязательного root: локально подготовленная копия APK игры со встроенными
@@ -152,6 +160,16 @@ DeviceApi здесь пример: задайте реальный API теле�
 
 ## Что проверено
 
+- Статический `audit_runtime.py` на текущем APK: payload формата 9 / android-arm64,
+  наличие обязательных Loader/Interop/своих модулей и согласованность deployment.
+  Все 33 `.so`, включая извлекаемый приватный .NET runtime, имеют ARM64 ELF LOAD
+  с выравниванием минимум 16 KiB и согласованными смещениями. Проверка не подменяет
+  запуск на физическом устройстве 16 KiB. Сырые границы RELRO записаны для
+  диагностики; по одному их смещению вердикт о совместимости не делается.
+- 7 новых проверок native-аудита: корректный ELF/информационный RELRO, 4 KiB/
+  несогласованное/неверное выравнивание, усечённая таблица, другая архитектура,
+  ApplicationClass в UTF-8/UTF-16/plain XML, обнаружение PairIP и неполный payload.
+  Всего Python: 32 проверки. `runtime-audit.json` находится рядом с APK.
 - Полная Build-Android.ps1 из объединённого входа: новая генерация Android Interop,
   ApiReview, компиляция Mod/Contracts, внедрение Loader, подпись v2/v3, проверка
   подписи/16 KiB выравнивания и hashes модулей прошли. Финальный CRC ZIP и все
@@ -187,12 +205,14 @@ DeviceApi здесь пример: задайте реальный API теле�
   Windows P/Invoke. Windows Mod после условного разделения также собирается.
 - Проверен синтаксис PowerShell и фактические CLI options Patcher 2.1.0.
 
-Не проверены: запуск Android/установка,
+Не проверены: принятие изменённой сборки проверками PairIP, запуск Android/установка,
 мобильные методы начисления/расходов и сохранения, JNI/Unity hooks, сенсорный ввод,
 ориентация/клавиатура/кириллица, нагрузка и облако. Стабильный релиз не заявляется.
 
 ## Первичные источники
 
+- Защита целостности Google Play: https://support.google.com/googleplay/android-developer/answer/10183279
+- ELF/ZIP 16 KiB: https://developer.android.com/guide/practices/page-sizes
 - SDK Platform Tools: https://developer.android.com/tools/releases/platform-tools
 - ADB: https://developer.android.com/tools/adb
 - Android app sandbox: https://source.android.com/docs/security/app-sandbox

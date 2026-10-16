@@ -17,8 +17,9 @@ sys.modules['inspect_apk']=module
 prepare_spec=importlib.util.spec_from_file_location('prepare_apk', source.with_name('prepare_apk.py'))
 preparation=importlib.util.module_from_spec(prepare_spec);prepare_spec.loader.exec_module(preparation)
 
-def axml(utf8=True):
+def axml(utf8=True, application=None):
     strings = ['manifest','package','com.pabloleban.IdleSlayer','http://schemas.android.com/apk/res/android','versionName','7.3.4','versionCode','uses-sdk','minSdkVersion','targetSdkVersion']
+    if application is not None: strings += ['application','name',application]
     offsets, body = [], bytearray()
     for value in strings:
         offsets.append(len(body))
@@ -34,7 +35,8 @@ def axml(utf8=True):
     main = element(0,[(0xffffffff,1,3,2),(3,4,3,5),(3,6,0x10,734)])
     sdk = element(7,[(3,8,0x10,26),(3,9,0x10,35)])
     end = lambda name: struct.pack('<HHIIIII',0x103,16,24,1,0xffffffff,0xffffffff,name)
-    chunks = pool+main+sdk+end(7)+end(0)
+    app = element(10,[(3,11,3,12)])+end(10) if application is not None else b''
+    chunks = pool+main+sdk+end(7)+app+end(0)
     return struct.pack('<HHI',3,8,len(chunks)+8)+chunks
 
 class ApkInspection(unittest.TestCase):

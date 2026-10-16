@@ -68,6 +68,8 @@ RunPatcher @('inject',$preparedInput,'--output',$apk,'--interop',$interop,'--rel
 if($LASTEXITCODE -ne 0){throw 'Подпись итогового APK не прошла проверку. APK не готов к установке.'}
 & (Join-Path $AndroidBuildTools 'zipalign.exe') -c -P 16 4 $apk
 if($LASTEXITCODE -ne 0){throw 'Итоговый APK не прошёл проверку выравнивания 16 KiB.'}
+& $Python -B (Join-Path $PSScriptRoot 'audit_runtime.py') $apk --output (Join-Path $Output 'runtime-audit.json')
+if($LASTEXITCODE -ne 0){throw 'Не прошла статическая проверка Android runtime payload/ELF.'}
 # Verify our two modules and the unchanged native/metadata entries, without extracting a whole game APK on NTFS.
 $archive=[IO.Compression.ZipFile]::OpenRead($apk)
 try{
