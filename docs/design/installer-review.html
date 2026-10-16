@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DivineLabs — установщик {{VERSION}}</title>
+<style>
+:root{color-scheme:light;--accent:#6b50ed;--ink:#20263a;--muted:#687087;--line:#dfe3ee}
+*{box-sizing:border-box}body{margin:0;background:#eef0f7;color:var(--ink);font:14px "Segoe UI",sans-serif}button,a,input,textarea{font:inherit}button,a{touch-action:manipulation}button{cursor:pointer}button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid #b9aafa;outline-offset:3px}
+header{background:#fff;border-bottom:1px solid var(--line);padding:20px 28px;display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap}h1{font-size:21px;margin:0 0 5px}.sub{color:var(--muted);font-size:13px}.tag{border-radius:8px;background:#efebff;color:#6141dc;padding:8px 12px}
+.shell{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;padding:24px;max-width:1800px;margin:auto}.steps{display:flex;flex-direction:column;gap:8px}.step{background:transparent;border:0;text-align:left;display:flex;gap:12px;align-items:center;padding:13px;border-radius:10px;color:var(--muted)}.step[aria-current=step]{background:var(--accent);color:#fff;font-weight:600}.num{display:grid;place-items:center;width:26px;height:26px;border:1px solid currentColor;border-radius:50%;flex:none}
+.review{min-width:0}.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}h2{margin:0 auto 0 0;font-size:20px}.button{border:1px solid #d9dce8;color:var(--ink);background:#fff;border-radius:8px;padding:9px 13px;text-decoration:none;display:inline-flex;gap:6px;align-items:center}.button:hover{background:#f5f2ff}.button[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.stage{position:relative;border:1px solid #d9dce8;border-radius:8px;overflow:hidden;background:white;box-shadow:0 12px 35px #252c4912}.stage img{width:100%;height:auto;display:block}.stage.marking{cursor:crosshair}.pins{position:absolute;inset:0;pointer-events:none}.pin{position:absolute;transform:translate(-50%,-50%);border:2px solid white;box-shadow:0 2px 8px #14102060;background:#e34465;color:white;border-radius:50%;width:28px;height:28px;font-weight:700;pointer-events:auto;display:grid;place-items:center;padding:0}.pin.selected{background:#5d3cea;outline:3px solid #cbbfff}
+.caption{display:flex;gap:16px;justify-content:space-between;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:10px 0 20px}.notes{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}.noteshead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}.noteshead h3{margin:0 auto 0 0;font-size:16px}.empty{color:var(--muted);line-height:1.65}.editor{display:none;gap:10px}.editor.visible{display:grid}.editor label{font-weight:600}textarea{width:100%;min-height:100px;resize:vertical;padding:12px;border:1px solid #d8dce8;border-radius:8px;color:var(--ink);background:#fbfbfe}.danger{color:#b82b4a}.notelist{display:grid;gap:8px;margin-top:16px}.note{border:1px solid var(--line);background:#fafaff;padding:12px;border-radius:8px;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere}.note.active{border-color:var(--accent);background:#f3efff}.foot{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.6}#import{display:none}
+@media(min-width:1600px){.stage{max-width:1100px}}@media(max-width:800px){.shell{grid-template-columns:1fr;padding:14px;gap:16px}.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}.step{white-space:normal;padding:10px}.num{width:22px;height:22px}header{padding:16px}h1{font-size:18px}h2{font-size:17px}.notes{padding:14px}}
+@media(max-width:480px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}.bar h2{width:100%}}
+@media(prefers-reduced-motion:no-preference){.button,.step{transition:background .12s,color .12s}}
+</style>
+</head>
+<body>
+<header><div><h1>DivineLabs · установщик</h1><div class="sub">Пять экранов текущего приложения — версия {{VERSION}}</div></div><div class="tag">Обсуждение дизайна</div></header>
+<div class="shell"><nav class="steps" aria-label="Этапы установщика"></nav><main class="review">
+<div class="bar"><h2 id="title"></h2><button class="button" id="mark" aria-pressed="false">Отметить правку</button><a class="button" id="download1" download>PNG 100%</a><a class="button" id="download2" download>PNG 200%</a></div>
+<div class="stage" id="stage"><img id="screen" alt=""><div class="pins" id="pins"></div></div>
+<div class="caption"><span id="description"></span><span>1100 × 790 · исходный WPF-интерфейс</span></div>
+<section class="notes" aria-label="Правки"><div class="noteshead"><h3 id="notesTitle">Правки к экрану</h3><button class="button" id="export">Скачать все заметки</button><button class="button" id="importButton">Загрузить заметки</button><input type="file" id="import" accept=".json,application/json"></div>
+<p class="empty" id="empty">Нажми «Отметить правку» и укажи место на снимке. Здесь можно записать, что изменить.</p>
+<div class="editor" id="editor"><label for="text" id="editorLabel">Комментарий</label><textarea id="text" placeholder="Например: уменьшить отступ под заголовком" maxlength="10000"></textarea><div><button class="button danger" id="remove">Удалить отметку</button></div></div>
+<div class="notelist" id="notelist"></div><div class="foot" id="storage" role="status">Заметки сохраняются в этом браузере. Для переноса скачай JSON с заметками.</div></section>
+<div class="foot">Снимки получены из исходного интерфейса без установки программы. Прогресс и результат показаны как демонстрационные состояния. Сами элементы приложения здесь не редактируются: правки переносим в XAML и повторно обновляем снимки.<br>Исходники интерфейса и графика приложены в папках Sources и Assets. Никаких внешних библиотек, подписок и отправки заметок на сервер.</div>
+</main></div>
+<script>
+'use strict';
+(function(){
+const scenes=[
+{file:'01-start',name:'Начало',description:'Приветствие, обложка и описания возможностей.'},
+{file:'02-license',name:'Лицензии',description:'Состояние до принятия лицензии: продолжение недоступно.'},
+{file:'03-options',name:'Параметры',description:'Папка установки и параметры ярлыков. Проверка папки здесь не выполняется.'},
+{file:'04-install',name:'Установка',description:'Демонстрационный прогресс 62%. Установка файлов не выполнялась.'},
+{file:'05-complete',name:'Готово',description:'Демонстрационное успешное завершение. Программа не устанавливалась.'}];
+const key='DivineLabs.installer-review.{{VERSION}}.{{COMMIT}}';
+const $=id=>document.getElementById(id);
+let scene=0, marking=false, selected=null, notes=[];
+function validate(value){
+ if(!Array.isArray(value)||value.length>5000)throw Error('Неверный список заметок.');
+ const ids=new Set();
+ return value.map(n=>{
+ if(!n||typeof n.id!=='string'||n.id.length>100||ids.has(n.id)||!Number.isInteger(n.scene)||n.scene<0||n.scene>4||!Number.isFinite(n.x)||!Number.isFinite(n.y)||n.x<0||n.x>1||n.y<0||n.y>1||typeof n.text!=='string'||n.text.length>10000)throw Error('Неверная заметка.');
+ ids.add(n.id);return {id:n.id,scene:n.scene,x:n.x,y:n.y,text:n.text};
+ });
+}
+try{notes=validate(JSON.parse(localStorage.getItem(key)||'[]'));}catch(e){$('storage').textContent='Не удалось прочитать сохранённые заметки. Можно загрузить ранее скачанный JSON.';}
+function save(){try{localStorage.setItem(key,JSON.stringify(notes));$('storage').textContent='Заметки сохранены в этом браузере. Для переноса скачай JSON.';}catch(e){$('storage').textContent='Браузер не разрешил сохранение. Скачай заметки перед закрытием страницы.';}}
+function mode(value){marking=value;$('mark').setAttribute('aria-pressed',String(value));$('mark').textContent=value?'Нажми на нужное место…':'Отметить правку';$('stage').classList.toggle('marking',value);}
+function render(){
+ const current=scenes[scene];$('title').textContent=(scene+1)+'. '+current.name;$('description').textContent=current.description;
+ $('screen').src='Screens/'+current.file+'.png';$('screen').alt='Установщик DivineLabs — '+current.name;
+ $('download1').href='Screens/'+current.file+'.png';$('download2').href='Screens/'+current.file+'@2x.png';
+ document.querySelectorAll('.step').forEach((b,i)=>{if(i===scene)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
+ renderNotes();
+}
+function renderNotes(){
+ const own=notes.filter(n=>n.scene===scene);$('notesTitle').textContent='Правки к экрану · '+own.length;$('pins').replaceChildren();$('notelist').replaceChildren();$('empty').hidden=own.length>0;
+ own.forEach((n,index)=>{
+ const pin=document.createElement('button');pin.type='button';pin.className='pin'+(n.id===selected?' selected':'');pin.style.left=(n.x*100)+'%';pin.style.top=(n.y*100)+'%';pin.textContent=index+1;pin.setAttribute('aria-label','Правка '+(index+1));pin.title=n.text||'Добавить описание';pin.addEventListener('click',e=>{e.stopPropagation();select(n.id);});$('pins').append(pin);
+ const item=document.createElement('button');item.type='button';item.className='note'+(n.id===selected?' active':'');item.textContent=(index+1)+'. '+(n.text||'Добавьте описание');item.addEventListener('click',()=>select(n.id));$('notelist').append(item);
+ });
+ const active=own.find(n=>n.id===selected);$('editor').classList.toggle('visible',!!active);
+ if(active){$('editorLabel').textContent='Правка '+(own.indexOf(active)+1);if($('text').value!==active.text)$('text').value=active.text;}
+}
+function select(id){selected=id;mode(false);renderNotes();$('text').focus();}
+function navigate(index){scene=index;selected=null;mode(false);render();}
+scenes.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.className='step';const number=document.createElement('span');number.className='num';number.textContent=i+1;const label=document.createElement('span');label.textContent=s.name;b.append(number,label);b.addEventListener('click',()=>navigate(i));document.querySelector('.steps').append(b);});
+$('mark').addEventListener('click',()=>mode(!marking));
+$('stage').addEventListener('click',e=>{if(!marking||e.target.closest('button'))return;const rect=$('screen').getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width,y=(e.clientY-rect.top)/rect.height;if(x<0||x>1||y<0||y>1)return;const n={id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2),scene,x,y,text:''};notes.push(n);save();select(n.id);});
+$('text').addEventListener('input',()=>{const n=notes.find(n=>n.id===selected);if(n){n.text=$('text').value;save();renderNotes();}});
+$('remove').addEventListener('click',()=>{notes=notes.filter(n=>n.id!==selected);selected=null;save();renderNotes();});
+$('export').addEventListener('click',()=>{const data={schemaVersion:1,product:'DivineLabs Idle Slayer Mods',version:'{{VERSION}}',sourceCommit:'{{COMMIT}}',notes};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='DivineLabs-installer-notes.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);});
+$('importButton').addEventListener('click',()=>$('import').click());
+$('import').addEventListener('change',async()=>{const file=$('import').files[0];if(!file)return;try{if(file.size>10*1024*1024)throw Error('Файл слишком большой.');const data=JSON.parse(await file.text());if(data.schemaVersion!==1||data.product!=='DivineLabs Idle Slayer Mods'||data.version!=='{{VERSION}}')throw Error('Заметки относятся к другому комплекту.');notes=validate(data.notes);selected=null;save();renderNotes();}catch(e){$('storage').textContent='Не удалось загрузить заметки: '+e.message;}$('import').value='';});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')mode(false);if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;if(e.key==='ArrowRight'&&scene<4){e.preventDefault();navigate(scene+1);}if(e.key==='ArrowLeft'&&scene>0){e.preventDefault();navigate(scene-1);}});
+render();
+})();
+</script>
+</body>
+</html>
