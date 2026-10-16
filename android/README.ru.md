@@ -3,6 +3,7 @@
 Статус на 16 октября 2026: исходники порта и локальная сборочная цепочка подготовлены.
 **Готового проверенного APK пока нет:** исходный Android APK Idle Slayer не предоставлен,
 Android Interop для него не создан, проверки на телефоне не проводились.
+ADB 37.0.1 и Build Tools 37.0.0 подготовлены локально; подключённых устройств нет.
 
 ## Какой продукт делаем
 
@@ -37,6 +38,41 @@ Android Interop для него не создан, проверки на тел�
 Точная совместимость Android-методов, шрифты/кириллица, клавиатура, touch routing,
 scene callbacks и игровые сохранения **ожидают настоящего APK и устройства**.
 
+## Подготовка SDK и исходника с телефона
+
+```powershell
+./scripts/android/Get-AndroidSdk.ps1
+python -B ./scripts/android/collect_game.py --list-devices
+python -B ./scripts/android/collect_game.py
+```
+
+SDK устанавливается в `W:\DEV\tools\android-sdk`: только Platform Tools 37.0.1
+и Build Tools 37.0.0, без Android Studio, эмулятора и NDK. Архивы с официального
+сервера Google закреплены по размеру/SHA256; существующие файлы сверяются с
+архивом при повторном вызове. Изменённые файлы не перезаписываются автоматически.
+Лицензия SDK и исходные NOTICE сохраняются рядом с инструментами; они не входят
+в игровой APK. Лицензия: [Android SDK](licenses/Android-SDK-License.txt).
+
+Подключите телефон по USB, включите USB-отладку и подтвердите разрешение на
+самом телефоне. Сценарий не подтверждает его за пользователя. При нескольких
+устройствах укажите `--device-index 1` по выведенному списку; серийные номера
+не печатаются и не попадают в отчёт. При неоднозначном названии игры можно
+указать `--package com.pabloleban.IdleSlayer` после проверки имени на телефоне.
+Root для чтения установленных APK не используется.
+
+Полученные файлы остаются в новой папке
+`W:\DEV\environments\idle-slayer\android\phone-ДАТА-ВРЕМЯ`.
+В `collection.json` записываются SHA256, версия/пакет, API и ABI телефона,
+без аккаунтов, серийного номера и удалённых путей установки. Игра и её данные
+не изменяются. Если приложение обновилось во время копирования или части имеют
+разные версии, успешный отчёт не создаётся; частично скопированные файлы остаются
+для диагностики. Существующие папки не перезаписываются.
+
+Для одного полного APK дополнительно создаётся выключенный `candidate.json`.
+Если Android выдаёт split-комплект, сохраняются **все** части. Это исходник для
+следующего анализа, не готовый вход `Build-Android.ps1`: автоматического слияния
+split APK пока нет. Не нужно удалять игру или заменять её ради получения файлов.
+
 ## Сборка из пользовательского APK
 
 Загрузчик как техническая зависимость: LemonLoader v0.7.4-android.3, Patcher v2.1.0.
@@ -56,6 +92,7 @@ URL и SHA256 закреплены в dependencies.lock.json. Их происх�
    оставляет ARM64-библиотеки, генерирует Interop из этого APK и собирает AndroidMod
    на net10.0 с Android-загрузчиком. Подстановка Steam DLL в этом сценарии отсутствует.
 5. Patcher добавляет только Loader/наши модули, выравнивает APK под 16 KiB и подписывает.
+   Отдельные apksigner verify и zipalign проверяют подпись и выравнивание.
    Упаковка проверяет, что libil2cpp/metadata сохранились, а собственные DLL совпадают
    с созданными. Все операции создают новую папку, исходный APK не перезаписывается.
 
@@ -67,11 +104,12 @@ LEMONLOADER_KEY_PASSWORD). Пароли не передаются в коман�
 ```powershell
 python -B ./scripts/android/inspect_apk.py 'W:\DEV\environments\idle-slayer\android\original.apk' --output 'W:\DEV\environments\idle-slayer\android\candidate.json'
 
-./scripts/android/Build-Android.ps1 -GameApk 'W:\DEV\environments\idle-slayer\android\original.apk' -CompatibilityProfile 'W:\DEV\environments\idle-slayer\android\reviewed.json' -AndroidBuildTools 'W:\DEV\tools\android-sdk\build-tools\VERSION' -KeyStore 'W:\DEV\.state\signing\DivineLabs-Android.jks' -KeyAlias divinelabs -DeviceApi 34
+./scripts/android/Build-Android.ps1 -GameApk 'W:\DEV\environments\idle-slayer\android\original.apk' -CompatibilityProfile 'W:\DEV\environments\idle-slayer\android\reviewed.json' -KeyStore 'W:\DEV\.state\signing\DivineLabs-Android.jks' -KeyAlias divinelabs -DeviceApi 34
 ```
 
-VERSION и DeviceApi здесь примеры; второй вызов невозможен до анализа игры,
-подготовки SDK и подписи. Сценарий не устанавливает APK на телефон, не удаляет
+DeviceApi здесь пример; второй вызов невозможен до анализа игры и подготовки
+постоянного ключа подписи. По умолчанию используются закреплённые Build Tools 37.0.0.
+Сценарий не устанавливает APK на телефон, не удаляет
 приложения, не трогает их данные и не подменяет платёжные/облачные проверки.
 
 Подпись локального APK отличается от подписи издателя: обновить оригинальную
@@ -82,6 +120,12 @@ VERSION и DeviceApi здесь примеры; второй вызов нево
 
 ## Что проверено
 
+- ADB 37.0.1, apksigner и zipalign запускаются из локального SDK. Повторная
+  проверка всех файлов SDK по закреплённым архивам прошла. ADB: телефон не обнаружен.
+- 8 проверок сборщика исходников на имитации ADB: полный APK, все split-части,
+  hashes/выключенный профиль, смена версии при копировании, чужой пакет/смешанные
+  версии, сохранение прежних файлов, некорректные пути/параметры, отсутствие
+  авторизации и неоднозначный выбор устройства. Физический телефон не использовался.
 - 10 проверок синтетических APK: UTF-8/UTF-16 binary XML, ABI, hashes, отсутствие
   изменения исходника, minSdk/ARM64 подготовка, регистр путей, дубль/обход ZIP,
   уже внедрённый Loader, нестандартная metadata, повреждённые границы manifest.
@@ -100,8 +144,12 @@ VERSION и DeviceApi здесь примеры; второй вызов нево
 
 ## Первичные источники
 
+- SDK Platform Tools: https://developer.android.com/tools/releases/platform-tools
+- ADB: https://developer.android.com/tools/adb
 - Android app sandbox: https://source.android.com/docs/security/app-sandbox
 - Подпись приложений: https://developer.android.com/studio/publish/app-signing
 - Закреплённый загрузчик: https://github.com/LemonLoaderX/LemonLoader/releases/tag/v0.7.4-android.3
 - Usage: https://github.com/LemonLoaderX/LemonLoader/blob/v0.7.4-android.3/docs/android/USAGE.md
 - Patcher: https://github.com/LemonLoaderX/LemonLoader.Patcher/releases/tag/v2.1.0
+
+Проверки Python: `python -B -m unittest discover -s tests -p "Android*Checks.py" -v`.

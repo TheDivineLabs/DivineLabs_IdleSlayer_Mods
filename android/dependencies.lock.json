@@ -8,5 +8,25 @@
     "version": "v2.1.0",
     "url": "https://github.com/LemonLoaderX/LemonLoader.Patcher/releases/download/v2.1.0/LemonLoader.Patcher.CLI-win-x64.zip",
     "sha256": "1077f0afcb953c5b25019b22488b8a0e973428156b50c6b4cdff798045a168b6"
+  },
+  "sdk": {
+    "platformTools": {
+      "version": "37.0.1",
+      "url": "https://dl.google.com/android/repository/platform-tools_r37.0.1-win.zip",
+      "sha256": "45f4d63113e895ebde0c90f194099a4676b6ac653bd28d54314a9e022bbc1a99",
+      "size": 8044989,
+      "archiveRoot": "platform-tools",
+      "directory": "platform-tools"
+    },
+    "buildTools": {
+      "version": "37.0.0",
+      "url": "https://dl.google.com/android/repository/build-tools_r37_windows.zip",
+      "sha256": "68075aa319ed8a01cf1a565ed1e61a3c1a801dd49191c35851248dc293c33b1a",
+      "size": 61077164,
+      "archiveRoot": "android-37.0",
+      "directory": "build-tools/37.0.0"
+    },
+    "source": "https://dl.google.com/android/repository/repository2-3.xml",
+    "license": "licenses/Android-SDK-License.txt"
   }
 }

@@ -30,3 +30,8 @@ https://github.com/LemonLoaderX/LemonLoader.Patcher/tree/v2.1.0
 Pinned downloads/hashes: android/dependencies.lock.json. Original notices and
 third-party license inventory accompany locally prepared Android outputs.
 No game APK, game libraries, Interop or signing material is distributed here.
+
+Android SDK Platform Tools 37.0.1 / Build Tools 37.0.0: Google / AOSP.
+Optional local development tools, downloaded from dl.google.com; not shipped
+inside game APKs or Windows payloads. Android SDK terms are retained in
+android/licenses/Android-SDK-License.txt, and archive NOTICE files remain intact.

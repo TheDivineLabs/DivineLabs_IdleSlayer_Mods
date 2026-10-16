@@ -2,7 +2,7 @@
 param(
  [Parameter(Mandatory)][string]$GameApk,
  [Parameter(Mandatory)][string]$CompatibilityProfile,
- [Parameter(Mandatory)][string]$AndroidBuildTools,
+ [string]$AndroidBuildTools='W:\DEV\tools\android-sdk\build-tools\37.0.0',
  [Parameter(Mandatory)][string]$KeyStore,
  [Parameter(Mandatory)][string]$KeyAlias,
  [Parameter(Mandatory)][ValidateRange(26,99)][int]$DeviceApi,
@@ -33,6 +33,7 @@ if($LASTEXITCODE -ne 0){throw 'APK не прошёл структурную пр
 $inputProfile=Get-Content -LiteralPath $candidate -Raw | ConvertFrom-Json
 foreach($field in @('Package','VersionName','NativeSha256','MetadataSha256')){if([string]$gameProfile.$field -cne [string]$inputProfile.$field){throw "APK не совпадает с проверенным профилем: $field"}}
 if($gameProfile.OriginalApkSha256 -and $gameProfile.OriginalApkSha256 -ne $inputProfile.OriginalApkSha256){throw 'Исходный APK не совпадает с проверенной копией.'}
+if([int]$inputProfile.MinSdk -gt $DeviceApi){throw 'Версия Android телефона ниже minSdk исходной игры.'}
 $preparedInput=$GameApk
 if([int]$inputProfile.MinSdk -lt 26 -or @($inputProfile.Abis | Where-Object {$_ -ne 'arm64-v8a'}).Count -gt 0){
  $preparedInput=Join-Path $Output 'input-api26.apk'
@@ -52,6 +53,11 @@ Copy-Item -LiteralPath "$managed\DivineLabs.IdleSlayer.Mod.dll" -Destination "$d
 Copy-Item -LiteralPath "$managed\DivineLabs.IdleSlayer.Contracts.dll" -Destination "$deployment\UserLibs"
 $apk=Join-Path $Output 'DivineLabs.IdleSlayer.Android.apk'
 RunPatcher @('inject',$preparedInput,'--output',$apk,'--interop',$interop,'--release',$tools.LoaderZip,'--runtime','android','--deployment',$deployment,'--profile','production','--align','--zipalign',(Join-Path $AndroidBuildTools 'zipalign.exe'),'--keystore',$KeyStore,'--key-alias',$KeyAlias,'--apksigner',(Join-Path $AndroidBuildTools 'apksigner.bat'))
+# Success requires both signing verification and 16 KiB native library alignment.
+& (Join-Path $AndroidBuildTools 'apksigner.bat') verify --verbose $apk
+if($LASTEXITCODE -ne 0){throw 'Подпись итогового APK не прошла проверку. APK не готов к установке.'}
+& (Join-Path $AndroidBuildTools 'zipalign.exe') -c -P 16 4 $apk
+if($LASTEXITCODE -ne 0){throw 'Итоговый APK не прошёл проверку выравнивания 16 KiB.'}
 # Verify our two modules and the unchanged native/metadata entries, without extracting a whole game APK on NTFS.
 $archive=[IO.Compression.ZipFile]::OpenRead($apk)
 try{
