@@ -11,8 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      TEMP: ${{ runner.temp }}
-      TMP: ${{ runner.temp }}
       PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -25,6 +23,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Use runner temporary storage
+        run: |
+          echo "TEMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
       - name: Check focused Android contracts
         run: |
           python -B -m unittest discover -s tests -p 'Android*Checks.py'
