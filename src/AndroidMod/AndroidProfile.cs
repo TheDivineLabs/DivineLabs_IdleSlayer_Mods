@@ -9,6 +9,7 @@ internal sealed class AndroidProfile
 {
     public int SchemaVersion {get;set;}
     public bool Approved {get;set;}
+    public bool RuntimeVerified {get;set;}
     public string Package {get;set;}="";
     public string VersionName {get;set;}="";
     public string NativeSha256 {get;set;}="";
@@ -21,7 +22,9 @@ internal sealed class AndroidProfile
         if(profile==null||profile.SchemaVersion!=1||!profile.Approved||profile.Package!=Application.identifier||profile.VersionName!=Application.version)return false;
         // The original game libraries remain in the APK. No Windows GameAssembly pin is reused.
         using var apk=ZipFile.OpenRead(Application.dataPath);
-        return Matches(apk,"lib/arm64-v8a/libil2cpp.so",profile.NativeSha256)&&Matches(apk,"assets/bin/Data/Managed/Metadata/global-metadata.dat",profile.MetadataSha256);
+        bool matches=Matches(apk,"lib/arm64-v8a/libil2cpp.so",profile.NativeSha256)&&Matches(apk,"assets/bin/Data/Managed/Metadata/global-metadata.dat",profile.MetadataSha256);
+        if(matches&&!profile.RuntimeVerified)Mod.Instance.LoggerInstance.Warning("Предварительная Android-сборка: проверка на устройстве ещё не выполнена.");
+        return matches;
     }
     private static bool Matches(ZipArchive apk,string path,string digest)
     {

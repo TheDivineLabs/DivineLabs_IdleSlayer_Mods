@@ -3,8 +3,9 @@ param(
  [Parameter(Mandatory)][string]$GameApk,
  [Parameter(Mandatory)][string]$CompatibilityProfile,
  [string]$AndroidBuildTools='W:\DEV\tools\android-sdk\build-tools\37.0.0',
- [Parameter(Mandatory)][string]$KeyStore,
- [Parameter(Mandatory)][string]$KeyAlias,
+ [string]$KeyStore='W:\DEV\.state\signing\DivineLabs-Android.p12',
+ [string]$KeyAlias='divinelabs',
+ [string]$ProtectedPasswordFile='W:\DEV\.state\signing\DivineLabs-Android.password.dpapi',
  [Parameter(Mandatory)][ValidateRange(26,99)][int]$DeviceApi,
  [string]$Output=('W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\android-'+[DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss')),
  [string]$Dotnet='W:\DEV\tools\dotnet\dotnet.exe',
@@ -16,7 +17,7 @@ $GameApk=[IO.Path]::GetFullPath($GameApk);$CompatibilityProfile=[IO.Path]::GetFu
 $env:JAVA_HOME=$JavaHome
 if(!(Test-Path -LiteralPath (Join-Path $JavaHome 'bin\java.exe'))){throw 'Укажите установленный JDK 17+ через JavaHome.'}
 $repo=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-$env:DOTNET_ROOT=Split-Path $Dotnet -Parent;$env:DOTNET_CLI_HOME='W:\DEV\.cache\dotnet-home';$env:NUGET_PACKAGES='W:\DEV\.cache\nuget';$env:TEMP='W:\DEV\.cache\temp';$env:TMP=$env:TEMP;$env:PYTHONDONTWRITEBYTECODE='1'
+$env:DOTNET_ROOT=Split-Path $Dotnet -Parent;$env:PATH=$env:DOTNET_ROOT+';'+(Join-Path $JavaHome 'bin')+';'+$env:PATH;$env:DOTNET_CLI_HOME='W:\DEV\.cache\dotnet-home';$env:NUGET_PACKAGES='W:\DEV\.cache\nuget';$env:TEMP='W:\DEV\.cache\temp';$env:TMP=$env:TEMP;$env:PYTHONDONTWRITEBYTECODE='1'
 if(-not [IO.Path]::GetFullPath($Output).StartsWith('W:\DEV\',[StringComparison]::OrdinalIgnoreCase)){throw 'Выходные файлы должны находиться под W:\DEV.'}
 if(Test-Path -LiteralPath $Output){throw 'Выберите новую папку Output. Прежние сборки не перезаписываются.'}
 if($DeviceApi -lt 26){throw 'Закреплённый Android-загрузчик требует Android 8 / API 26 или новее.'}
@@ -25,6 +26,13 @@ if(!(Test-Path -LiteralPath $CompatibilityProfile -PathType Leaf)){throw 'Нет
 $gameProfile=Get-Content -LiteralPath $CompatibilityProfile -Raw | ConvertFrom-Json
 if($gameProfile.SchemaVersion -ne 1 -or $gameProfile.Approved -ne $true){throw 'Профиль совместимости не утверждён. Неизвестная игра не включается автоматически.'}
 foreach($tool in @('zipalign.exe','apksigner.bat')){if(!(Test-Path -LiteralPath (Join-Path $AndroidBuildTools $tool))){throw "Нет Android Build Tools: $tool"}}
+if([string]::IsNullOrWhiteSpace($env:LEMONLOADER_KEYSTORE_PASSWORD) -and (Test-Path -LiteralPath $ProtectedPasswordFile -PathType Leaf)){
+ try{
+  $secret=[Security.Cryptography.ProtectedData]::Unprotect([IO.File]::ReadAllBytes($ProtectedPasswordFile),$null,[Security.Cryptography.DataProtectionScope]::CurrentUser)
+  $env:LEMONLOADER_KEYSTORE_PASSWORD=[Text.Encoding]::UTF8.GetString($secret)
+  [Array]::Clear($secret,0,$secret.Length)
+ }catch{throw 'Не удалось открыть пароль подписи DPAPI текущего пользователя. Ключ не изменён.'}
+}
 if(!(Test-Path -LiteralPath $KeyStore -PathType Leaf) -or [string]::IsNullOrWhiteSpace($env:LEMONLOADER_KEYSTORE_PASSWORD)){throw 'Укажите постоянный keystore и LEMONLOADER_KEYSTORE_PASSWORD. Ключи в Git не добавляются.'}
 New-Item -ItemType Directory -Path $Output | Out-Null
 $candidate=Join-Path $Output 'input-profile.json'
@@ -44,6 +52,8 @@ $tools=& "$PSScriptRoot\Get-AndroidTools.ps1"
 function RunPatcher([string[]]$Arguments){& $tools.Patcher @Arguments;if($LASTEXITCODE -ne 0){throw 'Операция Android Patcher не завершена. Исходный APK сохранён.'}}
 $interop=Join-Path $Output 'Interop'
 RunPatcher @('generate-interop',$preparedInput,'--output',$interop)
+& $Dotnet run --project (Join-Path $PSScriptRoot 'ApiReview') -c Release "-p:AndroidLoaderPath=$($tools.LoaderManaged)" -- $interop (Join-Path $Output 'api-review.json')
+if($LASTEXITCODE -ne 0){throw 'Android API не соответствует контрактам игровых патчей.'}
 $managed=Join-Path $Output 'Managed'
 & $Dotnet build (Join-Path $repo 'src\AndroidMod\AndroidMod.csproj') -c Release "-p:AndroidLoaderPath=$($tools.LoaderManaged)" "-p:AndroidInteropPath=$interop" "-p:AndroidGameProfile=$CompatibilityProfile" -p:DebugType=None -p:DebugSymbols=false -o $managed
 if($LASTEXITCODE -ne 0){throw 'Мод не собрался с Android Interop. Windows DLL вместо него не подставляются.'}

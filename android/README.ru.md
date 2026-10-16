@@ -1,9 +1,16 @@
 # Android · DivineLabs Idle Slayer Mods
 
-Статус на 16 октября 2026: исходники порта и локальная сборочная цепочка подготовлены.
-**Готового проверенного APK пока нет:** исходный Android APK Idle Slayer не предоставлен,
-Android Interop для него не создан, проверки на телефоне не проводились.
-ADB 37.0.1 и Build Tools 37.0.0 подготовлены локально; подключённых устройств нет.
+Статус на 16 октября 2026: получена Android 7.3.4 (866), ARM64, Unity 6000.3.14f1.
+Подписи всех пяти исходных частей проверены; создан настоящий Android Interop,
+мод собран с ним без ошибок/предупреждений. Проверены 23 цели игровых патчей.
+Профиль `profiles/idle-slayer-7.3.4-arm64-preview.json` разрешён **только как preview**:
+`StaticApiChecked=true`, `RuntimeVerified=false`. Это не приёмка функций в игре.
+Собран локальный APK (128 537 740 байт):
+`W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\android-7.3.4-preview-1\DivineLabs.IdleSlayer.Android.apk`.
+Подпись v2/v3, выравнивание 16 KiB, CRC ZIP, собственные DLL, native/metadata и
+64 исходных игровых assets проверены. SHA256 записан рядом в SHA256SUMS.txt;
+подробный отчёт — artifact-validation.json, инструкция — README.ru.txt.
+Телефон через ADB пока не обнаружен, запуск/установка на устройстве не проверены.
 
 ## Какой продукт делаем
 
@@ -38,8 +45,9 @@ ADB 37.0.1 и Build Tools 37.0.0 подготовлены локально; по
   Шаблон profiles/unapproved.example.json всегда выключен. Профиль не утверждается
   автоматически по совпадению имени игры или номера версии.
 
-Точная совместимость Android-методов, шрифты/кириллица, клавиатура, touch routing,
-scene callbacks и игровые сохранения **ожидают настоящего APK и устройства**.
+Игровые методы доступны в Android Interop и прошли проверку сигнатур. Их реальное
+поведение, шрифты/кириллица, клавиатура, touch routing, scene callbacks и сохранения
+**ожидают устройства**. Статическая проверка не подтверждает начисления в сессии.
 
 ## Подготовка SDK и исходника с телефона
 
@@ -72,9 +80,20 @@ Root для чтения установленных APK не используе�
 для диагностики. Существующие папки не перезаписываются.
 
 Для одного полного APK дополнительно создаётся выключенный `candidate.json`.
-Если Android выдаёт split-комплект, сохраняются **все** части. Это исходник для
-следующего анализа, не готовый вход `Build-Android.ps1`: автоматического слияния
-split APK пока нет. Не нужно удалять игру или заменять её ради получения файлов.
+Если Android выдаёт split-комплект, сохраняются **все** части. Для него или XAPK:
+
+```powershell
+./scripts/android/Prepare-AndroidInput.ps1 -GamePackage 'W:\DEV\environments\idle-slayer\android\phone-ДАТА-ВРЕМЯ'
+```
+
+Подготовка проверяет целостность отчёта получения, package/versionCode,
+подписи **каждой** части через apksigner и совпадение их сертификатов.
+APKEditor 1.4.9 (закреплён по SHA256) объединяет части; после этого сверяются
+SHA256 `libil2cpp.so` и metadata с исходниками. Выход `game-arm64.apk` ещё не
+подписан нашим ключом; `candidate.json` остаётся выключенным. Оригиналы сохраняются.
+Наличие корректной подписи доказывает целостность подписанного содержимого,
+но само по себе не удостоверяет личность владельца сертификата.
+Не нужно удалять игру или заменять её ради получения файлов.
 
 ## Сборка из пользовательского APK
 
@@ -84,13 +103,16 @@ URL и SHA256 закреплены в dependencies.lock.json. Их происх�
 Документация upstream заявляет Android API 26+ / ARM64 / Unity IL2CPP; фактическую
 совместимость Idle Slayer и конкретного телефона ещё нужно проверить.
 
-1. Нужен **полный исходный APK** с lib/arm64-v8a/libil2cpp.so и metadata. Один base.apk
-   из split-установки недостаточен. Готовый сторонний мод не используем как исходник.
+1. Нужен полный APK с ARM64 `libil2cpp.so` и metadata или полный split/XAPK комплект,
+   подготовленный через `Prepare-AndroidInput.ps1`. Один base.apk недостаточен.
+   Готовый сторонний мод не используем как исходник.
 2. scripts/android/inspect_apk.py читает бинарный AndroidManifest, ABI/ELF и hashes,
    не распаковывая APK и не меняя его. Выход — выключенный кандидат профиля.
 3. После анализа именно Android-сборки сохраняется отдельный утверждённый профиль
-   в локальном android/private либо W:\DEV\environments\idle-slayer. Нужны реальные
-   package/versionName/native/metadata hashes; OriginalApkSha256 фиксирует вход.
+   в profiles (только сведения о сборке) либо локальном android/private. Нужны реальные
+   package/versionName/native/metadata hashes. `ApiReview` проверяет найденные
+   по имени цели патчей, компиляция — типизированные обращения. RuntimeVerified
+   отмечается отдельно; профиль preview не считается подтверждённым на устройстве.
 4. scripts/android/Build-Android.ps1 проверяет профиль, согласует minSdk >=26 и
    оставляет ARM64-библиотеки, генерирует Interop из этого APK и собирает AndroidMod
    на net10.0 с Android-загрузчиком. Подстановка Steam DLL в этом сценарии отсутствует.
@@ -99,19 +121,26 @@ URL и SHA256 закреплены в dependencies.lock.json. Их происх�
    Упаковка проверяет, что libil2cpp/metadata сохранились, а собственные DLL совпадают
    с созданными. Все операции создают новую папку, исходный APK не перезаписывается.
 
-Нужны PowerShell 7.4+, .NET 10 SDK, Python 3.11+, Android SDK Build Tools, постоянный
-keystore и переменная LEMONLOADER_KEYSTORE_PASSWORD (при необходимости также
-LEMONLOADER_KEY_PASSWORD). Пароли не передаются в командной строке и не печатаются.
+Нужны PowerShell 7.4+, .NET 10 SDK, Python 3.11+, Android SDK Build Tools и постоянный
+keystore. Пароль задаётся через LEMONLOADER_KEYSTORE_PASSWORD (при необходимости
+также LEMONLOADER_KEY_PASSWORD) либо защищённый DPAPI-файл ниже. Пароли не передаются в командной строке и не печатаются.
 Сертификат/ключ сохраняются для будущих обновлений, не входят в Git/дистрибутив.
+
+`New-AndroidSigningKey.ps1` создаёт постоянный PKCS12 ключ под `W:\DEV\.state\signing`
+и случайный пароль, зашифрованный Windows DPAPI текущего пользователя. Существующие
+файлы не перезаписываются. `Build-Android.ps1` читает защищённый пароль, если
+переменная окружения не задана. Пароль/ключ не печатаются. DPAPI-файл привязан
+к этому пользователю Windows; при переносе ключа пароль нужно перенести отдельно
+защищённым способом. Сам SDK и ключи уже подготовлены на текущем компьютере.
 
 ```powershell
 python -B ./scripts/android/inspect_apk.py 'W:\DEV\environments\idle-slayer\android\original.apk' --output 'W:\DEV\environments\idle-slayer\android\candidate.json'
 
-./scripts/android/Build-Android.ps1 -GameApk 'W:\DEV\environments\idle-slayer\android\original.apk' -CompatibilityProfile 'W:\DEV\environments\idle-slayer\android\reviewed.json' -KeyStore 'W:\DEV\.state\signing\DivineLabs-Android.jks' -KeyAlias divinelabs -DeviceApi 34
+./scripts/android/Build-Android.ps1 -GameApk 'W:\DEV\environments\idle-slayer\android\original.apk' -CompatibilityProfile './android/profiles/idle-slayer-7.3.4-arm64-preview.json' -DeviceApi 34
 ```
 
-DeviceApi здесь пример; второй вызов невозможен до анализа игры и подготовки
-постоянного ключа подписи. По умолчанию используются закреплённые Build Tools 37.0.0.
+DeviceApi здесь пример: задайте реальный API телефона, если он известен.
+До первого вызова сборки нужен проверенный вход и постоянный ключ подписи. По умолчанию используются закреплённые Build Tools 37.0.0.
 Сценарий не устанавливает APK на телефон, не удаляет
 приложения, не трогает их данные и не подменяет платёжные/облачные проверки.
 
@@ -123,6 +152,18 @@ DeviceApi здесь пример; второй вызов невозможен 
 
 ## Что проверено
 
+- Полная Build-Android.ps1 из объединённого входа: новая генерация Android Interop,
+  ApiReview, компиляция Mod/Contracts, внедрение Loader, подпись v2/v3, проверка
+  подписи/16 KiB выравнивания и hashes модулей прошли. Финальный CRC ZIP и все
+  64 оригинальных assets совпали; native/metadata также сохранены.
+- Подготовка реального XAPK 7.3.4 (866), все пять подписей и одинаковый SHA256
+  сертификата, сохранение native/metadata после слияния. Исходник получен с APKPure,
+  а не с пользовательского телефона; сопоставление с его установкой не проводилось.
+- Cpp2IL и Il2CppInterop создали 153 Android-сборки из ARM64 ELF/metadata 39;
+  AndroidMod собран с ними без предупреждений. Статический ApiReview: 23 цели.
+- 7 дополнительных проверок staging split APK: сохранение исходника/байтов,
+  объявленные отсутствующие части, смешанные версии, дубли native, опасные ZIP-пути,
+  изменение копии с телефона и отказ от перезаписи. Всего Python: 25 проверок.
 - 17 проверок логики касаний без Unity/телефона: владение fingerId, чужой палец,
   порог движения, тап/перетаскивание, отмена, смена сцены и жест тремя пальцами
   с частичным отпусканием. `dotnet run --project tests/AndroidInput -c Release`.
@@ -140,13 +181,13 @@ DeviceApi здесь пример; второй вызов невозможен 
   Это непригодные для установки фикстуры, не игровые APK.
 - Проверка компиляции сенсорного кода с настоящими библиотеками Android Loader:
   успешно без предупреждений. Для типов Unity использованы локальные Steam-прокси,
-  поэтому полученные DLL **не являются Android-поставкой**. Профиль выключен.
+  поэтому полученные диагностические DLL **не являются Android-поставкой**. Профиль выключен.
   Воспроизведение: scripts/android/Check-Compile.ps1. Выход только в .cache/temp.
 - В собственных Android-сборках проверено отсутствие System.IO.Pipes и
   Windows P/Invoke. Windows Mod после условного разделения также собирается.
 - Проверен синтаксис PowerShell и фактические CLI options Patcher 2.1.0.
 
-Не проверены: сборка/подпись реального игрового APK, запуск Android/установка,
+Не проверены: запуск Android/установка,
 мобильные методы начисления/расходов и сохранения, JNI/Unity hooks, сенсорный ввод,
 ориентация/клавиатура/кириллица, нагрузка и облако. Стабильный релиз не заявляется.
 
@@ -159,5 +200,7 @@ DeviceApi здесь пример; второй вызов невозможен 
 - Закреплённый загрузчик: https://github.com/LemonLoaderX/LemonLoader/releases/tag/v0.7.4-android.3
 - Usage: https://github.com/LemonLoaderX/LemonLoader/blob/v0.7.4-android.3/docs/android/USAGE.md
 - Patcher: https://github.com/LemonLoaderX/LemonLoader.Patcher/releases/tag/v2.1.0
+- APKEditor: https://github.com/REAndroid/APKEditor/tree/V1.4.9
+- Исходный Android XAPK: https://apkpure.net/idle-slayer/com.pabloleban.IdleSlayer/download/7.3.4
 
 Проверки Python: `python -B -m unittest discover -s tests -p "Android*Checks.py" -v`.

@@ -1,0 +1,20 @@
+{
+  "VersionCode": 866,
+  "VersionName": "7.3.4",
+  "Package": "com.pabloleban.IdleSlayer",
+  "MinSdk": 25,
+  "TargetSdk": 36,
+  "SchemaVersion": 1,
+  "Approved": true,
+  "NativeSha256": "096BEE4EF5DF292C3C715CEAA5604C7F533E2C75FEAE1A7FAB38334C6D9021EE",
+  "MetadataSha256": "8674C3E5A8BC0C89DAB7D6A5D681F6D41312E9E168C9C87728BE1F619A714A91",
+  "UnityVersion": "6000.3.14f1",
+  "Abis": [
+    "arm64-v8a"
+  ],
+  "Channel": "android-preview",
+  "StaticApiChecked": true,
+  "RuntimeVerified": false,
+  "SourceXapkSha256": "15D1CACBEBB8E40DDB622A52F6CD9D03BB82B6755D0CFAD14C0C86528D1A51FE",
+  "SourceSignerSha256": "0E4248BBB0D35A0E0D040535263408DE76B24B349EBFF57F30878E57656E5E7A"
+}

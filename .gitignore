@@ -15,4 +15,7 @@ DivineLabs_Loader/Dependencies/SupportModules/*/Libs/*.dll
 *.aab
 *.keystore
 *.jks
+*.p12
+*.pfx
+*.dpapi
 android/private/

@@ -35,3 +35,7 @@ Android SDK Platform Tools 37.0.1 / Build Tools 37.0.0: Google / AOSP.
 Optional local development tools, downloaded from dl.google.com; not shipped
 inside game APKs or Windows payloads. Android SDK terms are retained in
 android/licenses/Android-SDK-License.txt, and archive NOTICE files remain intact.
+
+APKEditor 1.4.9 / REAndroid, Apache-2.0; optional split APK preparation tool.
+https://github.com/REAndroid/APKEditor/tree/V1.4.9
+License: android/licenses/APKEditor-Apache-2.0.txt. Not included in game payload.

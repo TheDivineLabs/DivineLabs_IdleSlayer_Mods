@@ -169,7 +169,7 @@ def collect(client, package, output):
         except InvalidApk as error:
             report['AnalysisRequired'] = str(error)
     else:
-        report['AnalysisRequired'] = 'Split APK сохранены целиком. Build-Android.ps1 пока требует отдельного полного APK; части автоматически не сливаются.'
+        report['AnalysisRequired'] = 'Split APK сохранены целиком. Следующий шаг: Prepare-AndroidInput.ps1 -GamePackage с путём этой папки.'
     (output / 'collection.json').write_text(json.dumps(report, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
     return report
 
