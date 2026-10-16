@@ -49,3 +49,6 @@ PairIP до загрузки мода. Игровые APK и игровые DLL 
 Служебный components.zip скачивается программой при восстановлении компонентов;
 для обычной установки выбирайте EXE либо portable ZIP. SHA256SUMS.txt содержит
 контрольные суммы всех трёх файлов.
+После публикации проверены серверные SHA256 всех файлов и автоматическая загрузка
+386 компонентов готовым EXE без Components и без dotnet в PATH. CI ветки и тега
+прошёл. [Дополнение к отчёту](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/blob/main/docs/VALIDATION-0.5.0.md).
