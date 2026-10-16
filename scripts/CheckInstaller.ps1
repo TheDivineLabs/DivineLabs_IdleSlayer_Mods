@@ -33,9 +33,16 @@ if((Get-Content "$target\Data\Config\game-path.txt") -ne 'legacy-path' -or (Get-
 if(Test-Path "$target\App\Launcher\Data"){throw 'Data создана внутри Launcher'}
 InstallTest
 CheckRoot
-RunApp "$target\App\Setup\DivineLabs.Uninstall.exe" @('--uninstall','--files-only','--silent')
-for($i=0;$i -lt 40 -and (Test-Path "$target\DivineLabs.IdleSlayer.exe");$i++){Start-Sleep -Milliseconds 500}
-if(Test-Path "$target\DivineLabs.IdleSlayer.exe"){throw 'Удаление не завершилось'}
+$uninstallReport=$target+'.uninstall-report.txt'
+RunApp "$target\App\Setup\DivineLabs.Uninstall.exe" @('--uninstall','--files-only','--silent','--report',$uninstallReport)
+$completed=$false
+for($i=0;$i -lt 120;$i++){
+ if(Test-Path -LiteralPath $uninstallReport){
+  try{$status=Get-Content -LiteralPath $uninstallReport -ErrorAction Stop;if($status[0]-eq '-1'){throw "Удаление завершилось ошибкой: $($status[1])"};if($status[0]-eq '100'){$completed=$true;break}}catch [IO.IOException]{}
+ }
+ Start-Sleep -Milliseconds 500
+}
+if(-not $completed-or (Test-Path "$target\DivineLabs.IdleSlayer.exe")){throw 'Удаление не завершилось'}
 if(-not(Test-Path "$target\Data\Config\.divinelabs-owner")){throw 'Утрачена принадлежность папки после удаления'}
 InstallTest
 CheckRoot

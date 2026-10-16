@@ -13,10 +13,10 @@ internal static class Program
         string target=Arg("--dir",uninstall?SetupOperations.UninstallRoot():SetupOperations.DefaultDirectory),report=Arg("--report");
         void Report(string message,int percent) => OperationReport.TryWrite(report,message,percent);
         try{
-            if(args.Contains("--cleanup")){SetupOperations.Cleanup(target,int.Parse(Arg("--parent")),filesOnly);return 0;}
+            if(args.Contains("--cleanup")){SetupOperations.Cleanup(target,int.Parse(Arg("--parent")),filesOnly,Report);Report("Программа удалена.",100);return 0;}
             if(args.Contains("--uninstall-now")){Report("Отключение компонентов и удаление программы…",-1);SetupOperations.UninstallNow(target,filesOnly,Report);Report("Программа удалена.",100);return 0;}
             if(!silent)return RunInterface(target,uninstall);
-            if(uninstall){SetupOperations.BeginUninstall(target,filesOnly,true);return 0;}
+            if(uninstall){SetupOperations.BeginUninstall(target,filesOnly,true,report);return 0;}
             SetupOperations.Install(target,!args.Contains("--no-integrations"),Report,!args.Contains("--no-shortcuts"),!args.Contains("--no-desktop-shortcut"),!args.Contains("--no-start-menu-shortcut"));
             if(!args.Contains("--no-launch"))SetupOperations.Launch(target);return 0;
         }catch(Exception e){try{SetupOperations.Log(target,e);Report("Ошибка: "+Explain(e),-1);}catch{}

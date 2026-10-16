@@ -136,7 +136,7 @@ internal static class SetupOperations
         var directory=new DirectoryInfo(Path.GetDirectoryName(Environment.ProcessPath)!);
         return directory.Name.Equals("Setup",StringComparison.OrdinalIgnoreCase)&&directory.Parent?.Name.Equals("App",StringComparison.OrdinalIgnoreCase)==true?directory.Parent.Parent!.FullName:directory.FullName;
     }
-    internal static void BeginUninstall(string root,bool filesOnly,bool silent)
+    internal static void BeginUninstall(string root,bool filesOnly,bool silent,string report="")
     {
         root=ValidateTarget(root);if(!File.Exists(ReceiptPath(root)))throw new IOException("Установка DivineLabs не найдена.");
         foreach(var p in Launchers(root))using(p){if(p.MainWindowHandle!=0)p.CloseMainWindow();if(!p.WaitForExit(15000))throw new IOException("Закройте лаунчер DivineLabs перед удалением.");}
@@ -146,7 +146,7 @@ internal static class SetupOperations
         }
         string cache=Inside(root,"Data/Cache/Work");Directory.CreateDirectory(cache);
         string helper=Path.Combine(cache,"DivineLabs-Uninstall-"+Guid.NewGuid().ToString("N")+".exe");File.Copy(Environment.ProcessPath!,helper);
-        var start=new ProcessStartInfo(helper){UseShellExecute=false,CreateNoWindow=silent};foreach(string a in new[]{"--cleanup","--dir",root,"--parent",Environment.ProcessId.ToString()})start.ArgumentList.Add(a);if(filesOnly)start.ArgumentList.Add("--files-only");if(silent)start.ArgumentList.Add("--silent");Process.Start(start);
+        var start=new ProcessStartInfo(helper){UseShellExecute=false,CreateNoWindow=silent};foreach(string a in new[]{"--cleanup","--dir",root,"--parent",Environment.ProcessId.ToString()})start.ArgumentList.Add(a);if(filesOnly)start.ArgumentList.Add("--files-only");if(silent)start.ArgumentList.Add("--silent");if(!string.IsNullOrEmpty(report)){start.ArgumentList.Add("--report");start.ArgumentList.Add(report);}Process.Start(start);
     }
     internal static void UninstallNow(string root,bool filesOnly,Action<string,int> progress=null)
     {
