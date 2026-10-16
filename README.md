@@ -10,6 +10,13 @@
 оборудования. Остальные границы проверки: [VALIDATION](docs/VALIDATION.md).
 [Точный охват валют и покупок](docs/CURRENCY-CAPABILITIES.ru.md).
 
+## Android
+
+Начат отдельный ARM64-порт с сенсорным игровым меню и локальной сборкой из APK
+пользователя. **Установочного Android APK ещё нет:** нужен исходный Android-пакет
+Idle Slayer для Interop, проверки игровых методов и прогона на телефоне.
+Проверка компиляции не равна Android-совместимости. [Статус и сборка Android](android/README.ru.md).
+
 ## Скачать и начать
 
 В [выпуске 0.4.2](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/tag/v0.4.2) есть два варианта:

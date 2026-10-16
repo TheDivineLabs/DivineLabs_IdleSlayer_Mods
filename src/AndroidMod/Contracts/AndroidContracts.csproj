@@ -1,0 +1,1 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><AssemblyName>DivineLabs.IdleSlayer.Contracts</AssemblyName><DefineConstants>$(DefineConstants);DIVINELABS_ANDROID</DefineConstants></PropertyGroup><ItemGroup><Compile Include="../../Contracts/*.cs" Link="%(Filename)%(Extension)"/></ItemGroup></Project>

@@ -7,3 +7,12 @@
 *.user
 *.sav
 DivineLabs_Loader/Dependencies/SupportModules/*/Libs/*.dll
+
+# Local Android game inputs, generated proxies and signing material.
+*.apk
+*.apks
+*.xapk
+*.aab
+*.keystore
+*.jks
+android/private/

@@ -1,0 +1,12 @@
+{
+  "loader": {
+    "version": "v0.7.4-android.3",
+    "url": "https://github.com/LemonLoaderX/LemonLoader/releases/download/v0.7.4-android.3/LemonLoader-Android-arm64.zip",
+    "sha256": "87e7e7bb5fbda55663989d47b22401187c4059d26d285c3e89141bd133ef10e4"
+  },
+  "patcher": {
+    "version": "v2.1.0",
+    "url": "https://github.com/LemonLoaderX/LemonLoader.Patcher/releases/download/v2.1.0/LemonLoader.Patcher.CLI-win-x64.zip",
+    "sha256": "1077f0afcb953c5b25019b22488b8a0e973428156b50c6b4cdff798045a168b6"
+  }
+}

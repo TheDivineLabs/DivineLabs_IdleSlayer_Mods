@@ -1,4 +1,6 @@
+#if !DIVINELABS_ANDROID
 using System.IO.Pipes;
+#endif
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -24,6 +26,7 @@ public sealed class SessionReply
 public static class SessionWire
 {
     public const int Protocol=2;
+    #if !DIVINELABS_ANDROID
     public static string Name(string path)=>"DivineLabs.IdleSlayer."+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Path.GetFullPath(path).ToUpperInvariant())))[..24];
     public static async Task Write<T>(Stream stream,T value,CancellationToken token)
     {
@@ -45,6 +48,7 @@ public static class SessionWire
         await pipe.ConnectAsync(timeout.Token);await Write(pipe,request,timeout.Token);var reply=await Read<SessionReply>(pipe,timeout.Token);
         if(reply.Protocol!=Protocol||reply.Id!=request.Id)throw new IOException("Версия соединения не совпадает.");return reply;
     }
+    #endif
 }
 // Owns persistence for the entire game session. Published snapshots are never mutated.
 public sealed class SessionHost:IDisposable
@@ -62,7 +66,9 @@ public sealed class SessionHost:IDisposable
     public string SessionId {get;}=Guid.NewGuid().ToString("N");
     public Settings Snapshot=>Volatile.Read(ref snapshot);
     public SessionHost(string config,Action<Exception> error=null,Func<GameCommand,CancellationToken,Task<GameCommandResult>> gameCommands=null,Func<Settings,Settings,CancellationToken,Task> prepareChange=null){report=error;commands=gameCommands;beforeChange=prepareChange;path=config;owner=SettingsStore.AcquireOwner(path);try{snapshot=SettingsStore.Load(path);}catch{owner.Dispose();throw;}}
+    #if !DIVINELABS_ANDROID
     public void Start()=>_ = Task.Run(Serve);
+    #endif
     public async Task<SessionReply> Apply(SessionRequest request)
     {
         await changes.WaitAsync().ConfigureAwait(false);
@@ -96,6 +102,7 @@ public sealed class SessionHost:IDisposable
     }
     private SessionReply CommandReply(SessionRequest request,GameCommandResult result)=>new(){Id=request.Id,Session=SessionId,Error=result.Error,Settings=Snapshot.Copy(),Result=result};
     private SessionReply Reply(SessionRequest r,string error=null)=>new(){Id=r.Id,Session=SessionId,Error=error,Settings=Snapshot.Copy()};
+    #if !DIVINELABS_ANDROID
     private async Task Serve()
     {
         while(!lifetime.IsCancellationRequested){
@@ -107,5 +114,6 @@ public sealed class SessionHost:IDisposable
             }catch(Exception e) when(e is IOException or OperationCanceledException or JsonException or InvalidDataException){}
         }
     }
+    #endif
     public void Dispose(){lifetime.Cancel();changes.Wait();try{disposed=true;owner.Dispose();}finally{changes.Release();}}
 }

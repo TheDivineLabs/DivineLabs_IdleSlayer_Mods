@@ -3,7 +3,9 @@ using HarmonyLib;
 using MelonLoader;
 using UnityEngine;
 [assembly: MelonInfo(typeof(DivineLabs.IdleSlayer.Mod), "DivineLabs • Idle Slayer", "0.4.2", "DivineLabs")]
+#if !DIVINELABS_ANDROID
 [assembly: MelonGame("Pablo Leban", "Idle Slayer")]
+#endif
 namespace DivineLabs.IdleSlayer;
 public sealed class Mod : MelonMod
 {
@@ -19,11 +21,18 @@ public sealed class Mod : MelonMod
         Instance = this;
         try
         {
+#if DIVINELABS_ANDROID
+            if(!AndroidProfile.Supported()){LoggerInstance.Warning("Android-сборка игры не проверена. Игровые патчи DivineLabs не включены.");return;}
+            ConfigPath=Path.Combine(Application.persistentDataPath,"DivineLabs",SettingsStore.FileName);
+#else
             string game = Path.GetDirectoryName(Environment.ProcessPath)!;
             if (!Compatibility.Supported(game)) { LoggerInstance.Warning("Версия игры не проверена. Модификации отключены; запустите обычную игру через лаунчер."); return; }
             ConfigPath = Path.Combine(game, "UserData", SettingsStore.FileName);
+#endif
             Session = new SessionHost(ConfigPath,e=>LoggerInstance.Error(e.ToString()),GameActions.Submit,GameActions.PrepareSettings);
+#if !DIVINELABS_ANDROID
             StartupCompatibility.Install(HarmonyInstance, game);
+#endif
             Patch("PlayerInventory", "AddCoins", nameof(Coins));
             Patch("SlayerPoints", "AddSouls", nameof(Souls));
             Patch("EnemyGameObject", "TakeDamage", nameof(Damage));
@@ -35,7 +44,15 @@ public sealed class Mod : MelonMod
             { var m = AccessTools.Method(typeof(Il2Cpp.JumpPanel), method); if(m != null) HarmonyInstance.Patch(m, prefix: new HarmonyMethod(typeof(Mod), nameof(InputAllowed))); }
             foreach(string action in new[]{"CheckAction","TryJump"})
             { var m=AccessTools.Method(typeof(Il2Cpp.PlayerMovement),action);if(m!=null)HarmonyInstance.Patch(m,prefix:new HarmonyMethod(typeof(Mod),nameof(InputAllowed))); }
-            Session.Start(); Ready = true; LoggerInstance.Msg($"Готово. Монеты ×{Config.CoinMultiplier}, урон ×{Config.DamageMultiplier}. Меню — {Config.Bindings["menu"]}.");
+#if !DIVINELABS_ANDROID
+            Session.Start();
+#endif
+            Ready = true;
+#if DIVINELABS_ANDROID
+            LoggerInstance.Msg("DivineLabs готов. Меню открывается кнопкой на игровом виджете.");
+#else
+            LoggerInstance.Msg($"Готово. Монеты ×{Config.CoinMultiplier}, урон ×{Config.DamageMultiplier}. Меню — {Config.Bindings["menu"]}.");
+#endif
         }
         catch (Exception e) { Session?.Dispose();Session=null; HarmonyInstance.UnpatchSelf(); LoggerInstance.Error("Не удалось включить модификации: " + e); }
     }

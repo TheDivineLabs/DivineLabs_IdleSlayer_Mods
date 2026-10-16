@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><TargetFramework>net10.0</TargetFramework><AssemblyName>DivineLabs.IdleSlayer.Mod</AssemblyName><DefineConstants>$(DefineConstants);DIVINELABS_ANDROID</DefineConstants></PropertyGroup>
+ <ItemGroup><Compile Remove="Contracts/**/*.cs"/><ProjectReference Include="Contracts/AndroidContracts.csproj"/>
+ <Compile Include="../Mod/Mod.cs;../Mod/GameActions.cs;../Mod/FreePurchases.cs;../Mod/GameVisuals.cs;../Mod/BrandGeometry.cs" Link="Shared/%(Filename)%(Extension)"/>
+ <Reference Include="$(AndroidLoaderPath)/MelonLoader.dll;$(AndroidLoaderPath)/0Harmony.dll;$(AndroidLoaderPath)/Il2CppInterop.Runtime.dll;$(AndroidLoaderPath)/Il2CppInterop.Common.dll"><Private>false</Private></Reference>
+ <Reference Include="$(AndroidInteropPath)/*.dll"><Private>false</Private></Reference>
+ <EmbeddedResource Include="$(AndroidGameProfile)" LogicalName="DivineLabs.AndroidProfile"/>
+ </ItemGroup>
+ <Target Name="RequireAndroidInputs" BeforeTargets="PrepareForBuild"><Error Condition="!Exists('$(AndroidLoaderPath)/MelonLoader.dll')" Text="Укажите AndroidLoaderPath: управляемые библиотеки Android-загрузчика."/><Error Condition="!Exists('$(AndroidInteropPath)/Assembly-CSharp.dll')" Text="Укажите AndroidInteropPath: Interop от точного Android APK, не Steam."/><Error Condition="!Exists('$(AndroidGameProfile)')" Text="Укажите AndroidGameProfile. Неизвестные сборки не поддерживаются автоматически."/></Target>
+</Project>

@@ -1,0 +1,107 @@
+# Android · DivineLabs Idle Slayer Mods
+
+Статус на 16 октября 2026: исходники порта и локальная сборочная цепочка подготовлены.
+**Готового проверенного APK пока нет:** исходный Android APK Idle Slayer не предоставлен,
+Android Interop для него не создан, проверки на телефоне не проводились.
+
+## Какой продукт делаем
+
+Вариант без обязательного root: локально подготовленная копия APK игры со встроенными
+функциями и сенсорным меню DivineLabs. Отдельное обычное приложение не может менять
+память другой игры из-за изоляции Android. Windows EXE, WPF, user32 и desktop-загрузчик
+в APK не переносятся. Steam-запуск на Android не используется.
+
+Сама игра, её APK/DEX/библиотеки, игровые Interop и сохранения не коммитятся и не
+публикуются. Подготовленный пользовательский APK остаётся локально под W:\DEV\artifacts.
+
+## Реализовано в исходниках
+
+- Отдельное меню uGUI/TMP: верхние вкладки, список функций с поиском/категориями/
+  избранным, настройки, разовые команды ресурсов. Крупнее элементы для сенсорного ввода.
+- Открытие кнопкой виджета или касанием тремя пальцами. Один жест даёт одно
+  переключение; ввод удерживается до отпускания всех пальцев. Скрытый виджет
+  не отключает жест. Перетаскивание, активный список, безопасная область экрана,
+  поворот, масштаб, прозрачность и уменьшение анимаций предусмотрены кодом.
+- Общие с Windows модели, ограничения чисел, множители, выдача и режимы покупок.
+  Их работа на Windows не считается проверкой Android-версии игровых методов.
+- Локальное владение JSON и квитанции команд. Windows named pipe не компилируется
+  в Android; меню вызывает тот же локальный обработчик. Портов и внешнего API нет.
+- Настройки: Application.persistentDataPath/DivineLabs/DivineLabs.settings.json.
+  Копии ресурсов: рядом в DivineLabs.Backups/Resources. Игровые .sav читаются из
+  Application.persistentDataPath. Реальное расположение проверяется по APK.
+- Профиль проверяет ARM64, Android, package/versionName и SHA256 libil2cpp.so +
+  metadata из фактического установленного APK до подключения игровых патчей.
+  Шаблон profiles/unapproved.example.json всегда выключен. Профиль не утверждается
+  автоматически по совпадению имени игры или номера версии.
+
+Точная совместимость Android-методов, шрифты/кириллица, клавиатура, touch routing,
+scene callbacks и игровые сохранения **ожидают настоящего APK и устройства**.
+
+## Сборка из пользовательского APK
+
+Загрузчик как техническая зависимость: LemonLoader v0.7.4-android.3, Patcher v2.1.0.
+URL и SHA256 закреплены в dependencies.lock.json. Их происхождение и Apache-2.0
+сохранены; это не собственная реализация CoreCLR/ARM64-загрузчика DivineLabs.
+Документация upstream заявляет Android API 26+ / ARM64 / Unity IL2CPP; фактическую
+совместимость Idle Slayer и конкретного телефона ещё нужно проверить.
+
+1. Нужен **полный исходный APK** с lib/arm64-v8a/libil2cpp.so и metadata. Один base.apk
+   из split-установки недостаточен. Готовый сторонний мод не используем как исходник.
+2. scripts/android/inspect_apk.py читает бинарный AndroidManifest, ABI/ELF и hashes,
+   не распаковывая APK и не меняя его. Выход — выключенный кандидат профиля.
+3. После анализа именно Android-сборки сохраняется отдельный утверждённый профиль
+   в локальном android/private либо W:\DEV\environments\idle-slayer. Нужны реальные
+   package/versionName/native/metadata hashes; OriginalApkSha256 фиксирует вход.
+4. scripts/android/Build-Android.ps1 проверяет профиль, согласует minSdk >=26 и
+   оставляет ARM64-библиотеки, генерирует Interop из этого APK и собирает AndroidMod
+   на net10.0 с Android-загрузчиком. Подстановка Steam DLL в этом сценарии отсутствует.
+5. Patcher добавляет только Loader/наши модули, выравнивает APK под 16 KiB и подписывает.
+   Упаковка проверяет, что libil2cpp/metadata сохранились, а собственные DLL совпадают
+   с созданными. Все операции создают новую папку, исходный APK не перезаписывается.
+
+Нужны PowerShell 7.4+, .NET 10 SDK, Python 3.11+, Android SDK Build Tools, постоянный
+keystore и переменная LEMONLOADER_KEYSTORE_PASSWORD (при необходимости также
+LEMONLOADER_KEY_PASSWORD). Пароли не передаются в командной строке и не печатаются.
+Сертификат/ключ сохраняются для будущих обновлений, не входят в Git/дистрибутив.
+
+```powershell
+python -B ./scripts/android/inspect_apk.py 'W:\DEV\environments\idle-slayer\android\original.apk' --output 'W:\DEV\environments\idle-slayer\android\candidate.json'
+
+./scripts/android/Build-Android.ps1 -GameApk 'W:\DEV\environments\idle-slayer\android\original.apk' -CompatibilityProfile 'W:\DEV\environments\idle-slayer\android\reviewed.json' -AndroidBuildTools 'W:\DEV\tools\android-sdk\build-tools\VERSION' -KeyStore 'W:\DEV\.state\signing\DivineLabs-Android.jks' -KeyAlias divinelabs -DeviceApi 34
+```
+
+VERSION и DeviceApi здесь примеры; второй вызов невозможен до анализа игры,
+подготовки SDK и подписи. Сценарий не устанавливает APK на телефон, не удаляет
+приложения, не трогает их данные и не подменяет платёжные/облачные проверки.
+
+Подпись локального APK отличается от подписи издателя: обновить оригинальную
+установку поверх неё обычно нельзя. Не удаляйте игру и не очищайте данные ради
+пробы: сначала проверяется сохранение прогресса и способ безопасной установки.
+Проверка переносимости облака/аккаунта и магазинных покупок — отдельная часть
+испытаний; работа на Steam этого не подтверждает.
+
+## Что проверено
+
+- 10 проверок синтетических APK: UTF-8/UTF-16 binary XML, ABI, hashes, отсутствие
+  изменения исходника, minSdk/ARM64 подготовка, регистр путей, дубль/обход ZIP,
+  уже внедрённый Loader, нестандартная metadata, повреждённые границы manifest.
+  Это непригодные для установки фикстуры, не игровые APK.
+- Проверка компиляции сенсорного кода с настоящими библиотеками Android Loader:
+  успешно без предупреждений. Для типов Unity использованы локальные Steam-прокси,
+  поэтому полученные DLL **не являются Android-поставкой**. Профиль выключен.
+  Воспроизведение: scripts/android/Check-Compile.ps1. Выход только в .cache/temp.
+- В собственных Android-сборках проверено отсутствие System.IO.Pipes и
+  Windows P/Invoke. Windows Mod после условного разделения также собирается.
+- Проверен синтаксис PowerShell и фактические CLI options Patcher 2.1.0.
+
+Не проверены: сборка/подпись реального игрового APK, запуск Android/установка,
+мобильные методы начисления/расходов и сохранения, JNI/Unity hooks, сенсорный ввод,
+ориентация/клавиатура/кириллица, нагрузка и облако. Стабильный релиз не заявляется.
+
+## Первичные источники
+
+- Android app sandbox: https://source.android.com/docs/security/app-sandbox
+- Подпись приложений: https://developer.android.com/studio/publish/app-signing
+- Закреплённый загрузчик: https://github.com/LemonLoaderX/LemonLoader/releases/tag/v0.7.4-android.3
+- Usage: https://github.com/LemonLoaderX/LemonLoader/blob/v0.7.4-android.3/docs/android/USAGE.md
+- Patcher: https://github.com/LemonLoaderX/LemonLoader.Patcher/releases/tag/v2.1.0

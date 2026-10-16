@@ -21,3 +21,12 @@ Used to identify the game; these assets are excluded from the Apache-2.0 grant
 covering DivineLabs code. DivineLabs badge and code remain DivineLabs assets.
 Source: https://store.steampowered.com/app/1353300/Idle_Slayer/
 Installer portrait cover: AI-generated visual based on the game artwork and the approved design concept; game character rights remain with their respective owner.
+
+Android development (optional, not part of the Windows payload):
+LemonLoader v0.7.4-android.3 / LemonLoaderX, derived from MelonLoader (Apache-2.0).
+https://github.com/LemonLoaderX/LemonLoader/tree/v0.7.4-android.3
+LemonLoader.Patcher v2.1.0 / LemonLoaderX (Apache-2.0).
+https://github.com/LemonLoaderX/LemonLoader.Patcher/tree/v2.1.0
+Pinned downloads/hashes: android/dependencies.lock.json. Original notices and
+third-party license inventory accompany locally prepared Android outputs.
+No game APK, game libraries, Interop or signing material is distributed here.
