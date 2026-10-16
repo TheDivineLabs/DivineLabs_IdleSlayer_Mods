@@ -18,8 +18,9 @@ internal static class GameMenu
     private static readonly List<Card> cards=new();
     private static readonly List<Button> buttons=new();
     private static readonly string[] categories=new[]{"Все категории"}.Concat(FeatureCatalog.All.Select(f=>f.Category).Distinct()).ToArray();
-    private static bool favorites,refreshing,dragging,dragMoved,wasDown,threeFingers;
-    private static Vector2 dragOffset,dragOrigin;
+    private static bool favorites,refreshing;
+    private static readonly MobileTouchState touchState=new();
+    private static Vector2 dragOffset;
     private static long revision=-1;
     private static int width,height,layoutFrames,lastRelease=-1,category,resourceIndex,materialIndex;
     private static Rect safeArea;
@@ -30,7 +31,7 @@ internal static class GameMenu
     private static MaterialState[] materials=Array.Empty<MaterialState>();
     private static string receipt;
     internal static bool Open {get;private set;}
-    internal static bool BlocksGameInput=>Open||threeFingers||Input.touchCount>=3||dragging||Time.frameCount==lastRelease||PointerOnWidget();
+    internal static bool BlocksGameInput=>Open||Input.touchCount>=3||touchState.BlocksInput(Time.frameCount)||Time.frameCount==lastRelease||PointerOnWidget();
     private sealed class Card{internal FeatureDefinition Feature;internal GameObject Node;internal TMP_InputField Input;internal TextMeshProUGUI Toggle,Favorite,Error;}
     internal static void Create()
     {
@@ -63,7 +64,7 @@ internal static class GameMenu
         scaleText=Label(preferences.transform,"",0,488,400,72,25,Color.white);Button(preferences.transform,"−",432,488,112,72,()=>Mod.Change(c=>c.UiScale=Math.Clamp(c.UiScale-.05f,.75f,1.5f)));Button(preferences.transform,"+",576,488,112,72,()=>Mod.Change(c=>c.UiScale=Math.Clamp(c.UiScale+.05f,.75f,1.5f)));
         Button(preferences.transform,"Сбросить расположение виджета",0,584,688,88,()=>Mod.Change(c=>{c.WidgetX=1;c.WidgetY=0;c.WidgetVisible=true;}));
         status=Label(body.transform,"Меню: кнопка на виджете или касание тремя пальцами.",24,956,688,122,22,Muted);
-        widget=Button(widgetRoot.transform,"≡",0,0,220,104,()=>{if(!dragMoved)Toggle();});widgetRect=widget.GetComponent<RectTransform>();widgetFade=widget.AddComponent<CanvasGroup>();GameVisuals.Logo(widget.transform,8,10,84);widget.GetComponentInChildren<TextMeshProUGUI>().rectTransform.anchoredPosition=new(52,-2);
+        widget=Button(widgetRoot.transform,"≡",0,0,220,104,WidgetClick);widgetRect=widget.GetComponent<RectTransform>();widgetFade=widget.AddComponent<CanvasGroup>();GameVisuals.Logo(widget.transform,8,10,84);widget.GetComponentInChildren<TextMeshProUGUI>().rectTransform.anchoredPosition=new(52,-2);
         activeList=Node(widgetRoot.transform,"ActiveFunctions",0,0,376,100);listRect=activeList.GetComponent<RectTransform>();SurfaceImage(activeList,Background).raycastTarget=false;listFade=activeList.AddComponent<CanvasGroup>();listText=Label(activeList.transform,"",12,10,352,84,22,Color.white);listText.enableWordWrapping=true;
         fade.alpha=0;overlay.SetActive(false);Page(functions);Refresh();
     }
@@ -101,33 +102,113 @@ internal static class GameMenu
     private static string Number(double n){try{return Il2Cpp.AbbreviationUtility.AbbreviateNumber(n,false,1000);}catch{return n.ToString("G6",CultureInfo.InvariantCulture);}}
     private static void Page(GameObject page){functions.SetActive(page==functions);resources.SetActive(page==resources);preferences.SetActive(page==preferences);}
     private static void Toggle(){Open=!Open;if(!Open)lastRelease=Time.frameCount;startAlpha=fade.alpha;targetAlpha=Open?1:0;overlay.SetActive(true);fade.interactable=fade.blocksRaycasts=Open;if(Mod.Config.ReduceMotion){fade.alpha=targetAlpha;overlay.SetActive(Open);transition=-1;}else transition=0;}
-    internal static void SetAvailable(bool available){if(root==null)return;if(!available){Open=false;dragging=false;threeFingers=false;overlay.SetActive(false);fade.alpha=0;transition=-1;}root.SetActive(available);widgetRoot.SetActive(available);if(available)Refresh();}
+    internal static void SetAvailable(bool available){if(root==null)return;if(!available){Open=false;touchState.Reset(Time.frameCount);overlay.SetActive(false);fade.alpha=0;transition=-1;}root.SetActive(available);widgetRoot.SetActive(available);if(available)Refresh();}
     private static void Fit()
     {
         width=Screen.width;height=Screen.height;safeArea=Screen.safeArea;var area=root.GetComponent<RectTransform>().rect;
         float availableWidth=area.width*safeArea.width/Math.Max(1,width),availableHeight=area.height*safeArea.height/Math.Max(1,height);
         float scale=Math.Max(.1f,Math.Min(Mod.Config.UiScale,Math.Min((availableWidth-24)/736,(availableHeight-24)/1100)));panel.localScale=new(scale,scale,1);panel.anchoredPosition=new((safeArea.center.x/Math.Max(1,width)-.5f)*area.width,(safeArea.center.y/Math.Max(1,height)-.5f)*area.height);
         var wr=widgetRoot.GetComponent<RectTransform>().rect;float left=safeArea.xMin/Math.Max(1,width)*wr.width+12,top=(1-safeArea.yMax/Math.Max(1,height))*wr.height+12;
-        float w=Math.Max(0,wr.width*safeArea.width/Math.Max(1,width)-244),h=Math.Max(0,wr.height*safeArea.height/Math.Max(1,height)-128);if(!dragging)widgetRect.anchoredPosition=new(left+Mod.Config.WidgetX*w,-top-Mod.Config.WidgetY*h);PositionList();
+        float w=Math.Max(0,wr.width*safeArea.width/Math.Max(1,width)-244),h=Math.Max(0,wr.height*safeArea.height/Math.Max(1,height)-128);if(!touchState.PointerId.HasValue)widgetRect.anchoredPosition=new(left+Mod.Config.WidgetX*w,-top-Mod.Config.WidgetY*h);PositionList();
     }
     private static void PositionList(){var area=widgetRoot.GetComponent<RectTransform>().rect;float y=-widgetRect.anchoredPosition.y+116;if(y+listRect.sizeDelta.y>area.height-12)y=-widgetRect.anchoredPosition.y-listRect.sizeDelta.y-12;listRect.anchoredPosition=new(Math.Clamp(widgetRect.anchoredPosition.x+220-376,12,Math.Max(12,area.width-388)),-Math.Clamp(y,12,Math.Max(12,area.height-listRect.sizeDelta.y-12)));}
-    private static Vector2 Pointer=>Input.touchCount>0?Input.GetTouch(0).position:(Vector2)Input.mousePosition;
-    private static bool Down=>Input.touchCount>0?Input.GetTouch(0).phase is TouchPhase.Began or TouchPhase.Moved or TouchPhase.Stationary:Input.GetMouseButton(0);
-    private static bool PointerOnWidget()=>widget!=null&&widget.activeInHierarchy&&Down&&RectTransformUtility.RectangleContainsScreenPoint(widgetRect,Pointer,null);
-    private static void Drag()
+    private const int MousePointer=-1;
+    private static bool OnWidget(Vector2 point)=>widget!=null&&widget.activeInHierarchy&&RectTransformUtility.RectangleContainsScreenPoint(widgetRect,point,null);
+    private static bool PointerOnWidget()
     {
-        bool down=Down;Vector2 pointer=Pointer;var parent=widgetRoot.GetComponent<RectTransform>();RectTransformUtility.ScreenPointToLocalPointInRectangle(parent,pointer,null,out Vector2 local);Vector2 point=new(local.x+parent.rect.width/2,parent.rect.height/2-local.y);
-        if(down&&!wasDown){dragMoved=false;if(PointerOnWidget()){dragging=true;dragOrigin=point;dragOffset=point-new Vector2(widgetRect.anchoredPosition.x,-widgetRect.anchoredPosition.y);}}
-        if(dragging){dragMoved|=(point-dragOrigin).sqrMagnitude>64;if(down&&dragMoved){Vector2 p=point-dragOffset;widgetRect.anchoredPosition=new(Math.Clamp(p.x,12,Math.Max(12,parent.rect.width-232)),-Math.Clamp(p.y,12,Math.Max(12,parent.rect.height-116)));PositionList();}
-            if(!down){dragging=false;lastRelease=Time.frameCount;if(dragMoved){var area=parent.rect;var safe=Screen.safeArea;float left=safe.xMin/Math.Max(1,Screen.width)*area.width+12,top=(1-safe.yMax/Math.Max(1,Screen.height))*area.height+12;float w=Math.Max(1,area.width*safe.width/Math.Max(1,Screen.width)-244),h=Math.Max(1,area.height*safe.height/Math.Max(1,Screen.height)-128);float x=Math.Clamp((widgetRect.anchoredPosition.x-left)/w,0,1),y=Math.Clamp((-widgetRect.anchoredPosition.y-top)/h,0,1);Mod.Change(c=>{c.WidgetX=x;c.WidgetY=y;});}}}
-        wasDown=down;
+        for(int i=0;i<Input.touchCount;i++)
+        {
+            var touch=Input.GetTouch(i);
+            if(OnWidget(touch.position))return true;
+        }
+        return Input.touchCount==0&&Input.GetMouseButton(0)&&OnWidget(Input.mousePosition);
+    }
+    private static Vector2 CanvasPoint(Vector2 screen)
+    {
+        var parent=widgetRoot.GetComponent<RectTransform>();
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(parent,screen,null,out Vector2 local);
+        return new(local.x+parent.rect.width/2,parent.rect.height/2-local.y);
+    }
+    private static void BeginDrag(int id,Vector2 screen)
+    {
+        if(!OnWidget(screen))return;
+        var point=CanvasPoint(screen);
+        if(touchState.BeginPointer(id,point.x,point.y,Time.frameCount))
+            dragOffset=point-new Vector2(widgetRect.anchoredPosition.x,-widgetRect.anchoredPosition.y);
+    }
+    private static void MoveDrag(int id,Vector2 screen)
+    {
+        var point=CanvasPoint(screen);
+        if(!touchState.MovePointer(id,point.x,point.y))return;
+        var area=widgetRoot.GetComponent<RectTransform>().rect;
+        var safe=Screen.safeArea;
+        float left=safe.xMin/Math.Max(1,Screen.width)*area.width+12;
+        float right=safe.xMax/Math.Max(1,Screen.width)*area.width-232;
+        float top=(1-safe.yMax/Math.Max(1,Screen.height))*area.height+12;
+        float bottom=(1-safe.yMin/Math.Max(1,Screen.height))*area.height-116;
+        Vector2 p=point-dragOffset;
+        widgetRect.anchoredPosition=new(Math.Clamp(p.x,left,Math.Max(left,right)),-Math.Clamp(p.y,top,Math.Max(top,bottom)));
+        PositionList();
+    }
+    private static void EndDrag(int id)
+    {
+        if(!touchState.EndPointer(id,Time.frameCount))return;
+        var area=widgetRoot.GetComponent<RectTransform>().rect;
+        var safe=Screen.safeArea;
+        float left=safe.xMin/Math.Max(1,Screen.width)*area.width+12;
+        float top=(1-safe.yMax/Math.Max(1,Screen.height))*area.height+12;
+        float w=Math.Max(1,area.width*safe.width/Math.Max(1,Screen.width)-244);
+        float h=Math.Max(1,area.height*safe.height/Math.Max(1,Screen.height)-128);
+        float x=Math.Clamp((widgetRect.anchoredPosition.x-left)/w,0,1);
+        float y=Math.Clamp((-widgetRect.anchoredPosition.y-top)/h,0,1);
+        Mod.Change(c=>{c.WidgetX=x;c.WidgetY=y;});
+    }
+    private static void HandleTouches()
+    {
+        if(touchState.ObserveTouches(Input.touchCount,Time.frameCount))
+        {
+            layoutFrames=3;
+            Toggle();
+        }
+        if(touchState.GestureActive)return;
+        if(touchState.PointerId is int id)
+        {
+            if(id==MousePointer)
+            {
+                MoveDrag(id,Input.mousePosition);
+                if(!Input.GetMouseButton(0))EndDrag(id);
+                return;
+            }
+            for(int i=0;i<Input.touchCount;i++)
+            {
+                var touch=Input.GetTouch(i);
+                if(touch.fingerId!=id)continue;
+                if(touch.phase==TouchPhase.Canceled){touchState.CancelPointer(Time.frameCount);layoutFrames=3;}
+                else{MoveDrag(id,touch.position);if(touch.phase==TouchPhase.Ended)EndDrag(id);}
+                return;
+            }
+            // Android canceled or removed the owning pointer; do not adopt another finger.
+            touchState.CancelPointer(Time.frameCount);layoutFrames=3;
+            return;
+        }
+        for(int i=0;i<Input.touchCount;i++)
+        {
+            var touch=Input.GetTouch(i);
+            if(touch.phase==TouchPhase.Began)BeginDrag(touch.fingerId,touch.position);
+        }
+        if(Input.touchCount==0&&Input.GetMouseButtonDown(0))BeginDrag(MousePointer,Input.mousePosition);
+    }
+    private static void WidgetClick()
+    {
+        // uGUI can deliver onClick before the loader's update callback for this frame.
+        HandleTouches();
+        if(touchState.ConsumeTap(Time.frameCount))Toggle();
     }
     internal static void Tick()
     {
-        if(root==null||!Mod.GameSceneReady)return;if(revision!=Mod.Config.Revision)Refresh();if(width!=Screen.width||height!=Screen.height||safeArea!=Screen.safeArea)layoutFrames=3;if(layoutFrames>0){Fit();layoutFrames--;}
-        if(Input.touchCount>=3&&!threeFingers){threeFingers=true;Toggle();}if(Input.touchCount==0&&threeFingers){threeFingers=false;lastRelease=Time.frameCount;}
+        if(root==null||!Mod.GameSceneReady)return;if(revision!=Mod.Config.Revision)Refresh();if(width!=Screen.width||height!=Screen.height||safeArea!=Screen.safeArea){if(touchState.PointerId.HasValue)touchState.CancelPointer(Time.frameCount);layoutFrames=3;}if(layoutFrames>0){Fit();layoutFrames--;}
         if(transition>=0){transition+=Time.unscaledDeltaTime;float t=Math.Min(1,transition/.18f);fade.alpha=Mathf.Lerp(startAlpha,targetAlpha,1-(1-t)*(1-t)*(1-t));if(t>=1){transition=-1;overlay.SetActive(Open);}}
-        Drag();CompleteCommand();while(Mod.Messages.TryDequeue(out string message))status.text=message;
+        HandleTouches();CompleteCommand();while(Mod.Messages.TryDequeue(out string message))status.text=message;
     }
     private static void Choice(){if(resourceChoice==null)return;resourceChoice.text=ResourceChoice.All[resourceIndex].Title+"  ›";bool material=ResourceChoice.All[resourceIndex].Kind==ResourceKind.Material;materialSearch.gameObject.SetActive(material);materialHint.text=material?(materials.Length==0?"Материалы не найдены.":materials[materialIndex].Title+" · "+Number(materials[materialIndex].Amount)+" / "+Number(materials[materialIndex].Maximum)):ResourceChoice.All[resourceIndex].Kind==ResourceKind.JewelsOfSoul?"Локальные заработанные камни. Перенос через облако не подтверждён.":"Множители не применяются повторно. USP и материалы сохраняют игровые ограничения.";}
     private static void MoveMaterial(int delta){if(materials.Length>0){materialIndex=(materialIndex+materials.Length+delta)%materials.Length;Choice();}}

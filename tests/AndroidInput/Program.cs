@@ -1,0 +1,23 @@
+using DivineLabs.IdleSlayer;
+static void Check(bool condition,string name){if(!condition)throw new Exception(name);Console.WriteLine("ПРОЙДЕНО: "+name);}
+var touch=new MobileTouchState();
+Check(touch.BeginPointer(7,10,10,1),"Начало касания виджета");
+Check(!touch.MovePointer(7,14,13),"Небольшое движение остаётся нажатием");
+Check(!touch.EndPointer(7,2)&&touch.BlocksInput(2),"Отпускание кнопки блокирует игровой ввод в этом кадре");
+Check(touch.ConsumeTap(2)&&!touch.ConsumeTap(2),"Один тап открывает меню ровно один раз");
+Check(!touch.BlocksInput(3),"Обычный игровой ввод возвращается на следующем кадре");
+touch.BeginPointer(7,10,10,3);
+Check(!touch.BeginPointer(8,20,20,3)&&!touch.MovePointer(8,100,100),"Второй палец не перехватывает виджет");
+Check(!touch.EndPointer(8,4)&&touch.PointerId==7,"Отпускание другого пальца сохраняет захват");
+Check(touch.MovePointer(7,30,10),"Перетаскивание определяется по исходному пальцу");
+Check(touch.EndPointer(7,5)&&!touch.ConsumeTap(5),"После перетаскивания меню не открывается");
+Check(!touch.BeginPointer(9,10,10,5)&&touch.BeginPointer(9,10,10,6),"Отпускание перетаскивания не начинает новое касание в том же кадре");
+Check(touch.ObserveTouches(3,7)&&!touch.PointerId.HasValue,"Жест тремя пальцами отменяет захват виджета");
+Check(!touch.ObserveTouches(3,8)&&!touch.ObserveTouches(2,9)&&touch.GestureActive,"Удержание и частичное отпускание не повторяют жест");
+Check(!touch.ConsumeTap(9)&&!touch.BeginPointer(10,0,0,9),"Жест подавляет нажатия виджета");
+Check(!touch.ObserveTouches(0,10)&&!touch.GestureActive&&touch.BlocksInput(10),"Жест завершается только после отпускания всех пальцев");
+Check(!touch.BlocksInput(11)&&touch.ObserveTouches(3,11),"Новый жест работает после полного отпускания");
+touch.Reset(12);
+Check(!touch.GestureActive&&!touch.PointerId.HasValue&&!touch.ConsumeTap(12),"Смена сцены отменяет незавершённый ввод");
+touch.BeginPointer(11,0,0,13);touch.CancelPointer(14);
+Check(!touch.ConsumeTap(14)&&touch.BlocksInput(14)&&!touch.BlocksInput(15),"Отменённое Android касание не становится кликом");
