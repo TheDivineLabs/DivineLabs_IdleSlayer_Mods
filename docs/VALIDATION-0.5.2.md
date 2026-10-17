@@ -53,3 +53,20 @@ working shortcuts and uninstall entry. Actual user installations were not remove
 
 Build warnings NU1900 reported unavailable vulnerability metadata from the NuGet
 sources. A dependency vulnerability audit is not claimed.
+
+## Publication results
+
+- All five uploaded assets matched local sizes and GitHub SHA256 digests.
+- The root EXE anonymously downloaded components from the 0.5.2 release into a
+  fresh fixture with no bundled components or cache, verified the ZIP SHA256 and
+  extracted/verified the resulting package.
+- Installer and portable links through `releases/latest/download` returned HTTP 200.
+- 0.5.2 is an ordinary Latest release. All nine older release objects and their
+  assets were removed; every previously existing Git tag retained its original SHA.
+- The existing [Windows CI run](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/actions/runs/39038600539)
+  passed for release commit `e1b067c502cc88cc45957213a6b1219eebb0bbb7`.
+
+The binaries were built from `d7faebd286c6479e7dfbc3cff620b0f28e9d75c9`;
+the release commit adds documentation and test-harness refinements only.
+Both identities are recorded in the published `build.json`. This final report
+update changes documentation only and does not rebuild the package.
