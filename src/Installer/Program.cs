@@ -14,6 +14,7 @@ internal static class Program
         string target=Arg("--dir",uninstall?SetupOperations.UninstallRoot():SetupOperations.DefaultDirectory),report=Arg("--report");
         void Report(string message,int percent) => OperationReport.TryWrite(report,message,percent);
         try{
+            if(args.Contains("--remove-copy")){SetupOperations.RemoveCopy(target,Report);return 0;}
             if(args.Contains("--cleanup")){SetupOperations.Cleanup(target,int.Parse(Arg("--parent")),filesOnly,Report);Report("Программа удалена.",100);return 0;}
             if(args.Contains("--uninstall-now")){Report("Отключение компонентов и удаление программы…",-1);SetupOperations.UninstallNow(target,filesOnly,Report);Report("Программа удалена.",100);return 0;}
             if(!silent)return RunInterface(target,uninstall);

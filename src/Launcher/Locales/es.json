@@ -239,5 +239,11 @@
   "CopySearchProgress": "Carpetas revisadas: {0}. Puedes detener la búsqueda.",
   "CopySearchDone": "Instalaciones encontradas: {0}. Se omitieron carpetas de sistema, caché y copias de seguridad.",
   "CopySearchCancelled": "Búsqueda detenida. Instalaciones encontradas: {0}.",
-  "ChooseCopy": "Elegir"
+  "ChooseCopy": "Elegir",
+  "RemoveCopy": "Eliminar copia",
+  "RemoveCopyTitle": "¿Eliminar esta copia de la aplicación?",
+  "RemoveCopyRetention": "Se conservan ajustes, partidas, copias de seguridad y archivos ajenos. Los mods del juego y otras instalaciones siguen activos.",
+  "RemovingCopy": "Eliminando la copia seleccionada… No se puede cerrar la ventana durante la operación.",
+  "CopyRemoved": "Copia eliminada. Los ajustes, partidas y copias de seguridad permanecen en su carpeta original.",
+  "CopyRemovalFailed": "No se completó la eliminación. Cierra las aplicaciones de esa carpeta e inténtalo de nuevo; consulta el registro. Se conservan tus datos."
 }

@@ -5,8 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings><Nullable>disable</Nullable><AssemblyName>DivineLabs.IdleSlayer.Setup</AssemblyName>
     <ApplicationIcon>../../assets/DivineLabs.ico</ApplicationIcon><ApplicationManifest>../Launcher/app.manifest</ApplicationManifest>
     <Company>DivineLabs</Company><Product>DivineLabs Idle Slayer Mods</Product><AssemblyTitle>DivineLabs Idle Slayer Mods</AssemblyTitle>
-    <Version>0.5.0</Version><IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-    <PackageArchive Condition="'$(PackageArchive)'==''">W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.0\DivineLabs-IdleSlayer-0.5.0-portable.zip</PackageArchive>
+    <Version>0.5.1</Version><IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <PackageArchive Condition="'$(PackageArchive)'==''">W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.1\DivineLabs-IdleSlayer-0.5.1-portable.zip</PackageArchive>
   </PropertyGroup>
   <ItemGroup><EmbeddedResource Include="$(PackageArchive)" LogicalName="DivineLabs.ApplicationPackage" Condition="Exists('$(PackageArchive)')"/></ItemGroup>
   <Target Name="RequireApplicationPackage" BeforeTargets="Publish"><Error Condition="!Exists('$(PackageArchive)')" Text="Сначала создайте portable ZIP через scripts/Build.ps1 или укажите PackageArchive."/></Target>

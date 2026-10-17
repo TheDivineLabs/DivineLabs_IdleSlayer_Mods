@@ -239,5 +239,11 @@
   "CopySearchProgress": "已检查文件夹：{0}。可以停止搜索。",
   "CopySearchDone": "找到的安装：{0}。已跳过系统、缓存和备份文件夹。",
   "CopySearchCancelled": "搜索已停止。找到的安装：{0}。",
-  "ChooseCopy": "选择"
+  "ChooseCopy": "选择",
+  "RemoveCopy": "删除副本",
+  "RemoveCopyTitle": "删除此应用副本？",
+  "RemoveCopyRetention": "保留设置、存档、备份和其他文件。游戏模组及其他安装不会被停用。",
+  "RemovingCopy": "正在删除所选副本… 操作期间暂时无法关闭窗口。",
+  "CopyRemoved": "副本已删除。设置、存档及备份仍保留在原文件夹中。",
+  "CopyRemovalFailed": "删除未完成。请关闭从此文件夹运行的应用后重试；详情见日志。您的数据已保留。"
 }

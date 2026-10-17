@@ -35,6 +35,12 @@ public partial class MaintenanceWindow : Window
         string Arg(string name,string fallback=""){int i=Array.IndexOf(args,name);return i>=0&&i+1<args.Length?args[i+1]:fallback;}
         worker=Arg("--worker");uninstall=args.Contains("--uninstall");
         InterfacePreferences.Load();InitializeComponent();Style=(Style)FindResource(typeof(Window));
+        CopyFinder.Worker=worker;
+        CopyFinder.RemovalBusyChanged+=(_,removing)=>{
+            busy=removing;TargetPath.IsEnabled=Browse.IsEnabled=!removing;
+            if(!removing)InlineNotice.Text="";
+            LanguagePicker.IsEnabled=!removing;Navigation();
+        };
         DesktopWindow.Attach(this);ThemeManager.Attach(this);
         Icon=new BitmapImage(new Uri("pack://application:,,,/DivineLabs.IdleSlayer.Launcher;component/DivineLabs.png"));
         Motion.SetEnabled(this,SystemParameters.ClientAreaAnimation);

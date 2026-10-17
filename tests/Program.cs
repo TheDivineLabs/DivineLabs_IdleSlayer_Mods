@@ -140,7 +140,7 @@ if(Installation.ValidGame(installedGame)&&!Installation.Running)
 {
     string local=Product.Components;
     if(Directory.Exists(local))throw new IOException("Для локальной проверки нужна отдельная папка tests/bin без пользовательского payload.");
-    Directory.CreateDirectory(local);var manifest=new PackageManifest{Version=Product.Version};
+    Directory.CreateDirectory(local);var manifest=new PackageManifest{Version=Product.ComponentVersion};
     foreach(string relative in new[]{"version.dll",Product.LoaderDirectory+"/net6/MelonLoader.dll","Mods/DivineLabs.IdleSlayer.Mod.dll","UserLibs/DivineLabs.IdleSlayer.Contracts.dll","Defaults/Loader.cfg"})
     {string p=Paths.Inside(local,relative);Directory.CreateDirectory(Path.GetDirectoryName(p)!);File.WriteAllText(p,"test-component-"+relative);using var input=File.OpenRead(p);manifest.Files[relative]=Convert.ToHexString(SHA256.HashData(input));}
     File.WriteAllText(Path.Combine(local,"manifest.json"),JsonSerializer.Serialize(manifest));

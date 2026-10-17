@@ -2,7 +2,8 @@ using System.Text.Json;
 namespace DivineLabs.IdleSlayer.Runtime;
 public static class Product
 {
-    public const string Version = "0.5.0";
+    public const string Version = "0.5.1";
+    public const string ComponentVersion = "0.5.0";
     public const string LoaderDirectory = "DivineLabs_Loader";
     public static string ResolveHome(string executableDirectory)
     {
@@ -50,7 +51,7 @@ public sealed class PackageManifest
     public static PackageManifest Read(string root)
     {
         var m=JsonSerializer.Deserialize<PackageManifest>(File.ReadAllText(Path.Combine(root,"manifest.json"))) ?? throw new InvalidDataException("Манифест компонентов пуст.");
-        if(m.SchemaVersion!=1 || m.Version!=Product.Version || m.Files.Count==0)throw new InvalidDataException("Неподдерживаемая версия пакета компонентов.");
+        if(m.SchemaVersion!=1 || m.Version!=Product.ComponentVersion || m.Files.Count==0)throw new InvalidDataException("Неподдерживаемая версия пакета компонентов.");
         foreach(var entry in m.Files){Paths.Inside(root,entry.Key);if(entry.Value.Length!=64 || !entry.Value.All(Uri.IsHexDigit))throw new InvalidDataException("Некорректная контрольная сумма компонента.");}
         foreach(string required in new[]{"version.dll",Product.LoaderDirectory+"/net6/MelonLoader.dll","Mods/DivineLabs.IdleSlayer.Mod.dll","UserLibs/DivineLabs.IdleSlayer.Contracts.dll"})
             if(!m.Files.ContainsKey(required))throw new InvalidDataException("В пакете нет обязательного компонента: "+required);

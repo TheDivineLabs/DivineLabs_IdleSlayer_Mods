@@ -125,5 +125,11 @@ public sealed partial class SetupText
         ["CopySearchDone"]=("Найдено установок: {0}. Системные папки, кэш и резервные копии пропущены.","Installations found: {0}. System, cache and backup folders were skipped."),
         ["CopySearchCancelled"]=("Поиск остановлен. Найдено установок: {0}.","Search stopped. Installations found: {0}."),
         ["ChooseCopy"]=("Выбрать","Choose"),
+        ["RemoveCopy"]=("Удалить копию","Remove copy"),
+        ["RemoveCopyTitle"]=("Удалить эту копию программы?","Remove this app copy?"),
+        ["RemoveCopyRetention"]=("Настройки, сохранения, резервные копии и посторонние файлы останутся. Моды в игре и другие установки не отключаются.","Settings, saves, backups and unrelated files are retained. Game mods and other installations stay enabled."),
+        ["RemovingCopy"]=("Удаляем выбранную копию… Закрытие окна временно недоступно.","Removing the selected copy… Closing this window is temporarily blocked."),
+        ["CopyRemoved"]=("Копия удалена. Настройки, сохранения и резервные копии сохранены в прежней папке.","Copy removed. Settings, saves and backups remain in the original folder."),
+        ["CopyRemovalFailed"]=("Копия не удалена полностью. Закройте приложения из этой папки и повторите; подробности — в журнале. Данные сохранены.","Copy removal did not complete. Close apps running from this folder and retry; see the log for details. Your data is retained."),
     };
 }

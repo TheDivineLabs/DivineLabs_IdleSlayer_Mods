@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0-windows</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>disable</Nullable></PropertyGroup>
+ <ItemGroup>
+  <Compile Include="../../src/Installer/SetupOperations.cs" Link="SetupOperations.cs"/>
+  <Compile Include="../../src/Shared/InstallationLocations.cs" Link="InstallationLocations.cs"/>
+  <Compile Include="../../src/Shared/InstallTarget.cs" Link="InstallTarget.cs"/>
+ </ItemGroup>
+</Project>

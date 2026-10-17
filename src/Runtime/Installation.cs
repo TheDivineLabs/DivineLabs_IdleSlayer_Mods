@@ -108,7 +108,7 @@ public static class Installation
             foreach(string name in Names.Where(n=>n!="MelonLoader"&&n!=".divinelabs-installation.json"))
             {added.Add(name);if(Directory.Exists(Path.Combine(stage,name)))CopyTree(Path.Combine(stage,name),Path.Combine(game,name));else if(File.Exists(Path.Combine(stage,name)))File.Copy(Path.Combine(stage,name),Path.Combine(game,name));}
             added.Add(".divinelabs-installation.json");
-            File.WriteAllText(Path.Combine(game,".divinelabs-installation.json"),JsonSerializer.Serialize(new{Version=Product.Version,Previous=id}));
+            File.WriteAllText(Path.Combine(game,".divinelabs-installation.json"),JsonSerializer.Serialize(new{Version=Product.ComponentVersion,Previous=id}));
             File.WriteAllText(Path.Combine(history,"previous.txt"),id);RememberGame(game);
             string manual=Path.Combine(game,".divinelabs-manual-mode");if(File.Exists(manual))File.Delete(manual);
         }

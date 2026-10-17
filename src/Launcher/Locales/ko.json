@@ -239,5 +239,11 @@
   "CopySearchProgress": "확인한 폴더: {0}. 검색을 중지할 수 있습니다.",
   "CopySearchDone": "찾은 설치: {0}. 시스템, 캐시 및 백업 폴더는 제외했습니다.",
   "CopySearchCancelled": "검색을 중지했습니다. 찾은 설치: {0}.",
-  "ChooseCopy": "선택"
+  "ChooseCopy": "선택",
+  "RemoveCopy": "사본 제거",
+  "RemoveCopyTitle": "이 앱 사본을 제거할까요?",
+  "RemoveCopyRetention": "설정, 저장 데이터, 백업 및 관련 없는 파일은 보존됩니다. 게임 모드와 다른 설치는 계속 활성화됩니다.",
+  "RemovingCopy": "선택한 사본을 제거하는 중… 작업 중에는 창을 닫을 수 없습니다.",
+  "CopyRemoved": "사본이 제거되었습니다. 설정, 저장 데이터 및 백업은 원래 폴더에 남아 있습니다.",
+  "CopyRemovalFailed": "제거가 완료되지 않았습니다. 이 폴더에서 실행 중인 앱을 닫고 다시 시도하세요. 자세한 내용은 로그를 확인하세요. 데이터는 보존됩니다."
 }

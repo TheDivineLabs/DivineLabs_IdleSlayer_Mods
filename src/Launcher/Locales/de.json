@@ -239,5 +239,11 @@
   "CopySearchProgress": "Geprüfte Ordner: {0}. Die Suche kann gestoppt werden.",
   "CopySearchDone": "Gefundene Installationen: {0}. System-, Cache- und Sicherungsordner wurden übersprungen.",
   "CopySearchCancelled": "Suche gestoppt. Gefundene Installationen: {0}.",
-  "ChooseCopy": "Auswählen"
+  "ChooseCopy": "Auswählen",
+  "RemoveCopy": "Kopie entfernen",
+  "RemoveCopyTitle": "Diese Programmkopie entfernen?",
+  "RemoveCopyRetention": "Einstellungen, Spielstände, Sicherungen und fremde Dateien bleiben erhalten. Spielmods und andere Installationen bleiben aktiviert.",
+  "RemovingCopy": "Die gewählte Kopie wird entfernt… Das Fenster kann vorübergehend nicht geschlossen werden.",
+  "CopyRemoved": "Kopie entfernt. Einstellungen, Spielstände und Sicherungen bleiben im bisherigen Ordner.",
+  "CopyRemovalFailed": "Entfernen nicht abgeschlossen. Schließe Programme aus diesem Ordner und versuche es erneut. Details stehen im Protokoll. Deine Daten bleiben erhalten."
 }

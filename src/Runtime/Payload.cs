@@ -22,7 +22,7 @@ public static class Payload
     }
     public static async Task<string> EnsureAsync(IProgress<SetupProgress> progress=null,CancellationToken cancel=default)
     {
-        string cache=Path.Combine(Product.Cache,"Components",Product.Version);
+        string cache=Path.Combine(Product.Cache,"Components",Product.ComponentVersion);
         foreach(string candidate in new[]{Product.Components,cache})
         {
             if(!Directory.Exists(candidate))continue;
@@ -30,8 +30,8 @@ public static class Payload
         }
         using var resource=typeof(Payload).Assembly.GetManifestResourceStream("DivineLabs.PackageIndex");
         var index=JsonSerializer.Deserialize<PackageIndex>(resource!)!;
-        if(index.version!=Product.Version||index.sha256.Length!=64||!index.sha256.All(Uri.IsHexDigit))throw new InvalidDataException("Не настроен источник компонентов. Используйте полный portable ZIP.");
-        string download=Path.Combine(Product.Cache,"Downloads",Product.Version+"-components.zip");Directory.CreateDirectory(Path.GetDirectoryName(download)!);
+        if(index.version!=Product.ComponentVersion||index.sha256.Length!=64||!index.sha256.All(Uri.IsHexDigit))throw new InvalidDataException("Не настроен источник компонентов. Используйте полный portable ZIP.");
+        string download=Path.Combine(Product.Cache,"Downloads",Product.ComponentVersion+"-components.zip");Directory.CreateDirectory(Path.GetDirectoryName(download)!);
         await DownloadVerifiedAsync(new Uri(index.url),download,index.sha256,progress,cancel);
         string stage=Path.Combine(Product.Cache,"Work","components-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(stage);
         progress?.Report(new("Распаковка компонентов…"));ExtractSafe(download,stage,cancel);Verify(stage,progress,cancel);

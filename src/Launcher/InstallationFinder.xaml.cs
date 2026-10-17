@@ -3,12 +3,17 @@ using System.Windows.Controls;
 using DivineLabs.IdleSlayer.Runtime;
 using DivineLabs.IdleSlayer.Maintenance;
 using Microsoft.Win32;
+using System.Diagnostics;
 namespace DivineLabs.IdleSlayer.Launcher;
 public partial class InstallationFinder:UserControl
 {
     public static readonly DependencyProperty CurrentFolderProperty=DependencyProperty.Register(nameof(CurrentFolder),typeof(string),typeof(InstallationFinder));
     public string CurrentFolder{get=>(string)GetValue(CurrentFolderProperty);set=>SetValue(CurrentFolderProperty,value);}
     public event EventHandler<string> FolderSelected;
+    public event EventHandler<bool> RemovalBusyChanged;
+    public string Worker {get;set;}="";
+    public bool IsRemoving {get;private set;}
+    private string removalFolder;
     private CancellationTokenSource search;
     private bool loaded;
     private volatile bool closed;
@@ -27,7 +32,7 @@ public partial class InstallationFinder:UserControl
     private void CancelClick(object sender,RoutedEventArgs e)=>search?.Cancel();
     private async Task Find(string folder)
     {
-        if(search!=null)return;closed=false;request++;search=new();var active=search;
+        if(search!=null||IsRemoving)return;CancelRemovalClick(this,new());closed=false;request++;search=new();var active=search;
         FindAll.IsEnabled=ChooseRoot.IsEnabled=false;CancelSearch.Visibility=Visibility.Visible;
         Status.Text=SetupText.Current["CopySearching"];
         var progress=new Progress<int>(count=>{if(!Dispatcher.HasShutdownStarted)Dispatcher.BeginInvoke(new Action(()=>{if(search==active&&!closed)Status.Text=string.Format(SetupText.Current["CopySearchProgress"],count);}));});
@@ -45,6 +50,52 @@ public partial class InstallationFinder:UserControl
     }
     private async void ChooseCopyClick(object sender,RoutedEventArgs e)
     {string folder=(string)((Button)sender).Tag;var location=await Task.Run(()=>InstallationLocations.Inspect(folder));await OnUi(()=>{if(closed)return;if(location==null){Status.Text=SetupText.Current["DiscoveryFailed"];return;}FolderSelected?.Invoke(this,folder);});}
+    private void RemoveCopyClick(object sender,RoutedEventArgs e)
+    {
+        if(search!=null||IsRemoving)return;
+        removalFolder=(string)((Button)sender).Tag;RemovalPath.Text=removalFolder;
+        RemovalConfirmation.Visibility=Visibility.Visible;RemovalLog.Visibility=Visibility.Collapsed;
+        Copies.IsEnabled=FindAll.IsEnabled=ChooseRoot.IsEnabled=false;
+        CancelRemoval.Focus();
+    }
+    private void CancelRemovalClick(object sender,RoutedEventArgs e)
+    {
+        if(IsRemoving)return;
+        RemovalConfirmation.Visibility=Visibility.Collapsed;removalFolder=null;
+        Copies.IsEnabled=FindAll.IsEnabled=ChooseRoot.IsEnabled=true;
+    }
+    private void RemovalLogClick(object sender,RoutedEventArgs e)
+    {
+        string path=Path.Combine(RemovalPath.Text,"Data","Logs","setup.log");
+        if(File.Exists(path))Process.Start(new ProcessStartInfo(path){UseShellExecute=true});
+    }
+    private async void ConfirmRemovalClick(object sender,RoutedEventArgs e)
+    {
+        if(IsRemoving||removalFolder==null||search!=null)return;
+        string folder=removalFolder,worker=Worker;
+        if(!File.Exists(worker)){Status.Text=SetupText.Current["WorkerFailed"];return;}
+        IsRemoving=true;RemovalBusyChanged?.Invoke(this,true);ConfirmRemoval.IsEnabled=CancelRemoval.IsEnabled=false;
+        Status.Text=SetupText.Current["RemovingCopy"];string report=Path.Combine(Path.GetTempPath(),"DivineLabs-remove-"+Guid.NewGuid().ToString("N")+".txt");
+        try{
+            await Task.Run(async ()=>{
+                var start=new ProcessStartInfo(worker){UseShellExecute=false,CreateNoWindow=true};
+                foreach(string argument in new[]{"--remove-copy","--silent","--dir",folder,"--report",report})start.ArgumentList.Add(argument);
+                using var process=Process.Start(start)??throw new IOException("Worker did not start");
+                await process.WaitForExitAsync();
+                if(process.ExitCode!=0)throw new IOException(OperationReport.TryRead(report,out _,out string message)?message:"Removal failed");
+                if(InstallationLocations.Inspect(folder)!=null)throw new IOException("Installation still exists");
+            });
+            await OnUi(()=>{
+                Copies.ItemsSource=Copies.Items.Cast<InstallationLocation>().Where(x=>!string.Equals(x.Folder,folder,StringComparison.OrdinalIgnoreCase)).ToArray();
+                Status.Text=SetupText.Current["CopyRemoved"];RemovalConfirmation.Visibility=RemovalLog.Visibility=Visibility.Collapsed;
+            });
+        }catch(Exception error){Product.Record(error);await OnUi(()=>{Status.Text=SetupText.Current["CopyRemovalFailed"];RemovalLog.Visibility=File.Exists(Path.Combine(folder,"Data","Logs","setup.log"))?Visibility.Visible:Visibility.Collapsed;});}
+        finally{
+            await OnUi(()=>{IsRemoving=false;RemovalBusyChanged?.Invoke(this,false);ConfirmRemoval.IsEnabled=CancelRemoval.IsEnabled=true;
+                if(RemovalConfirmation.Visibility!=Visibility.Visible)CancelRemovalClick(this,new());});
+            try{File.Delete(report);}catch(IOException){}catch(UnauthorizedAccessException){}
+        }
+    }
     private async Task OnUi(Action action)
     {if(Dispatcher.HasShutdownStarted)return;try{await Dispatcher.InvokeAsync(action);}catch(TaskCanceledException)when(closed||Dispatcher.HasShutdownStarted){}}
 }
