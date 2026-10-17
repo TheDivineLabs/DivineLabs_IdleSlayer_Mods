@@ -4,7 +4,7 @@ namespace DivineLabs.IdleSlayer.Launcher;
 internal sealed class MaintenanceStep : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
-    public string Title { get; }
+    public string Title { get; private set; }
     public int Index { get; }
     private int current=-1;
     public MaintenanceStep(string title,int index){Title=title;Index=index;}
@@ -20,4 +20,5 @@ internal sealed class MaintenanceStep : INotifyPropertyChanged
     private static readonly Brush Line=new SolidColorBrush(Color.FromRgb(222,227,237));
     private static readonly Brush Text=new SolidColorBrush(Color.FromRgb(27,38,56));
     public void Update(int value){if(current==value)return;current=value;PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(null));}
+    public void Rename(string title){Title=title;PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(nameof(Title)));}
 }

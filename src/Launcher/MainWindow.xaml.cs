@@ -57,7 +57,8 @@ public partial class MainWindow:Window
             OpacitySlider.Value=s.WidgetOpacity*100;ScaleSlider.Value=s.UiScale*100;
             Motion.SetEnabled(this,!s.ReduceMotion&&SystemParameters.ClientAreaAnimation);
             KeyList.ItemsSource=FeatureCatalog.Actions.Select(id=>new{Id=id,Title=FeatureCatalog.ActionTitle(id),Label=s.Bindings[id].ToString()}).ToArray();
-            Summary.Text=s.Enabled?string.Join("     /     ",FeatureCatalog.All.Select(f=>f.Title+" "+(s.FeatureEnabled(f.Id)?(f.HasMultiplier?"×"+s.Multiplier(f.Id).ToString("G6",CultureInfo.InvariantCulture):"вкл"):"выкл."))):"Все функции выключены";
+            var active=FeatureCatalog.All.Where(f=>s.Enabled&&s.FeatureEnabled(f.Id)).Select(f=>f.Title+" "+(f.HasMultiplier?"×"+s.Multiplier(f.Id).ToString("G6",CultureInfo.InvariantCulture):"вкл")).ToArray();
+            Summary.Text=active.Length>0?string.Join("   ·   ",active):"Все функции выключены";
             MenuHint.Text=$"Меню в игре — {s.Bindings["menu"]}.";
             Filter();
         }finally{refreshing=false;}
@@ -72,12 +73,20 @@ public partial class MainWindow:Window
     private void FilterChanged(object sender,TextChangedEventArgs e){if(searchDelay==null)return;searchDelay.Stop();searchDelay.Start();}
     private void CategoryClick(object sender,RoutedEventArgs e){category=(string)((Button)sender).Tag;Filter();}
     private void Navigate(object sender,RoutedEventArgs e)=>SelectPage((string)((Button)sender).Tag);
+    private void MinimizeClick(object sender,RoutedEventArgs e)=>WindowState=WindowState.Minimized;
+    private void MaximizeClick(object sender,RoutedEventArgs e)=>WindowState=WindowState==WindowState.Maximized?WindowState.Normal:WindowState.Maximized;
+    private void CloseClick(object sender,RoutedEventArgs e)=>Close();
     private void SelectPage(string name)
     {
         foreach(var view in new FrameworkElement[]{HomePage,FeaturesPage,SettingsPage,ResourcesPage})view.Visibility=Visibility.Collapsed;
         var page=name=="features"?(FrameworkElement)FeaturesPage:name=="settings"?SettingsPage:name=="resources"?ResourcesPage:HomePage;
         page.Visibility=Visibility.Visible;Motion.Enter(page);if(name=="resources")ResourcesPage.RefreshIfIdle();
-        foreach(var b in new[]{NavHome,NavFeatures,NavResources,NavSettings})b.BorderBrush=(System.Windows.Media.Brush)FindResource((string)b.Tag==name?"Accent":"Background");
+        foreach(var b in new[]{NavHome,NavFeatures,NavResources,NavSettings}){
+            bool active=(string)b.Tag==name;
+            b.BorderBrush=(System.Windows.Media.Brush)FindResource(active?"Accent":"WhiteSurface");
+            b.Background=active?(System.Windows.Media.Brush)FindResource("SelectedSurface"):System.Windows.Media.Brushes.Transparent;
+            b.Foreground=(System.Windows.Media.Brush)FindResource(active?"Accent":"Text");
+        }
     }
     private async void AllClick(object s,RoutedEventArgs e){bool v=AllEnabled.IsChecked==true;await Change(c=>c.Enabled=v);}
     private async void FeatureEnabledClick(object sender,RoutedEventArgs e){var b=(CheckBox)sender;string id=(string)b.Tag;bool value=b.IsChecked==true;await Change(c=>c.SetFeatureEnabled(id,value));}

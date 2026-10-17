@@ -1,0 +1,14 @@
+{
+  "title": "DivineLabs Idle Slayer Design",
+  "figma": "https://www.figma.com/design/5Ml26SowEwW95efKkcCEda",
+  "sections": [
+    { "name": "Установщик", "figmaPage": "2:526", "folder": "01 Установщик", "source": "src/Launcher/MaintenanceWindow.xaml", "screens": ["Начало", "Лицензии", "Параметры", "Установка", "Готово"] },
+    { "name": "Программа", "figmaPage": "3:2", "folder": "02 Программа", "source": "src/Launcher/MainWindow.xaml", "screens": ["Главная", "Функции", "Ресурсы", "Настройки"] },
+    { "name": "Удалятор", "folder": "03 Удалятор", "source": "src/Launcher/MaintenanceWindow.xaml", "mode": "--uninstall" },
+    { "name": "Архив", "figmaPage": "0:1", "description": "Previous installer references and editable screens" }
+  ],
+  "tokens": { "background": "#FAFBFE", "surface": "#FFFFFF", "chrome": "#F4F6FC", "text": "#1B2638", "muted": "#667389", "accent": "#6658E8", "line": "#DEE3ED", "success": "#24855C", "error": "#A32C42" },
+  "editable": "XAML is the implementation source. SVG exports retain text and vectors; cover art is embedded raster. Figma imports are design snapshots, not synchronized application code.",
+  "checks": "WPF layout renders at 100/150/200%; these do not certify physical Windows DPI or gameplay.",
+  "gameMenu": "Unchanged in this desktop design pass; do not treat this library as an in-game redesign."
+}

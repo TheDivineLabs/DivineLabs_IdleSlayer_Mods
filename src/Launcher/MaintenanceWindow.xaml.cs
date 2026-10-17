@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Windows.Input;
 using Microsoft.Win32;
 using DivineLabs.DesktopUI;
 using DivineLabs.IdleSlayer.Maintenance;
@@ -16,7 +17,13 @@ public partial class MaintenanceWindow : Window
     private readonly bool uninstall;
     private readonly List<MaintenanceStep> steps;
     private readonly List<LicenseDocument> documents=new();
-    private bool busy,done;
+    private bool busy,done,allowClose;
+    private long requiredBytes;
+    private int lastPercent=-1;
+    private string lastStatus="Подготовка…";
+    private InstallTargetKind targetKind;
+    private bool targetCheckFailed;
+    private IInputElement previousFocus;
     private volatile bool closed;
     private int page;
     private long pathRequest;
@@ -35,9 +42,7 @@ public partial class MaintenanceWindow : Window
         Steps.ItemsSource=steps;
         TargetPath.Text=Arg("--dir",InstallTarget.DefaultDirectory);
         LoadLicenses();OwnTab.IsChecked=true;
-        RequiredSpace.Text=long.TryParse(Arg("--required-bytes"),out long bytes)&&bytes>0
-            ?$"Для комплекта потребуется около {Math.Ceiling(bytes/1048576d):N0} МБ свободного места."
-            :"Размер комплекта будет проверен перед установкой.";
+        long.TryParse(Arg("--required-bytes"),out requiredBytes);
         if(uninstall){
             WelcomeTitle.Text="До следующей игры";
             WelcomeText.Text="Удалим программу. Ваш прогресс останется.";
@@ -48,8 +53,12 @@ public partial class MaintenanceWindow : Window
             RetentionBox.Visibility=Visibility.Visible;ShortcutOptions.Visibility=Browse.Visibility=RequiredSpace.Visibility=Visibility.Collapsed;
             TargetPath.IsReadOnly=true;FilesLabel.Text="Удаление файлов";ProgressTitle.Text="Удаляем программу";ProgressDescription.Text="Отключаем компоненты и удаляем установленные файлы.";
         }
+        ApplyLanguage();
         ShowPage(0,false);
-        Closing+=(_,e)=>{if(busy){e.Cancel=true;InlineNotice.Text="Сейчас меняются файлы. Дождитесь завершения операции.";}};
+        Closing+=(_,e)=>{
+            if(busy){e.Cancel=true;InlineNotice.Text=T("CloseBlocked");return;}
+            if(!done&&!allowClose&&IsVisible){e.Cancel=true;ShowCancel();}
+        };
         Closed+=(_,_)=>{closed=true;if(!uninstall)return;try{File.WriteAllText(Path.Combine(Path.GetDirectoryName(worker)!,"maintenance.complete"),"DivineLabs");}catch(IOException){}catch(UnauthorizedAccessException){}};
         Loaded+=(_,_)=>{
             var area=SystemParameters.WorkArea;MinWidth=Math.Min(MinWidth,area.Width);MinHeight=Math.Min(MinHeight,area.Height);
@@ -57,6 +66,31 @@ public partial class MaintenanceWindow : Window
             Left=Math.Clamp(Left,area.Left,Math.Max(area.Left,area.Right-Width));Top=Math.Clamp(Top,area.Top,Math.Max(area.Top,area.Bottom-Height));
             Motion.Enter(this);
         };
+    }
+    private static string T(string key)=>SetupText.Current[key];
+    private void LanguageChanged(object sender,EventArgs e)=>ApplyLanguage();
+    private void ApplyLanguage()
+    {
+        string[] titles=uninstall?new[]{"Start","Options","Removal","Done"}:new[]{"Start","Licenses","Options","Installation","Done"};
+        for(int i=0;i<steps.Count;i++)steps[i].Rename(T(titles[i]));
+        RequiredSpace.Text=requiredBytes>0?string.Format(T("SpaceBytes"),Math.Ceiling(requiredBytes/1048576d).ToString("N0")):T("Space");
+        if(uninstall){
+            WelcomeTitle.Text=T("RemoveWelcome");WelcomeText.Text=T("RemovePace");WelcomeBody.Text=T("RemoveMore");
+            WelcomeDetail.Text=T("RemoveMore");WelcomeNote.Text=T("RemoveFlexible");
+            OptionsTitle.Text=T("RemoveOptions");OptionsDescription.Text=T("RemoveFolder");
+            Retention.Text=T("Retention");FilesLabel.Text=T("RemovingFiles");ProgressTitle.Text=T("Removing");ProgressDescription.Text=T("RemoveProgress");
+        }
+        ResultTitle.Text=T(uninstall?"Removed":"ResultTitle");ResultDescription.Text=T(uninstall?"RemovedBody":"ResultBody");
+        CancelTitle.Text=T(uninstall?"CancelRemove":"CancelTitle");CancelDescription.Text=T(uninstall?"CancelRemoveBody":"CancelBody");
+        Status.Text=SetupText.Current.Progress(lastStatus);
+        if(done)ResultPath.Text=uninstall?T("RetainedPath")+Path.Combine(TargetPath.Text,"Data"):TargetPath.Text;
+        UpdatePathHint();UpdateProgressLabels();Navigation();
+    }
+    private void StepHeaderSizeChanged(object sender,SizeChangedEventArgs e)
+    {
+        if(steps==null||steps.Count<2)return;
+        double inset=StepHeader.ActualWidth/(steps.Count*2);
+        StepBase.Margin=StepTrack.Margin=new Thickness(inset,19,inset,0);
     }
     private static string Embedded(string name)
     {using var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream(name);if(stream==null)return "Текст лицензии недоступен. Проверьте комплект.";using var reader=new StreamReader(stream);return reader.ReadToEnd();}
@@ -77,8 +111,7 @@ public partial class MaintenanceWindow : Window
     private void LicenseChanged(object sender,SelectionChangedEventArgs e)
     {
         if(LicenseText!=null&&LicenseSelector.SelectedItem is LicenseDocument document){
-            LicenseText.Text=document.Title+Environment.NewLine+Environment.NewLine+
-                string.Join(Environment.NewLine,document.Text.Replace("\r\n","\n").Split('\n').Select(line=>line.Trim()));
+            LicenseText.Text=document.Title+Environment.NewLine+Environment.NewLine+document.Text;
             LicenseText.ScrollToHome();
         }
     }
@@ -88,10 +121,11 @@ public partial class MaintenanceWindow : Window
         bool gate=page==1&&Accepted.IsChecked!=true;
         Back.Visibility=page is 1 or 2||page==3&&!busy?Visibility.Visible:Visibility.Collapsed;
         Cancel.Visibility=done?Visibility.Collapsed:Visibility.Visible;
+        Finish.Visibility=done&&!uninstall?Visibility.Visible:Visibility.Collapsed;
         Cancel.IsEnabled=Back.IsEnabled=!busy;Primary.IsEnabled=!busy&&!gate;
         Primary.Style=(Style)FindResource(gate?"LicenseGate":"Primary");
-        Primary.ToolTip=gate?"Отметьте принятие условий под текстом лицензии.":null;
-        Primary.Content=gate?"Примите условия":done?uninstall?"Готово":"Запустить →":page==2?uninstall?"Удалить":Existing?"Обновить →":"Установить →":page==3?busy?"Установка…":"Повторить":"Далее →";
+        Primary.ToolTip=gate?T("AcceptHint"):null;
+        Primary.Content=T(gate?"AcceptFirst":done?uninstall?"Done":"Launch":page==2?uninstall?"Remove":Existing?"Update":"Install":page==3?busy?"Busy":"Retry":"Next");
     }
     private void ShowPage(int next,bool animate=true)
     {
@@ -118,61 +152,82 @@ public partial class MaintenanceWindow : Window
         try{
             await Dispatcher.InvokeAsync(()=>{
                 if(closed||request!=pathRequest)return;
-                PathHint.Text=failed?"Не удалось проверить папку. Выберите другое расположение.":uninstall?"Удаляются только файлы из списка установки.":kind switch{
-                    InstallTargetKind.Installed=>"Найдена установка. Настройки сохранятся.",
-                    InstallTargetKind.Recoverable=>"Найдена незавершённая установка. Мастер восстановит её.",
-                    InstallTargetKind.Occupied=>"В папке есть посторонние файлы. Выберите отдельную папку программы.",
-                    _=>"Программа будет установлена в эту папку."};
-                PathHint.Foreground=(Brush)FindResource(failed||kind==InstallTargetKind.Occupied?"ErrorBrush":"Muted");
+                targetKind=kind;targetCheckFailed=failed;UpdatePathHint();
                 if(Primary!=null&&page==2)Navigation();
             });
         }catch(OperationCanceledException){}
     }
+    private void UpdatePathHint()
+    {
+        PathHint.Text=T(targetCheckFailed?"CheckFailed":uninstall?"RemoveOnly":targetKind switch{
+            InstallTargetKind.Installed=>"Installed",InstallTargetKind.Recoverable=>"Recoverable",InstallTargetKind.Occupied=>"Occupied",_=>"Empty"});
+        PathHint.Foreground=(Brush)FindResource(targetCheckFailed||targetKind==InstallTargetKind.Occupied?"ErrorBrush":"Muted");
+    }
     private void BrowseClick(object sender,RoutedEventArgs e)
-    {var dialog=new OpenFolderDialog{Title="DivineLabs Idle Slayer Mods — папка программы"};if(dialog.ShowDialog()==true)TargetPath.Text=dialog.FolderName;}
+    {var dialog=new OpenFolderDialog{Title=T("FolderTitle")};if(dialog.ShowDialog()==true)TargetPath.Text=dialog.FolderName;}
     private void BackClick(object sender,RoutedEventArgs e){InlineNotice.Text="";ShowPage(page==3?2:page==2&&uninstall?0:page-1);}
     private void CancelClick(object sender,RoutedEventArgs e)=>Close();
+    private void FinishClick(object sender,RoutedEventArgs e){if(done&&!busy)Close();}
+    private void ShowCancel()
+    {
+        if(CancelOverlay.Visibility==Visibility.Visible)return;
+        previousFocus=Keyboard.FocusedElement;MainPane.IsEnabled=false;LanguagePicker.IsEnabled=false;
+        CancelOverlay.Visibility=Visibility.Visible;Motion.Enter(CancelOverlay);Continue.Focus();
+    }
+    private void ContinueClick(object sender,RoutedEventArgs e)
+    {CancelOverlay.Visibility=Visibility.Collapsed;MainPane.IsEnabled=true;LanguagePicker.IsEnabled=true;previousFocus?.Focus();}
+    private void ExitClick(object sender,RoutedEventArgs e){allowClose=true;Close();}
+    private void CancelOverlayKeyDown(object sender,KeyEventArgs e)
+    {if(e.Key==Key.Escape){e.Handled=true;ContinueClick(sender,e);}}
     private void MinimizeClick(object sender,RoutedEventArgs e)=>WindowState=WindowState.Minimized;
     private void MaximizeClick(object sender,RoutedEventArgs e)=>WindowState=WindowState==WindowState.Maximized?WindowState.Normal:WindowState.Maximized;
     private void LogClick(object sender,RoutedEventArgs e)
-    {string log=Path.Combine(TargetPath.Text,"Data","Logs","setup.log");if(File.Exists(log))Process.Start(new ProcessStartInfo(log){UseShellExecute=true});else InlineNotice.Text="Журнал ещё не создан. Проверьте выбранную папку.";}
+    {string log=Path.Combine(TargetPath.Text,"Data","Logs","setup.log");if(File.Exists(log))Process.Start(new ProcessStartInfo(log){UseShellExecute=true});else InlineNotice.Text=T("LogMissing");}
     private void ProgressState(int value,string message)
     {
-        Status.Text=message;Progress.IsIndeterminate=value<0;
+        lastStatus=message;Status.Text=SetupText.Current.Progress(message);Progress.IsIndeterminate=value<0;
         if(value<0)return;
+        lastPercent=value;
         Motion.Value(Progress,value);Percent.Text=value+"%";
         double previous=ProgressRing.Value;ProgressRing.BeginAnimation(SetupProgressRing.ValueProperty,null);ProgressRing.Value=value;
         if(Motion.GetEnabled(this)&&SystemParameters.ClientAreaAnimation)
             ProgressRing.BeginAnimation(SetupProgressRing.ValueProperty,new DoubleAnimation(previous,value,TimeSpan.FromMilliseconds(180)){FillBehavior=FillBehavior.Stop});
-        PrepareState.Text=value>=5?"✓ Готово":"Выполняется…";
-        FilesState.Text=value>=94?"✓ Готово":value>=5?"Выполняется…":"Ожидание";
-        VerifyState.Text=value>=100?"✓ Готово":value>=94?"Выполняется…":"Ожидание";
+        UpdateProgressLabels();
     }
+    private void UpdateProgressLabels()
+    {
+        int value=lastPercent;
+        SetStage(PrepareState,value>=5?"Complete":"Working");
+        SetStage(FilesState,value>=94?"Complete":value>=5?"Working":"Waiting");
+        SetStage(VerifyState,value>=100?"Complete":value>=94?"Working":"Waiting");
+    }
+    private static void SetStage(TextBlock label,string state)
+    {label.Text=T(state);label.Foreground=new SolidColorBrush((Color)ColorConverter.ConvertFromString(state=="Complete"?"#24855C":state=="Working"?"#6658E8":"#8891A2"));}
     private async void PrimaryClick(object sender,RoutedEventArgs e)
     {
         if(busy)return;
-        if(done){if(!uninstall){try{Process.Start(new ProcessStartInfo(Path.Combine(TargetPath.Text,"DivineLabs.IdleSlayer.exe")){UseShellExecute=true});}catch(Exception error){InlineNotice.Text="Не удалось открыть программу: "+error.Message;return;}}Close();return;}
+        if(done){if(!uninstall){try{Process.Start(new ProcessStartInfo(Path.Combine(TargetPath.Text,"DivineLabs.IdleSlayer.exe")){UseShellExecute=true});}catch(Exception error){InlineNotice.Text=T("LaunchFailed")+error.Message;return;}}Close();return;}
         if(page==0){ShowPage(uninstall?2:1);return;}
         if(page==1){if(Accepted.IsChecked==true)ShowPage(2);return;}
         int requestedPage=page;string requestedPath=TargetPath.Text;
         string target;
         try{if(string.IsNullOrWhiteSpace(TargetPath.Text))throw new ArgumentException();target=Path.GetFullPath(TargetPath.Text);}
-        catch(Exception error)when(error is ArgumentException or NotSupportedException or PathTooLongException){InlineNotice.Text="Выберите корректную папку программы.";return;}
+        catch(Exception error)when(error is ArgumentException or NotSupportedException or PathTooLongException){InlineNotice.Text=T("InvalidPath");return;}
         if(!uninstall){
-            try{if(await Task.Run(()=>InstallTarget.Inspect(target))==InstallTargetKind.Occupied){InlineNotice.Text="В выбранной папке есть посторонние файлы. Выберите отдельную папку программы.";return;}}
-            catch(Exception error)when(error is IOException or UnauthorizedAccessException){InlineNotice.Text="Не удалось проверить выбранную папку. Измените расположение.";return;}
+            try{if(await Task.Run(()=>InstallTarget.Inspect(target))==InstallTargetKind.Occupied){InlineNotice.Text=T("Occupied");return;}}
+            catch(Exception error)when(error is IOException or UnauthorizedAccessException){InlineNotice.Text=T("CheckFailed");return;}
         }
         if(busy||closed||page!=requestedPage||TargetPath.Text!=requestedPath)return;
         busy=true;InlineNotice.Text="";ErrorPanel.Visibility=Visibility.Collapsed;Progress.Visibility=Visibility.Visible;
-        Progress.IsIndeterminate=true;Progress.Value=0;ProgressRing.Value=0;Percent.Text="…";Status.Text="Подготовка…";
-        PrepareState.Text="Выполняется…";FilesState.Text=VerifyState.Text="Ожидание";ShowPage(3);
+        Progress.IsIndeterminate=true;Progress.Value=0;ProgressRing.Value=0;Percent.Text="…";Status.Text=T("Preparing");
+        lastPercent=-1;UpdateProgressLabels();ShowPage(3);
         string report=Path.Combine(AppContext.BaseDirectory,"operation-"+Guid.NewGuid().ToString("N")+".txt");
         try{
             var start=new ProcessStartInfo(worker){UseShellExecute=false,CreateNoWindow=true};
             foreach(string argument in new[]{"--silent","--no-launch","--dir",target,"--report",report})start.ArgumentList.Add(argument);
             if(uninstall)start.ArgumentList.Add("--uninstall-now");
             else{if(Shortcuts.IsChecked!=true)start.ArgumentList.Add("--no-desktop-shortcut");if(StartMenuShortcut.IsChecked!=true)start.ArgumentList.Add("--no-start-menu-shortcut");}
-            using var process=Process.Start(start)??throw new IOException("Не удалось запустить обслуживание.");
+            using var process=Process.Start(start)??throw new IOException(T("WorkerFailed"));
             while(!process.HasExited){
                 var snapshot=await Task.Run(()=>{bool read=OperationReport.TryRead(report,out int percent,out string message);return(read,percent,message);});
                 if(snapshot.read)ProgressState(snapshot.percent,snapshot.message);
@@ -180,13 +235,12 @@ public partial class MaintenanceWindow : Window
             }
             await process.WaitForExitAsync();
             if(process.ExitCode!=0){
-                var failure=await Task.Run(()=>OperationReport.TryRead(report,out _,out string text)&&text.StartsWith("Ошибка: ",StringComparison.Ordinal)?text[8..]:"Не удалось завершить операцию. Откройте журнал и повторите попытку.");
+                var failure=await Task.Run(()=>OperationReport.TryRead(report,out _,out string text)&&text.StartsWith("Ошибка: ",StringComparison.Ordinal)?text[8..]:T("OperationFailed"));
                 throw new IOException(failure);
             }
-            done=true;InlineNotice.Text="";ResultTitle.Text=uninstall?"Программа удалена":"Всё готово к запуску";
-            ResultDescription.Text=uninstall?"Настройки, сохранения и резервные копии сохранены.":"DivineLabs Idle Slayer Mods установлен. Откройте лаунчер и начните игру.";
-            ResultPath.Text=uninstall?"Сохранённые данные: "+Path.Combine(target,"Data"):target;
-        }catch(Exception error){Status.Text="Операция не завершена";Progress.Visibility=Visibility.Collapsed;Percent.Text="!";ErrorText.Text=error.Message;ErrorPanel.Visibility=Visibility.Visible;}
+            done=true;InlineNotice.Text="";ProgressState(100,T("Complete"));ApplyLanguage();
+            ResultPath.Text=uninstall?T("RetainedPath")+Path.Combine(target,"Data"):target;
+        }catch(Exception error){Status.Text=T("NotFinished");Progress.Visibility=Visibility.Collapsed;Percent.Text="!";ErrorText.Text=error.Message;ErrorPanel.Visibility=Visibility.Visible;}
         finally{busy=false;ShowPage(done?4:3);}
     }
 }
