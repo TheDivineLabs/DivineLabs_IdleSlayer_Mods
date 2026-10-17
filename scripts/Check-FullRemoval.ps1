@@ -9,6 +9,13 @@ function Run([string]$File,[string[]]$Arguments){
  $process=[Diagnostics.Process]::Start($info)
  try{if(-not $process.WaitForExit(60000)){throw 'Native operation timed out.'};if($process.ExitCode-ne 0){throw "Native operation failed ($($process.ExitCode))."}}finally{$process.Dispose()}
 }
+function Complete([string]$Report){
+ try{
+  $stream=[IO.FileStream]::new($Report,[IO.FileMode]::Open,[IO.FileAccess]::Read,([IO.FileShare]::ReadWrite-bor [IO.FileShare]::Delete))
+  $reader=[IO.StreamReader]::new($stream)
+  try{return $reader.ReadLine()-eq '100'}finally{$reader.Dispose()}
+ }catch [IO.IOException]{return $false}
+}
 foreach($kind in @('copy','main','silent-root')){
  $folder=Join-Path $scratch $kind
  Run $Setup @('--silent','--no-launch','--no-integrations','--dir',$folder)
@@ -16,7 +23,7 @@ foreach($kind in @('copy','main','silent-root')){
   $path=Join-Path $folder $file;New-Item -ItemType Directory -Force (Split-Path $path)|Out-Null;[IO.File]::WriteAllText($path,'test data to remove')
  }
  if($kind-eq 'copy'){[IO.File]::WriteAllText("$folder\personal.txt",'keep outside Data')}
- $report=Join-Path $Output ("full-removal-$kind.txt")
+ $report=Join-Path $Output ("full-removal-$kind-"+[Guid]::NewGuid().ToString('N')+'.txt')
  if($kind-eq 'copy'){Run $Setup @('--remove-copy','--silent','--remove-data','--dir',$folder,'--report',$report)}
  elseif($kind-eq 'main'){Run $Setup @('--uninstall-now','--files-only','--silent','--remove-data','--dir',$folder,'--report',$report)}
  else{
@@ -24,10 +31,10 @@ foreach($kind in @('copy','main','silent-root')){
   Run "$folder\DivineLabs.Uninstall.exe" @('--silent','--files-only','--remove-data','--report',$report)
   $deadline=[DateTime]::UtcNow.AddSeconds(60)
   while([DateTime]::UtcNow-lt $deadline){
-   if((Test-Path -LiteralPath $report)-and (Get-Content -LiteralPath $report -Raw)-match '^100\r?\n'){break}
+   if(Complete $report){break}
    Start-Sleep -Milliseconds 200
   }
-  if(-not(Test-Path -LiteralPath $report)-or (Get-Content -LiteralPath $report -Raw)-notmatch '^100\r?\n'){throw 'Detached removal did not report success'}
+  if(-not(Complete $report)){throw 'Detached removal did not report success'}
  }
  if(Test-Path -LiteralPath "$folder\Data"){throw "Full removal retained Data: $kind"}
  if(Test-Path -LiteralPath "$folder\DivineLabs.Uninstall.exe"){throw "Full removal retained uninstaller: $kind"}
