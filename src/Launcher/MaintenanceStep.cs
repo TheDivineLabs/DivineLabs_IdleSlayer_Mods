@@ -9,6 +9,7 @@ internal sealed class MaintenanceStep : INotifyPropertyChanged
     private int current=-1;
     public MaintenanceStep(string title,int index){Title=title;Index=index;}
     public bool IsActive=>Index==current;
+    public bool IsReached=>Index<=current;
     public string Number=>Index<current?"✓":(Index+1).ToString();
     public Brush Background=>Index<=current?Accent:Canvas;
     public Brush Foreground=>Index<=current?Brushes.White:Muted;

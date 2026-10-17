@@ -8,34 +8,60 @@
   <SolidColorBrush x:Key="Muted" Color="#667389"/>
   <SolidColorBrush x:Key="SelectedSurface" Color="#F2EFFF"/>
   <SolidColorBrush x:Key="WhiteSurface" Color="White"/>
+  <SolidColorBrush x:Key="ButtonHoverBrush" Color="#166658E8"/>
+  <Style x:Key="KeyboardFocus" TargetType="Control"><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Control"><Border BorderBrush="#6658E8" BorderThickness="1" CornerRadius="8" Margin="-3"/></ControlTemplate></Setter.Value></Setter></Style>
+  <DrawingImage x:Key="MinimizeIcon"><DrawingImage.Drawing><GeometryDrawing Geometry="M1,7 L13,7"><GeometryDrawing.Pen><Pen Brush="#253147" Thickness="1.2"/></GeometryDrawing.Pen></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
+  <DrawingImage x:Key="MaximizeIcon"><DrawingImage.Drawing><GeometryDrawing Geometry="M1,1 H13 V13 H1 Z"><GeometryDrawing.Pen><Pen Brush="#253147" Thickness="1.2" LineJoin="Round"/></GeometryDrawing.Pen></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
+  <DrawingImage x:Key="RestoreIcon"><DrawingImage.Drawing><GeometryDrawing Geometry="M4,1 H13 V10 H10 M1,4 H10 V13 H1 Z"><GeometryDrawing.Pen><Pen Brush="#253147" Thickness="1.2" LineJoin="Round"/></GeometryDrawing.Pen></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
+  <DrawingImage x:Key="CloseIcon"><DrawingImage.Drawing><GeometryDrawing Geometry="M1,1 L13,13 M13,1 L1,13"><GeometryDrawing.Pen><Pen Brush="#253147" Thickness="1.2" StartLineCap="Round" EndLineCap="Round"/></GeometryDrawing.Pen></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
   <Style x:Key="SetupButton" TargetType="Button">
     <Setter Property="Background" Value="#EFF1F7"/><Setter Property="Foreground" Value="#263147"/><Setter Property="BorderBrush" Value="#DEE3ED"/>
     <Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="16,10"/><Setter Property="Margin" Value="0"/>
     <Setter Property="MinHeight" Value="44"/><Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocus}"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
-      <Border x:Name="Body" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="{TemplateBinding Padding}">
-        <Grid><Border x:Name="Hover" Background="#166658E8" Opacity="0" CornerRadius="7" Margin="-8,-5"/><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/></Grid>
-      </Border>
+      <Grid>
+        <Border x:Name="Body" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8"/>
+        <Border x:Name="Hover" Background="{DynamicResource ButtonHoverBrush}" Opacity="0" CornerRadius="7" Margin="{TemplateBinding BorderThickness}" IsHitTestVisible="False"/>
+        <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+      </Grid>
       <ControlTemplate.Triggers>
         <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Hover" Property="Opacity" Value="1"/><Setter TargetName="Body" Property="BorderBrush" Value="#A69CF5"/></Trigger>
         <MultiTrigger><MultiTrigger.Conditions><Condition Property="IsMouseOver" Value="True"/><Condition Property="ui:Motion.Enabled" Value="True"/></MultiTrigger.Conditions><MultiTrigger.EnterActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="Hover" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.12" FillBehavior="Stop"/></Storyboard></BeginStoryboard></MultiTrigger.EnterActions></MultiTrigger>
         <Trigger Property="IsPressed" Value="True"><Setter TargetName="Body" Property="Opacity" Value=".78"/></Trigger>
-        <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Body" Property="BorderBrush" Value="#6658E8"/><Setter TargetName="Body" Property="BorderThickness" Value="2"/></Trigger>
         <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Body" Property="Opacity" Value=".45"/></Trigger>
       </ControlTemplate.Triggers>
     </ControlTemplate></Setter.Value></Setter>
   </Style>
   <Style x:Key="SocialButton" TargetType="Button" BasedOn="{StaticResource SetupButton}"><Setter Property="Background" Value="Transparent"/><Setter Property="FontSize" Value="13"/><Setter Property="MinHeight" Value="44"/></Style>
-  <Style x:Key="LanguageOption" TargetType="Button" BasedOn="{StaticResource SetupButton}"><Setter Property="Background" Value="White"/><Setter Property="BorderThickness" Value="0"/><Setter Property="MinHeight" Value="52"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border x:Name="Body" Background="{TemplateBinding Background}" CornerRadius="7" Padding="10"><ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Body" Property="Background" Value="#F2EFFF"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Body" Property="Background" Value="#EAE5FF"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style>
-  <Style x:Key="ChromeButton" TargetType="Button" BasedOn="{StaticResource SetupButton}"><Setter Property="Background" Value="Transparent"/><Setter Property="BorderBrush" Value="Transparent"/><Setter Property="Width" Value="48"/><Setter Property="Height" Value="48"/><Setter Property="Padding" Value="0"/></Style>
+  <Style x:Key="LanguageOption" TargetType="Button" BasedOn="{StaticResource SetupButton}"><Setter Property="Background" Value="White"/><Setter Property="BorderThickness" Value="0"/><Setter Property="MinHeight" Value="52"/><Setter Property="Padding" Value="10"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style>
+  <Style x:Key="ChromeButton" TargetType="Button" BasedOn="{StaticResource SetupButton}">
+    <Setter Property="Background" Value="Transparent"/><Setter Property="BorderBrush" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Width" Value="48"/><Setter Property="Height" Value="48"/><Setter Property="Padding" Value="0"/><Setter Property="HorizontalContentAlignment" Value="Center"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border x:Name="Body" Background="Transparent"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Body" Property="Background" Value="#EAE6FA"/></Trigger><Trigger Property="IsPressed" Value="True"><Setter TargetName="Body" Property="Background" Value="#DDD7F7"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="MaximizeGlyph" TargetType="Image"><Setter Property="Source" Value="{StaticResource MaximizeIcon}"/><Setter Property="Width" Value="12"/><Setter Property="Height" Value="12"/><Style.Triggers><DataTrigger Binding="{Binding WindowState,RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized"><Setter Property="Source" Value="{StaticResource RestoreIcon}"/></DataTrigger></Style.Triggers></Style>
   <DrawingImage x:Key="FlagRu"><DrawingImage.Drawing><DrawingGroup><GeometryDrawing Brush="White" Geometry="M0,0 H30 V6 H0 Z"/><GeometryDrawing Brush="#3265B0" Geometry="M0,6 H30 V12 H0 Z"/><GeometryDrawing Brush="#D84B54" Geometry="M0,12 H30 V18 H0 Z"/></DrawingGroup></DrawingImage.Drawing></DrawingImage>
   <DrawingImage x:Key="FlagEn"><DrawingImage.Drawing><DrawingGroup><GeometryDrawing Brush="#23457B" Geometry="M0,0 H30 V18 H0 Z"/><GeometryDrawing Pen="{x:Null}" Brush="White" Geometry="M0,0 H4 L30,15 V18 H26 L0,3 Z M30,0 H26 L0,15 V18 H4 L30,3 Z"/><GeometryDrawing Brush="#C94958" Geometry="M0,0 H2 L30,17 V18 H28 L0,1 Z M30,0 H28 L0,17 V18 H2 L30,1 Z"/><GeometryDrawing Brush="White" Geometry="M11,0 H19 V18 H11 Z M0,5 H30 V13 H0 Z"/><GeometryDrawing Brush="#C94958" Geometry="M13,0 H17 V18 H13 Z M0,7 H30 V11 H0 Z"/></DrawingGroup></DrawingImage.Drawing></DrawingImage>
   <DrawingImage x:Key="FlagAuto"><DrawingImage.Drawing><GeometryDrawing><GeometryDrawing.Pen><Pen Brush="#6658E8" Thickness="1.5"/></GeometryDrawing.Pen><GeometryDrawing.Geometry><GeometryGroup><EllipseGeometry Center="10,10" RadiusX="9" RadiusY="9"/><EllipseGeometry Center="10,10" RadiusX="4" RadiusY="9"/><LineGeometry StartPoint="1,10" EndPoint="19,10"/></GeometryGroup></GeometryDrawing.Geometry></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
   <Style TargetType="Button" BasedOn="{StaticResource SetupButton}">
     <Setter Property="Background" Value="#EFF1F7"/><Setter Property="Foreground" Value="#263147"/><Setter Property="BorderBrush" Value="#DDE2ED"/><Setter Property="MinHeight" Value="42"/>
   </Style>
-  <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource SetupButton}"><Setter Property="MinHeight" Value="42"/>
+  <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource SetupButton}">
+    <Style.Resources><SolidColorBrush x:Key="ButtonHoverBrush" Color="#22FFFFFF"/></Style.Resources><Setter Property="MinHeight" Value="42"/>
     <Setter Property="Background" Value="#6658E8"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderBrush" Value="#6658E8"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="MinWidth" Value="130"/>
+  </Style>
+  <Style TargetType="ScrollBar">
+    <Setter Property="Width" Value="10"/><Setter Property="Background" Value="#EDF0F6"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ScrollBar">
+      <Grid><Border Background="{TemplateBinding Background}" CornerRadius="5"/>
+        <Track x:Name="PART_Track" IsDirectionReversed="True" Orientation="{TemplateBinding Orientation}">
+          <Track.Thumb><Thumb MinHeight="22"><Thumb.Template><ControlTemplate TargetType="Thumb"><Border x:Name="Grip" Background="#9AA5B5" CornerRadius="4" Margin="1"/><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Grip" Property="Background" Value="#7D899D"/></Trigger><Trigger Property="IsDragging" Value="True"><Setter TargetName="Grip" Property="Background" Value="#6658E8"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Thumb.Template></Thumb></Track.Thumb>
+          <Track.DecreaseRepeatButton><RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0" Focusable="False"/></Track.DecreaseRepeatButton>
+          <Track.IncreaseRepeatButton><RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0" Focusable="False"/></Track.IncreaseRepeatButton>
+        </Track>
+      </Grid><ControlTemplate.Triggers><Trigger Property="Orientation" Value="Horizontal"><Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False"/></Trigger></ControlTemplate.Triggers>
+    </ControlTemplate></Setter.Value></Setter>
+    <Style.Triggers><Trigger Property="Orientation" Value="Horizontal"><Setter Property="Width" Value="Auto"/><Setter Property="Height" Value="10"/></Trigger></Style.Triggers>
   </Style>
   <Style TargetType="TextBox" BasedOn="{StaticResource BaseTextBox}">
     <Setter Property="Background" Value="White"/><Setter Property="Foreground" Value="#1B2638"/><Setter Property="CaretBrush" Value="#6658E8"/><Setter Property="BorderBrush" Value="#DDE2ED"/>

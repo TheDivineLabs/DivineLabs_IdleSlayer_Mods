@@ -35,6 +35,7 @@ public partial class MaintenanceWindow : Window
         string Arg(string name,string fallback=""){int i=Array.IndexOf(args,name);return i>=0&&i+1<args.Length?args[i+1]:fallback;}
         worker=Arg("--worker");uninstall=args.Contains("--uninstall");
         InitializeComponent();Style=(Style)FindResource(typeof(Window));
+        DesktopWindow.Attach(this);
         Icon=new BitmapImage(new Uri("pack://application:,,,/DivineLabs.IdleSlayer.Launcher;component/DivineLabs.png"));
         Motion.SetEnabled(this,SystemParameters.ClientAreaAnimation);
         steps=(uninstall?new[]{"Начало","Параметры","Удаление","Готово"}:new[]{"Начало","Лицензии","Параметры","Установка","Готово"})

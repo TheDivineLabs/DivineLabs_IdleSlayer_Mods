@@ -22,6 +22,7 @@ public partial class MainWindow:Window
     public MainWindow()
     {
         InitializeComponent();ResourcesPage.Attach(client);Style=(Style)FindResource(typeof(Window));
+        DesktopWindow.Attach(this);
         Icon=new BitmapImage(new Uri("pack://application:,,,/DivineLabs.IdleSlayer.Launcher;component/DivineLabs.png"));
         PreviewKeyDown+=CaptureKey;PreviewMouseDown+=CaptureMouse;
         Loaded+=async(_,_)=>{
