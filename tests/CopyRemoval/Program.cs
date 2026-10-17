@@ -33,7 +33,7 @@ try{
     Directory.Delete(Path.Combine(linked,"Docs"),true);Directory.CreateSymbolicLink(Path.Combine(linked,"Docs"),outside);
     Rejected(linked);Require(File.ReadAllText(Path.Combine(outside,"owned.txt"))=="retain","Followed directory link");
     Require(File.Exists(Path.Combine(linked,"DivineLabs.IdleSlayer.exe")),"Link rejection partly deleted app");
-    Console.WriteLine("Passed: selected-only removal, retained settings/saves/backups/unowned files, catalog isolation, normalized traversal rejection, locked-file preflight/retry, reparse rejection. "+scratch);
+    Console.WriteLine("Passed: selected-only removal, retained settings/saves/backups/unowned files, catalog isolation, normalized traversal rejection, locked-file preflight/retry, running-copy rejection, reparse rejection. "+scratch);
 }finally{InstallationLocations.Forget(first);InstallationLocations.Forget(second);}
 
 string Create(string name){

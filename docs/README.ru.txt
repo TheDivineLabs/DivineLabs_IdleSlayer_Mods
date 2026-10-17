@@ -1,4 +1,4 @@
-DivineLabs Idle Slayer Mods 0.5.0
+DivineLabs Idle Slayer Mods 0.5.1
 
 Начало работы
 Распакуйте portable ZIP целиком либо запустите DivineLabs Idle Slayer Mods.exe.
@@ -12,7 +12,8 @@ DivineLabs Idle Slayer Mods 0.5.0
 DivineLabs.IdleSlayer.exe — запуск программы.
 App/Launcher — приложение и необходимые библиотеки Windows.
 App/Components — DivineLabs_Loader, Mods, UserLibs и Defaults.
-App/Setup — удаление установленной версии; в portable не требуется.
+DivineLabs.Uninstall.exe — мастер удаления установленной версии.
+App/Setup — сведения об установленных файлах; в portable не требуется.
 Data/Config — расположение игры и служебные сведения.
 Data/Cache — загрузки и временные файлы.
 Data/Logs — диагностические журналы.
@@ -59,3 +60,8 @@ https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods
 Загрузчик DivineLabs_Loader основан на MelonLoader 0.7.3.
 Лицензия и происхождение сохранены; технические имена DLL обеспечивают
 совместимость. Игра и её DLL не входят в комплект.
+В параметрах установщика раздел «Другие установки программы» находит копии на ПК.
+«Удалить копию» удаляет только выбранную программу после подтверждения пути.
+Настройки, сохранения, резервные копии и посторонние файлы сохраняются.
+Моды в самой игре и другие установки не отключаются.
+Игровые компоненты в этом настольном выпуске остаются версии 0.5.0.
