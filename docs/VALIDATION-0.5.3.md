@@ -27,8 +27,17 @@
 
 ## Release checks
 
-Public asset hashes and the anonymous component download are checked against the
-published candidate before it is marked Latest.
+- All four GitHub assets matched local file sizes and GitHub SHA256 digests,
+  including the checksum manifest. GitHub normalizes the installer asset name to
+  `DivineLabs.Idle.Slayer.Mods.exe`; the public checksums use that exact name.
+- The final root EXE downloaded components anonymously from the 0.5.3 release in
+  a fixture with no bundled components and no prior cache. Archive hash and the
+  extracted component manifest passed verification.
+- GitHub CI passed for release commit `af384d5`. The published 0.5.3 is a normal,
+  non-draft, non-prerelease Latest release. Runtime binaries were built from
+  `9426f4c`; the later commit changes only the test script and this report.
+
+Retained local evidence: `W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.3\Checks`.
 
 ## Scope
 
