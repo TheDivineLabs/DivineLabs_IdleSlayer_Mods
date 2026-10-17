@@ -53,7 +53,7 @@ public partial class MaintenanceWindow : Window
         LoadLicenses();OwnTab.IsChecked=true;
         long.TryParse(Arg("--required-bytes"),out requiredBytes);
         if(uninstall){
-            CopyFinder.Visibility=Visibility.Collapsed;
+            CopyFinder.Configure(InstallationFinderMode.Uninstall);
             WelcomeTitle.Text="До следующей игры";
             WelcomeText.Text="Удалим программу. Ваш прогресс останется.";
             WelcomeDetail.Text="Настройки и резервные копии сохранятся.";
@@ -176,7 +176,7 @@ public partial class MaintenanceWindow : Window
     }
     private void BrowseClick(object sender,RoutedEventArgs e)
     {var dialog=new OpenFolderDialog{Title=T("FolderTitle")};if(dialog.ShowDialog()==true)TargetPath.Text=dialog.FolderName;}
-    private void CopyFolderSelected(object sender,string folder)=>TargetPath.Text=folder;
+    private void CopyFolderSelected(object sender,string folder){if(!uninstall)TargetPath.Text=folder;}
     private void BackClick(object sender,RoutedEventArgs e){InlineNotice.Text="";ShowPage(page==3?2:page==2&&uninstall?0:page-1);}
     private void CancelClick(object sender,RoutedEventArgs e)=>Close();
     private void FinishClick(object sender,RoutedEventArgs e){if(done&&!busy)Close();}

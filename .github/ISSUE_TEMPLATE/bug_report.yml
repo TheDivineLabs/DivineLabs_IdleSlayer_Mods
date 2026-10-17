@@ -1,0 +1,29 @@
+name: Bug report
+description: Report a problem with the launcher, installer or mod.
+title: "[Bug] "
+body:
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      placeholder: 0.5.2 — installer or portable
+    validations:
+      required: true
+  - type: input
+    id: game
+    attributes:
+      label: Game version and Windows version
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: What happened?
+      description: Steps to reproduce, expected result and actual result. Write in your preferred language.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Screenshot or relevant log excerpt
+      description: Remove personal paths and account details. Do not attach game saves or credentials.

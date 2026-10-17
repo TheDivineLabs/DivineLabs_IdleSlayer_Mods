@@ -125,6 +125,8 @@ public sealed partial class SetupText
         ["CopySearchDone"]=("Найдено установок: {0}. Системные папки, кэш и резервные копии пропущены.","Installations found: {0}. System, cache and backup folders were skipped."),
         ["CopySearchCancelled"]=("Поиск остановлен. Найдено установок: {0}.","Search stopped. Installations found: {0}."),
         ["ChooseCopy"]=("Выбрать","Choose"),
+        ["CopiesRemoveBody"]=("Найдите и удалите лишние копии. Эта установка показана выше и удаляется основной кнопкой мастера.","Find and remove extra copies. This installation is shown above and is removed using the main wizard button."),
+        ["CopiesRemovalKnown"]=("Другие установки программы. Настройки, сохранения и резервные копии сохраняются.","Other app installations. Settings, saves and backups are retained."),
         ["RemoveCopy"]=("Удалить копию","Remove copy"),
         ["RemoveCopyTitle"]=("Удалить эту копию программы?","Remove this app copy?"),
         ["RemoveCopyRetention"]=("Настройки, сохранения, резервные копии и посторонние файлы останутся. Моды в игре и другие установки не отключаются.","Settings, saves, backups and unrelated files are retained. Game mods and other installations stay enabled."),

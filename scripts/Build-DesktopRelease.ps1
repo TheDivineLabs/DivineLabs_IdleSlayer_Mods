@@ -1,6 +1,6 @@
 param(
  [string]$BasePortable='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.0\DivineLabs-IdleSlayer-0.5.0-portable.zip',
- [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.1',
+ [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.2',
  [string]$Dotnet='W:\DEV\tools\dotnet\dotnet.exe',
  [string]$NativeBin='', [string]$NativeLib=''
 )
@@ -28,9 +28,12 @@ $index=Get-Content -Raw -LiteralPath "$root\src\Runtime\Resources\package-index.
 $componentArchive=Join-Path (Split-Path $BasePortable) "DivineLabs-IdleSlayer-$componentVersion-components.zip"
 if($index.version-ne $componentVersion -or (Get-FileHash -LiteralPath $componentArchive).Hash-ne $index.sha256){throw 'The component archive does not match the pinned download index.'}
 Copy-Item -LiteralPath $componentArchive -Destination $full
-foreach($document in @('LICENSE','THIRD-PARTY-NOTICES.txt','README.md')){Copy-Item -LiteralPath (Join-Path $root $document) -Destination (Join-Path $portable "Docs\$document")}
+foreach($document in @('LICENSE','THIRD-PARTY-NOTICES.txt')){Copy-Item -LiteralPath (Join-Path $root $document) -Destination (Join-Path $portable "Docs\$document")}
+# Repository README links do not belong in an offline package.
+if(Test-Path -LiteralPath "$portable\Docs\README.md"){Remove-Item -LiteralPath "$portable\Docs\README.md"}
 Copy-Item -LiteralPath "$root\LICENSE" -Destination "$portable\Docs\LICENSE.txt"
 Copy-Item -LiteralPath "$root\docs\README.ru.txt" -Destination "$portable\Docs\README.ru.txt"
+Copy-Item -LiteralPath "$root\docs\README.en.txt" -Destination "$portable\Docs\README.en.txt"
 RunDotnet @('publish',"$root\src\Launcher\Launcher.csproj",'-c','Release','-r','win-x64','--self-contained','true','-p:PublishSingleFile=true','-p:IncludeNativeLibrariesForSelfExtract=false','-p:DebugType=None','-p:DebugSymbols=false','-o',"$portable\App\Launcher")
 $bootstrap=@('publish',"$root\src\Bootstrap\Bootstrap.csproj",'-c','Release','-r','win-x64','-p:DebugType=None','-p:DebugSymbols=false','-o',"$full\Bootstrap")
 if($NativeBin){$bootstrap+='-p:IlcUseEnvironmentalTools=true'}

@@ -40,7 +40,7 @@
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
           <TextBlock x:Name="Connection" Text="{local:Tr NoConnection}" Foreground="{DynamicResource Muted}" Margin="8,12" />
-          <TextBlock Text="DivineLabs / 0.5.1" FontSize="11" Foreground="{DynamicResource Muted}" Margin="8" />
+          <TextBlock Text="DivineLabs / 0.5.2" FontSize="11" Foreground="{DynamicResource Muted}" Margin="8" />
         </StackPanel>
       </DockPanel>
     </Border>

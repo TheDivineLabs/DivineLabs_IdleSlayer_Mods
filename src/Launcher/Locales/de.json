@@ -245,5 +245,7 @@
   "RemoveCopyRetention": "Einstellungen, Spielstände, Sicherungen und fremde Dateien bleiben erhalten. Spielmods und andere Installationen bleiben aktiviert.",
   "RemovingCopy": "Die gewählte Kopie wird entfernt… Das Fenster kann vorübergehend nicht geschlossen werden.",
   "CopyRemoved": "Kopie entfernt. Einstellungen, Spielstände und Sicherungen bleiben im bisherigen Ordner.",
-  "CopyRemovalFailed": "Entfernen nicht abgeschlossen. Schließe Programme aus diesem Ordner und versuche es erneut. Details stehen im Protokoll. Deine Daten bleiben erhalten."
+  "CopyRemovalFailed": "Entfernen nicht abgeschlossen. Schließe Programme aus diesem Ordner und versuche es erneut. Details stehen im Protokoll. Deine Daten bleiben erhalten.",
+  "CopiesRemoveBody": "Finde und entferne weitere Kopien. Die aktuelle Installation steht oben und wird über die Hauptschaltfläche des Assistenten entfernt.",
+  "CopiesRemovalKnown": "Weitere Installationen. Einstellungen, Spielstände und Sicherungen bleiben erhalten."
 }

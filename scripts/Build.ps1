@@ -1,6 +1,6 @@
 param(
  [string]$GamePath='W:\steam\steamapps\common\Idle Slayer',
- [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.1',
+ [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.2',
  [string]$Dotnet='dotnet', [switch]$SkipLoader, [switch]$SkipInstaller,
  [string]$NativeBin='', [string]$NativeLib=''
 )
@@ -54,7 +54,7 @@ $bootstrap=@('publish',"$root\src\Bootstrap\Bootstrap.csproj",'-c','Release','-r
 if($NativeBin){$bootstrap+='-p:IlcUseEnvironmentalTools=true'};RunDotnet $bootstrap
 Copy-Item -LiteralPath "$stage\bootstrap\DivineLabs.IdleSlayer.exe" -Destination $portable
 $docs=Join-Path $portable 'Docs';New-Item -ItemType Directory -Force "$docs\Licenses"|Out-Null
-Copy-Item -LiteralPath "$root\docs\README.ru.txt","$root\THIRD-PARTY-NOTICES.txt" -Destination $docs
+Copy-Item -LiteralPath "$root\docs\README.ru.txt","$root\docs\README.en.txt","$root\THIRD-PARTY-NOTICES.txt" -Destination $docs
 Copy-Item -LiteralPath "$root\LICENSE" -Destination "$docs\LICENSE.txt"
 Copy-Item -Path "$root\licenses\*" -Destination "$docs\Licenses" -Recurse
 $dotnetDir=Split-Path (Get-Command $Dotnet).Source -Parent

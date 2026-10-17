@@ -16,6 +16,17 @@ internal static class Program
         string output=args.Length>0?args[0]:@"W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\design-0.4";Directory.CreateDirectory(output);
         var app=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
         AppContext.SetSwitch("DivineLabs.Interface.Transient",true);
+        if(args.Contains("--inspect-uninstaller")){InstalledUninstallerChecks.Run(output,(nint)long.Parse(args[Array.IndexOf(args,"--hwnd")+1]),args[Array.IndexOf(args,"--folder")+1]);app.Shutdown();return;}
+        if(args.Contains("--uninstaller-copies-check")){CopyFinderChecks.Run(output,args[Array.IndexOf(args,"--worker")+1],true);Console.WriteLine("Uninstaller copy checks complete: "+output);app.Shutdown();return;}
+        if(args.Contains("--readme-screenshot")){
+            var window=new MainWindow();var language=(LanguageMenu)window.FindName("LanguagePicker");((Button)language.FindName("English")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));DivineLabs.DesktopUI.ThemeManager.Select("dark");
+            IEnumerable<DependencyObject> Elements(DependencyObject parent){yield return parent;foreach(var child in LogicalTreeHelper.GetChildren(parent).OfType<DependencyObject>())foreach(var descendant in Elements(child))yield return descendant;}
+            foreach(var picker in Elements(window).OfType<ThemePicker>())typeof(ThemePicker).GetMethod("Refresh",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(picker,null);
+            DivineLabs.DesktopUI.Motion.SetEnabled(window,false);
+            typeof(MainWindow).GetMethod("SelectPage",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(window,new object[]{"features"});
+            ((FrameworkElement)window.FindName("FeaturesPage")).IsEnabled=true;
+            Render(window,1120,800,1,Path.Combine(output,"launcher.png"));window.Close();app.Shutdown();return;
+        }
         if(args.Contains("--copy-removal-check")){CopyFinderChecks.Run(output,args[Array.IndexOf(args,"--worker")+1]);Console.WriteLine("Copy removal UI/native checks complete: "+output);app.Shutdown();return;}
         if(args.Contains("--copy-finder-check")){CopyFinderChecks.Run(output);Console.WriteLine("Copy finder checks complete: "+output);app.Shutdown();return;}
         if(args.Contains("--appearance-check")){AppearanceChecks.Run(output);Console.WriteLine("Appearance checks complete: "+output);app.Shutdown();return;}

@@ -245,5 +245,7 @@
   "RemoveCopyRetention": "Se conservan ajustes, partidas, copias de seguridad y archivos ajenos. Los mods del juego y otras instalaciones siguen activos.",
   "RemovingCopy": "Eliminando la copia seleccionada… No se puede cerrar la ventana durante la operación.",
   "CopyRemoved": "Copia eliminada. Los ajustes, partidas y copias de seguridad permanecen en su carpeta original.",
-  "CopyRemovalFailed": "No se completó la eliminación. Cierra las aplicaciones de esa carpeta e inténtalo de nuevo; consulta el registro. Se conservan tus datos."
+  "CopyRemovalFailed": "No se completó la eliminación. Cierra las aplicaciones de esa carpeta e inténtalo de nuevo; consulta el registro. Se conservan tus datos.",
+  "CopiesRemoveBody": "Busca y elimina copias adicionales. La instalación actual aparece arriba y se elimina con el botón principal del asistente.",
+  "CopiesRemovalKnown": "Otras instalaciones. Se conservan los ajustes, partidas y copias de seguridad."
 }

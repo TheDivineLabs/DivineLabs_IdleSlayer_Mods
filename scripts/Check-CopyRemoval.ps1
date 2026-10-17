@@ -1,5 +1,5 @@
-param([string]$Setup='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.1\DivineLabs Idle Slayer Mods.exe',
- [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.1\Checks')
+param([string]$Setup='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.2\DivineLabs Idle Slayer Mods.exe',
+ [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.2\Checks')
 $ErrorActionPreference='Stop'
 New-Item -ItemType Directory -Force $Output|Out-Null
 $scratch=Join-Path 'W:\DEV\.cache\temp' ('DivineLabs-native-copy-check-'+[Guid]::NewGuid().ToString('N'))
@@ -14,7 +14,7 @@ foreach($folder in @($first,$second)){
  Run $Setup @('--silent','--no-launch','--no-integrations','--dir',$folder,'--report',(Join-Path $Output ((Split-Path $folder -Leaf)+'-install.txt')))
  foreach($file in @('DivineLabs.IdleSlayer.exe','DivineLabs.Uninstall.exe','App\Setup\installation.json')){if(-not(Test-Path -LiteralPath (Join-Path $folder $file))){throw "Installation missing: $file"}}
  $receipt=Get-Content -LiteralPath "$folder\App\Setup\installation.json" -Raw|ConvertFrom-Json
- if($receipt.Version-ne '0.5.1'){throw 'Wrong installation version.'}
+ if($receipt.Version-ne '0.5.2'){throw 'Wrong installation version.'}
 }
 $canaries=@('Data\Config\settings.json','Data\Saves\progress.sav','Data\Backups\Application\old.bin','Data\Backups\Saves\save.sav','notes.txt','Docs\my-notes.txt')
 foreach($relative in $canaries){$path=Join-Path $second $relative;New-Item -ItemType Directory -Force (Split-Path $path)|Out-Null;[IO.File]::WriteAllText($path,'retain')}

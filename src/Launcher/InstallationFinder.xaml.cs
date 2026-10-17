@@ -5,6 +5,7 @@ using DivineLabs.IdleSlayer.Maintenance;
 using Microsoft.Win32;
 using System.Diagnostics;
 namespace DivineLabs.IdleSlayer.Launcher;
+public enum InstallationFinderMode { Install, Uninstall }
 public partial class InstallationFinder:UserControl
 {
     public static readonly DependencyProperty CurrentFolderProperty=DependencyProperty.Register(nameof(CurrentFolder),typeof(string),typeof(InstallationFinder));
@@ -12,6 +13,14 @@ public partial class InstallationFinder:UserControl
     public event EventHandler<string> FolderSelected;
     public event EventHandler<bool> RemovalBusyChanged;
     public string Worker {get;set;}="";
+    public InstallationFinderMode Mode {get;private set;}
+    public Visibility FolderSelectionVisibility=>Mode==InstallationFinderMode.Uninstall?Visibility.Collapsed:Visibility.Visible;
+    public void Configure(InstallationFinderMode mode)
+    {
+        Mode=mode;
+        Description.SetBinding(TextBlock.TextProperty,new System.Windows.Data.Binding("["+(mode==InstallationFinderMode.Uninstall?"CopiesRemoveBody":"CopiesBody")+"]"){Source=SetupText.Current});
+        if(mode==InstallationFinderMode.Uninstall){if(IsLoaded)((Expander)Content).IsExpanded=true;else Loaded+=(_,_)=>((Expander)Content).IsExpanded=true;}
+    }
     public bool IsRemoving {get;private set;}
     private string removalFolder;
     private CancellationTokenSource search;
@@ -23,7 +32,7 @@ public partial class InstallationFinder:UserControl
     {
         if(loaded)return;loaded=true;long revision=++request;
         string current=CurrentFolder;var rows=await Task.Run(()=>InstalledCopies.Known(current));
-        await OnUi(()=>{if(closed||revision!=request)return;Copies.ItemsSource=rows;Status.Text=SetupText.Current[rows.Count==0?"CopiesNotKnown":"CopiesKnown"];});
+        await OnUi(()=>{if(closed||revision!=request)return;var visible=VisibleCopies(rows,current);Copies.ItemsSource=visible;Status.Text=SetupText.Current[visible.Length==0?"CopiesNotKnown":Mode==InstallationFinderMode.Uninstall?"CopiesRemovalKnown":"CopiesKnown"];});
     }
     public void Stop(){closed=true;request++;search?.Cancel();}
     private async void FindAllClick(object sender,RoutedEventArgs e)=>await Find(null);
@@ -41,7 +50,7 @@ public partial class InstallationFinder:UserControl
             var result=await Task.Run(()=>InstalledCopies.Search(folder==null?InstalledCopies.LocalDisks():new[]{folder},active.Token,progress));
             await OnUi(()=>{
                 if(closed)return;
-                var combined=known.Concat(result.Copies).DistinctBy(x=>x.Folder,StringComparer.OrdinalIgnoreCase).ToArray();Copies.ItemsSource=combined;
+                var combined=VisibleCopies(known.Concat(result.Copies).DistinctBy(x=>x.Folder,StringComparer.OrdinalIgnoreCase),current);Copies.ItemsSource=combined;
                 Status.Text=string.Format(SetupText.Current[result.Cancelled?"CopySearchCancelled":"CopySearchDone"],combined.Length);
                 if(result.UnavailableFolders>0)Status.Text+=" "+SetupText.Current["SomeLocationsUnavailable"];
             });
@@ -49,10 +58,12 @@ public partial class InstallationFinder:UserControl
         finally{await OnUi(()=>{search=null;FindAll.IsEnabled=ChooseRoot.IsEnabled=true;CancelSearch.Visibility=Visibility.Collapsed;});active.Dispose();}
     }
     private async void ChooseCopyClick(object sender,RoutedEventArgs e)
-    {string folder=(string)((Button)sender).Tag;var location=await Task.Run(()=>InstallationLocations.Inspect(folder));await OnUi(()=>{if(closed)return;if(location==null){Status.Text=SetupText.Current["DiscoveryFailed"];return;}FolderSelected?.Invoke(this,folder);});}
+    {if(Mode==InstallationFinderMode.Uninstall)return;string folder=(string)((Button)sender).Tag;var location=await Task.Run(()=>InstallationLocations.Inspect(folder));await OnUi(()=>{if(closed)return;if(location==null){Status.Text=SetupText.Current["DiscoveryFailed"];return;}FolderSelected?.Invoke(this,folder);});}
+    private InstallationLocation[] VisibleCopies(IEnumerable<InstallationLocation> rows,string current)=>rows.Where(row=>!IsCurrentCopy(row.Folder,current)).ToArray();
+    private bool IsCurrentCopy(string folder,string current)=>Mode==InstallationFinderMode.Uninstall&&!string.IsNullOrWhiteSpace(current)&&string.Equals(InstallationLocations.Normalize(folder),InstallationLocations.Normalize(current),StringComparison.OrdinalIgnoreCase);
     private void RemoveCopyClick(object sender,RoutedEventArgs e)
     {
-        if(search!=null||IsRemoving)return;
+        if(search!=null||IsRemoving||IsCurrentCopy((string)((Button)sender).Tag,CurrentFolder))return;
         removalFolder=(string)((Button)sender).Tag;RemovalPath.Text=removalFolder;
         RemovalConfirmation.Visibility=Visibility.Visible;RemovalLog.Visibility=Visibility.Collapsed;
         Copies.IsEnabled=FindAll.IsEnabled=ChooseRoot.IsEnabled=false;

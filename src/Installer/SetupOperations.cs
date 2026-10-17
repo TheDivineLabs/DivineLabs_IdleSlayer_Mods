@@ -10,7 +10,7 @@ namespace DivineLabs.IdleSlayer.Setup;
 internal sealed class Receipt
 {
     public string Product {get;set;}="DivineLabs.IdleSlayer";
-    public string Version {get;set;}="0.5.1";
+    public string Version {get;set;}="0.5.2";
     public string[] Files {get;set;}=Array.Empty<string>();
 }
 [JsonSerializable(typeof(Receipt))]
@@ -124,7 +124,7 @@ internal static class SetupOperations
     {
         foreach(var known in InstallationLocations.Known())InstallationLocations.Remember(known.Folder);
         InstallationLocations.Remember(target);
-        using var key=Registry.CurrentUser.CreateSubKey(RegistryKey);key.SetValue("DisplayName","DivineLabs Idle Slayer Mods");key.SetValue("DisplayVersion","0.5.1");key.SetValue("Publisher","DivineLabs");key.SetValue("InstallLocation",target);key.SetValue("DisplayIcon",Inside(target,"DivineLabs.IdleSlayer.exe"));key.SetValue("UninstallString","\""+Inside(target,Uninstaller)+"\" --uninstall");key.SetValue("NoModify",1);key.SetValue("NoRepair",1);
+        using var key=Registry.CurrentUser.CreateSubKey(RegistryKey);key.SetValue("DisplayName","DivineLabs Idle Slayer Mods");key.SetValue("DisplayVersion","0.5.2");key.SetValue("Publisher","DivineLabs");key.SetValue("InstallLocation",target);key.SetValue("DisplayIcon",Inside(target,"DivineLabs.IdleSlayer.exe"));key.SetValue("UninstallString","\""+Inside(target,Uninstaller)+"\" --uninstall");key.SetValue("NoModify",1);key.SetValue("NoRepair",1);
         if(!desktopShortcut&&!menuShortcut)return;
         string Q(string text)=>"'"+text.Replace("'","''")+"'";
         string desktop=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),"DivineLabs Idle Slayer Mods.lnk");
