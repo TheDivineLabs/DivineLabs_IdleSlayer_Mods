@@ -247,5 +247,13 @@
   "CopyRemoved": "Kopie entfernt. Einstellungen, Spielstände und Sicherungen bleiben im bisherigen Ordner.",
   "CopyRemovalFailed": "Entfernen nicht abgeschlossen. Schließe Programme aus diesem Ordner und versuche es erneut. Details stehen im Protokoll. Deine Daten bleiben erhalten.",
   "CopiesRemoveBody": "Finde und entferne weitere Kopien. Die aktuelle Installation steht oben und wird über die Hauptschaltfläche des Assistenten entfernt.",
-  "CopiesRemovalKnown": "Weitere Installationen. Einstellungen, Spielstände und Sicherungen bleiben erhalten."
+  "CopiesRemovalKnown": "Weitere Installationen. Einstellungen, Spielstände und Sicherungen bleiben erhalten.",
+  "FullRemoval": "Vollständig entfernen, einschließlich App-Daten",
+  "FullRemovalHint": "Löscht Einstellungen, Cache, Protokolle und alle Sicherungen im Data-Ordner dieser Installation unwiderruflich. Originalspielstände im Spielordner und fremde Dateien außerhalb von Data bleiben erhalten.",
+  "RemoveOnlyFull": "Entfernt Programmdateien und den Data-Ordner dieser Installation.",
+  "FullRemovedBody": "Die App und ihr Data-Ordner wurden entfernt. Spielstände im Spielordner und fremde Dateien außerhalb von Data bleiben unverändert.",
+  "FullRemovedPath": "Installationsordner: ",
+  "FullCopyRemovalHint": "Löscht auch Einstellungen, Cache, Protokolle und alle Sicherungen im Data-Ordner dieser Kopie unwiderruflich. Andere Installationen, Spielmods und Originalspielstände im Spielordner bleiben unverändert.",
+  "FullCopyRemoved": "Die App-Kopie und ihr Data-Ordner wurden entfernt.",
+  "FullCopyRemovalFailed": "Entfernung unvollständig. Einige Dateien wurden möglicherweise bereits gelöscht. Schließe Apps aus diesem Ordner und versuche es erneut. Details stehen im Protokoll."
 }

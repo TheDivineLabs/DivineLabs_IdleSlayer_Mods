@@ -1,5 +1,5 @@
-param([string]$Portable='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.2\portable',
- [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.2\Checks')
+param([string]$Portable='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.3\portable',
+ [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.3\Checks')
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
 $index=Get-Content -LiteralPath "$root\src\Runtime\Resources\package-index.json" -Raw|ConvertFrom-Json

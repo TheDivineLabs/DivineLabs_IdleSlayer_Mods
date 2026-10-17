@@ -30,7 +30,11 @@ internal static class InstalledUninstallerChecks
         if(expansion.Current.ExpandCollapseState!=ExpandCollapseState.Expanded)throw new Exception("Installed uninstaller list is not expanded");
         var target=(ValuePattern)Id("TargetPath").GetCurrentPattern(ValuePattern.Pattern);
         if(!target.Current.IsReadOnly||!string.Equals(target.Current.Value,expectedFolder,StringComparison.OrdinalIgnoreCase))throw new Exception("Installed uninstaller target is not fixed");
-        File.WriteAllText(Path.Combine(output,"installed-uninstaller.txt"),"PASS: root uninstaller -> real maintenance window -> Options -> visible expanded copies; original target read-only. UI Automation, no physical clicks.");
+        var full=(TogglePattern)Id("FullRemoval").GetCurrentPattern(TogglePattern.Pattern);
+        if(full.Current.ToggleState!=ToggleState.Off)throw new Exception("Installed uninstaller defaults to deleting data");
+        full.Toggle();if(full.Current.ToggleState!=ToggleState.On)throw new Exception("Full removal checkbox does not toggle");
+        full.Toggle();
+        File.WriteAllText(Path.Combine(output,"installed-uninstaller.txt"),"PASS: root uninstaller -> real maintenance window -> Options -> visible expanded copies; original target read-only; full-removal checkbox defaults off and toggles. UI Automation, no physical clicks.");
         Invoke(Id("Cancel"));
         for(int count=0;count<50;count++){
             try{Invoke(Id("ConfirmExit"));return;}catch(ElementNotAvailableException){}catch(InvalidOperationException){}

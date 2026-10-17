@@ -1,6 +1,6 @@
 param(
  [string]$GamePath='W:\steam\steamapps\common\Idle Slayer',
- [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.2',
+ [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.3',
  [string]$Dotnet='dotnet', [switch]$SkipLoader, [switch]$SkipInstaller,
  [string]$NativeBin='', [string]$NativeLib=''
 )

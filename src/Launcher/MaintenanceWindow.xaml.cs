@@ -37,7 +37,7 @@ public partial class MaintenanceWindow : Window
         InterfacePreferences.Load();InitializeComponent();Style=(Style)FindResource(typeof(Window));
         CopyFinder.Worker=worker;
         CopyFinder.RemovalBusyChanged+=(_,removing)=>{
-            busy=removing;TargetPath.IsEnabled=Browse.IsEnabled=!removing;
+            busy=removing;TargetPath.IsEnabled=Browse.IsEnabled=FullRemoval.IsEnabled=!removing;
             if(!removing)InlineNotice.Text="";
             LanguagePicker.IsEnabled=!removing;Navigation();
         };
@@ -88,12 +88,12 @@ public partial class MaintenanceWindow : Window
             WelcomeTitle.Text=T("RemoveWelcome");WelcomeText.Text=T("RemovePace");WelcomeBody.Text=T("RemoveMore");
             WelcomeDetail.Text=T("RemoveMore");WelcomeNote.Text=T("RemoveFlexible");
             OptionsTitle.Text=T("RemoveOptions");OptionsDescription.Text=T("RemoveFolder");
-            Retention.Text=T("Retention");FilesLabel.Text=T("RemovingFiles");ProgressTitle.Text=T("Removing");ProgressDescription.Text=T("RemoveProgress");
+            Retention.Text=T(RemoveData?"FullRemovalHint":"Retention");RetentionTitle.Text=T(RemoveData?"FullRemoval":"RetentionTitle");FilesLabel.Text=T("RemovingFiles");ProgressTitle.Text=T("Removing");ProgressDescription.Text=T("RemoveProgress");
         }
-        ResultTitle.Text=T(uninstall?"Removed":"ResultTitle");ResultDescription.Text=T(uninstall?"RemovedBody":"ResultBody");
+        ResultTitle.Text=T(uninstall?"Removed":"ResultTitle");ResultDescription.Text=T(uninstall?RemoveData?"FullRemovedBody":"RemovedBody":"ResultBody");
         CancelTitle.Text=T(uninstall?"CancelRemove":"CancelTitle");CancelDescription.Text=T(uninstall?"CancelRemoveBody":"CancelBody");
         Status.Text=SetupText.Current.Progress(lastStatus);
-        if(done)ResultPath.Text=uninstall?T("RetainedPath")+Path.Combine(TargetPath.Text,"Data"):TargetPath.Text;
+        if(done)ResultPath.Text=uninstall?RemoveData?T("FullRemovedPath")+TargetPath.Text:T("RetainedPath")+Path.Combine(TargetPath.Text,"Data"):TargetPath.Text;
         UpdatePathHint();UpdateProgressLabels();Navigation();
     }
     private void StepHeaderSizeChanged(object sender,SizeChangedEventArgs e)
@@ -168,9 +168,11 @@ public partial class MaintenanceWindow : Window
             });
         }catch(OperationCanceledException){}
     }
+    private bool RemoveData=>uninstall&&FullRemoval.IsChecked==true;
+    private void RemovalModeChanged(object sender,RoutedEventArgs e){if(steps!=null)ApplyLanguage();}
     private void UpdatePathHint()
     {
-        PathHint.Text=T(targetCheckFailed?"CheckFailed":uninstall?"RemoveOnly":targetKind switch{
+        PathHint.Text=T(targetCheckFailed?"CheckFailed":uninstall?RemoveData?"RemoveOnlyFull":"RemoveOnly":targetKind switch{
             InstallTargetKind.Installed=>"Installed",InstallTargetKind.Recoverable=>"Recoverable",InstallTargetKind.Occupied=>"Occupied",_=>"Empty"});
         PathHint.Foreground=(Brush)FindResource(targetCheckFailed||targetKind==InstallTargetKind.Occupied?"ErrorBrush":"Muted");
     }
@@ -230,14 +232,14 @@ public partial class MaintenanceWindow : Window
             catch(Exception error)when(error is IOException or UnauthorizedAccessException){InlineNotice.Text=T("CheckFailed");return;}
         }
         if(busy||closed||page!=requestedPage||TargetPath.Text!=requestedPath)return;
-        CopyFinder.Stop();busy=true;InlineNotice.Text="";ErrorPanel.Visibility=Visibility.Collapsed;Progress.Visibility=Visibility.Visible;
+        CopyFinder.Stop();busy=true;FullRemoval.IsEnabled=false;InlineNotice.Text="";ErrorPanel.Visibility=Visibility.Collapsed;Progress.Visibility=Visibility.Visible;
         Progress.IsIndeterminate=true;Progress.Value=0;ProgressRing.Value=0;Percent.Text="…";Status.Text=T("Preparing");
         lastPercent=-1;UpdateProgressLabels();ShowPage(3);
         string report=Path.Combine(AppContext.BaseDirectory,"operation-"+Guid.NewGuid().ToString("N")+".txt");
         try{
             var start=new ProcessStartInfo(worker){UseShellExecute=false,CreateNoWindow=true};
             foreach(string argument in new[]{"--silent","--no-launch","--dir",target,"--report",report})start.ArgumentList.Add(argument);
-            if(uninstall)start.ArgumentList.Add("--uninstall-now");
+            if(uninstall){start.ArgumentList.Add("--uninstall-now");if(RemoveData)start.ArgumentList.Add("--remove-data");}
             else{if(Shortcuts.IsChecked!=true)start.ArgumentList.Add("--no-desktop-shortcut");if(StartMenuShortcut.IsChecked!=true)start.ArgumentList.Add("--no-start-menu-shortcut");}
             using var process=Process.Start(start)??throw new IOException(T("WorkerFailed"));
             while(!process.HasExited){
@@ -251,8 +253,7 @@ public partial class MaintenanceWindow : Window
                 throw new IOException(failure);
             }
             done=true;InlineNotice.Text="";ProgressState(100,T("Complete"));ApplyLanguage();
-            ResultPath.Text=uninstall?T("RetainedPath")+Path.Combine(target,"Data"):target;
         }catch(Exception error){Status.Text=T("NotFinished");Progress.Visibility=Visibility.Collapsed;Percent.Text="!";ErrorText.Text=error.Message;ErrorPanel.Visibility=Visibility.Visible;}
-        finally{busy=false;ShowPage(done?4:3);}
+        finally{busy=false;FullRemoval.IsEnabled=!done;ShowPage(done?4:3);}
     }
 }

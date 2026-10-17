@@ -8,7 +8,8 @@
    <TextBlock x:Name="Status" Foreground="{DynamicResource Muted}" FontSize="12" AutomationProperties.LiveSetting="Polite" Margin="0,0,0,6"/>
    <Border x:Name="RemovalConfirmation" Visibility="Collapsed" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource ErrorBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,6,0,10"><StackPanel>
     <TextBlock Text="{local:Tr RemoveCopyTitle}" FontWeight="SemiBold"/><TextBlock x:Name="RemovalPath" TextWrapping="Wrap" FontSize="12" Margin="0,6"/>
-    <TextBlock Text="{local:Tr RemoveCopyRetention}" TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource Muted}"/>
+    <TextBlock x:Name="RemovalRetention" Text="{local:Tr RemoveCopyRetention}" TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource Muted}"/>
+    <CheckBox x:Name="FullCopyRemoval" Content="{local:Tr FullRemoval}" Margin="0,12,0,0" Checked="RemovalModeChanged" Unchecked="RemovalModeChanged"/>
     <WrapPanel Margin="0,10,0,0"><Button x:Name="ConfirmRemoval" Content="{local:Tr RemoveCopy}" Click="ConfirmRemovalClick" Foreground="{DynamicResource ErrorBrush}" Padding="12,7" Margin="0,0,8,0"/><Button x:Name="CancelRemoval" Content="{local:Tr Cancel}" Click="CancelRemovalClick" Padding="12,7"/></WrapPanel>
    </StackPanel></Border>
    <Button x:Name="RemovalLog" Content="{local:Tr LogShort}" Click="RemovalLogClick" Visibility="Collapsed" HorizontalAlignment="Left" Padding="12,7" Margin="0,0,0,8"/>

@@ -9,16 +9,23 @@ internal static class Program
     [STAThread]public static int Main(string[] args)
     {
         string Arg(string name,string fallback=""){int i=Array.IndexOf(args,name);return i>=0&&i+1<args.Length?args[i+1]:fallback;}
+        bool removeData=args.Contains("--remove-data");
         bool silent=args.Contains("--silent"),filesOnly=args.Contains("--files-only"),uninstall=args.Contains("--uninstall")||
             Path.GetFileName(Environment.ProcessPath).Equals("DivineLabs.Uninstall.exe",StringComparison.OrdinalIgnoreCase);
         string target=Arg("--dir",uninstall?SetupOperations.UninstallRoot():SetupOperations.DefaultDirectory),report=Arg("--report");
         void Report(string message,int percent) => OperationReport.TryWrite(report,message,percent);
         try{
-            if(args.Contains("--remove-copy")){SetupOperations.RemoveCopy(target,Report);return 0;}
-            if(args.Contains("--cleanup")){SetupOperations.Cleanup(target,int.Parse(Arg("--parent")),filesOnly,Report);Report("Программа удалена.",100);return 0;}
-            if(args.Contains("--uninstall-now")){Report("Отключение компонентов и удаление программы…",-1);SetupOperations.UninstallNow(target,filesOnly,Report);Report("Программа удалена.",100);return 0;}
+            if(args.Contains("--remove-copy")){SetupOperations.RemoveCopy(target,Report,removeData);return 0;}
+            if(args.Contains("--cleanup")){
+                SetupOperations.Cleanup(target,int.Parse(Arg("--parent")),filesOnly,Report,removeData);Report("Программа удалена.",100);
+                string work=Path.GetDirectoryName(Environment.ProcessPath)!;
+                if(Path.GetFileName(work).StartsWith("DivineLabs-maintenance-",StringComparison.Ordinal)&&!work.StartsWith(Path.GetFullPath(target).TrimEnd(Path.DirectorySeparatorChar)+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase))
+                    try{File.WriteAllText(Path.Combine(work,"maintenance.complete"),"DivineLabs");}catch(IOException){}catch(UnauthorizedAccessException){}
+                return 0;
+            }
+            if(args.Contains("--uninstall-now")){Report("Отключение компонентов и удаление программы…",-1);SetupOperations.UninstallNow(target,filesOnly,Report,removeData);Report("Программа удалена.",100);return 0;}
             if(!silent)return RunInterface(target,uninstall);
-            if(uninstall){SetupOperations.BeginUninstall(target,filesOnly,true,report);return 0;}
+            if(uninstall){SetupOperations.BeginUninstall(target,filesOnly,true,report,removeData);return 0;}
             SetupOperations.Install(target,!args.Contains("--no-integrations"),Report,!args.Contains("--no-shortcuts"),!args.Contains("--no-desktop-shortcut"),!args.Contains("--no-start-menu-shortcut"));
             if(!args.Contains("--no-launch"))SetupOperations.Launch(target);return 0;
         }catch(Exception e){try{SetupOperations.Log(target,e);Report("Ошибка: "+Explain(e),-1);}catch{}

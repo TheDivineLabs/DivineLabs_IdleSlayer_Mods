@@ -247,5 +247,13 @@
   "CopyRemoved": "Copia eliminada. Los ajustes, partidas y copias de seguridad permanecen en su carpeta original.",
   "CopyRemovalFailed": "No se completó la eliminación. Cierra las aplicaciones de esa carpeta e inténtalo de nuevo; consulta el registro. Se conservan tus datos.",
   "CopiesRemoveBody": "Busca y elimina copias adicionales. La instalación actual aparece arriba y se elimina con el botón principal del asistente.",
-  "CopiesRemovalKnown": "Otras instalaciones. Se conservan los ajustes, partidas y copias de seguridad."
+  "CopiesRemovalKnown": "Otras instalaciones. Se conservan los ajustes, partidas y copias de seguridad.",
+  "FullRemoval": "Eliminación completa, incluidos los datos de la app",
+  "FullRemovalHint": "Elimina permanentemente los ajustes, la caché, los registros y todas las copias de seguridad de Data de esta instalación. Se conservan las partidas originales de la carpeta del juego y los archivos ajenos fuera de Data.",
+  "RemoveOnlyFull": "Elimina los archivos del programa y la carpeta Data de esta instalación.",
+  "FullRemovedBody": "Se eliminaron la app y su carpeta Data. No se modificaron las partidas de la carpeta del juego ni los archivos ajenos fuera de Data.",
+  "FullRemovedPath": "Carpeta de instalación: ",
+  "FullCopyRemovalHint": "También elimina permanentemente los ajustes, la caché, los registros y todas las copias de seguridad de Data de esta copia. No afecta a otras instalaciones, mods ni partidas originales de la carpeta del juego.",
+  "FullCopyRemoved": "Se eliminaron la copia de la app y su carpeta Data.",
+  "FullCopyRemovalFailed": "La eliminación no se completó. Es posible que se hayan eliminado algunos archivos. Cierra las apps de esta carpeta y vuelve a intentarlo; consulta el registro."
 }

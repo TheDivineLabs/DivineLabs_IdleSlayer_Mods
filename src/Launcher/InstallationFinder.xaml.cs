@@ -28,6 +28,7 @@ public partial class InstallationFinder:UserControl
     private volatile bool closed;
     private long request;
     public InstallationFinder(){InitializeComponent();DivineLabs.DesktopUI.ThemeManager.Attach(this);Unloaded+=(_,_)=>Stop();}
+    private void RemovalModeChanged(object sender,RoutedEventArgs e)=>RemovalRetention.SetBinding(TextBlock.TextProperty,new System.Windows.Data.Binding("["+(FullCopyRemoval.IsChecked==true?"FullCopyRemovalHint":"RemoveCopyRetention")+"]"){Source=SetupText.Current});
     private async void Expanded(object sender,RoutedEventArgs e)
     {
         if(loaded)return;loaded=true;long revision=++request;
@@ -64,7 +65,7 @@ public partial class InstallationFinder:UserControl
     private void RemoveCopyClick(object sender,RoutedEventArgs e)
     {
         if(search!=null||IsRemoving||IsCurrentCopy((string)((Button)sender).Tag,CurrentFolder))return;
-        removalFolder=(string)((Button)sender).Tag;RemovalPath.Text=removalFolder;
+        removalFolder=(string)((Button)sender).Tag;RemovalPath.Text=removalFolder;FullCopyRemoval.IsChecked=false;
         RemovalConfirmation.Visibility=Visibility.Visible;RemovalLog.Visibility=Visibility.Collapsed;
         Copies.IsEnabled=FindAll.IsEnabled=ChooseRoot.IsEnabled=false;
         CancelRemoval.Focus();
@@ -83,14 +84,15 @@ public partial class InstallationFinder:UserControl
     private async void ConfirmRemovalClick(object sender,RoutedEventArgs e)
     {
         if(IsRemoving||removalFolder==null||search!=null)return;
-        string folder=removalFolder,worker=Worker;
+        string folder=removalFolder,worker=Worker;bool removeData=FullCopyRemoval.IsChecked==true;
         if(!File.Exists(worker)){Status.Text=SetupText.Current["WorkerFailed"];return;}
-        IsRemoving=true;RemovalBusyChanged?.Invoke(this,true);ConfirmRemoval.IsEnabled=CancelRemoval.IsEnabled=false;
+        IsRemoving=true;RemovalBusyChanged?.Invoke(this,true);ConfirmRemoval.IsEnabled=CancelRemoval.IsEnabled=FullCopyRemoval.IsEnabled=false;
         Status.Text=SetupText.Current["RemovingCopy"];string report=Path.Combine(Path.GetTempPath(),"DivineLabs-remove-"+Guid.NewGuid().ToString("N")+".txt");
         try{
             await Task.Run(async ()=>{
                 var start=new ProcessStartInfo(worker){UseShellExecute=false,CreateNoWindow=true};
                 foreach(string argument in new[]{"--remove-copy","--silent","--dir",folder,"--report",report})start.ArgumentList.Add(argument);
+                if(removeData)start.ArgumentList.Add("--remove-data");
                 using var process=Process.Start(start)??throw new IOException("Worker did not start");
                 await process.WaitForExitAsync();
                 if(process.ExitCode!=0)throw new IOException(OperationReport.TryRead(report,out _,out string message)?message:"Removal failed");
@@ -98,11 +100,11 @@ public partial class InstallationFinder:UserControl
             });
             await OnUi(()=>{
                 Copies.ItemsSource=Copies.Items.Cast<InstallationLocation>().Where(x=>!string.Equals(x.Folder,folder,StringComparison.OrdinalIgnoreCase)).ToArray();
-                Status.Text=SetupText.Current["CopyRemoved"];RemovalConfirmation.Visibility=RemovalLog.Visibility=Visibility.Collapsed;
+                Status.Text=SetupText.Current[removeData?"FullCopyRemoved":"CopyRemoved"];RemovalConfirmation.Visibility=RemovalLog.Visibility=Visibility.Collapsed;
             });
-        }catch(Exception error){Product.Record(error);await OnUi(()=>{Status.Text=SetupText.Current["CopyRemovalFailed"];RemovalLog.Visibility=File.Exists(Path.Combine(folder,"Data","Logs","setup.log"))?Visibility.Visible:Visibility.Collapsed;});}
+        }catch(Exception error){Product.Record(error);await OnUi(()=>{Status.Text=SetupText.Current[removeData?"FullCopyRemovalFailed":"CopyRemovalFailed"];RemovalLog.Visibility=File.Exists(Path.Combine(folder,"Data","Logs","setup.log"))?Visibility.Visible:Visibility.Collapsed;});}
         finally{
-            await OnUi(()=>{IsRemoving=false;RemovalBusyChanged?.Invoke(this,false);ConfirmRemoval.IsEnabled=CancelRemoval.IsEnabled=true;
+            await OnUi(()=>{IsRemoving=false;RemovalBusyChanged?.Invoke(this,false);ConfirmRemoval.IsEnabled=CancelRemoval.IsEnabled=FullCopyRemoval.IsEnabled=true;
                 if(RemovalConfirmation.Visibility!=Visibility.Visible)CancelRemovalClick(this,new());});
             try{File.Delete(report);}catch(IOException){}catch(UnauthorizedAccessException){}
         }

@@ -1,6 +1,6 @@
 param(
  [string]$BasePortable='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.0\DivineLabs-IdleSlayer-0.5.0-portable.zip',
- [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.2',
+ [string]$Output='W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\0.5.3',
  [string]$Dotnet='W:\DEV\tools\dotnet\dotnet.exe',
  [string]$NativeBin='', [string]$NativeLib=''
 )

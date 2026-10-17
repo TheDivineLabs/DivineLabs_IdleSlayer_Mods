@@ -17,7 +17,7 @@ internal static class Program
         var app=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
         AppContext.SetSwitch("DivineLabs.Interface.Transient",true);
         if(args.Contains("--inspect-uninstaller")){InstalledUninstallerChecks.Run(output,(nint)long.Parse(args[Array.IndexOf(args,"--hwnd")+1]),args[Array.IndexOf(args,"--folder")+1]);app.Shutdown();return;}
-        if(args.Contains("--uninstaller-copies-check")){CopyFinderChecks.Run(output,args[Array.IndexOf(args,"--worker")+1],true);Console.WriteLine("Uninstaller copy checks complete: "+output);app.Shutdown();return;}
+        if(args.Contains("--uninstaller-copies-check")){CopyFinderChecks.Run(output,args[Array.IndexOf(args,"--worker")+1],true,args.Contains("--full-removal"));Console.WriteLine("Uninstaller copy checks complete: "+output);app.Shutdown();return;}
         if(args.Contains("--readme-screenshot")){
             var window=new MainWindow();var language=(LanguageMenu)window.FindName("LanguagePicker");((Button)language.FindName("English")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));DivineLabs.DesktopUI.ThemeManager.Select("dark");
             IEnumerable<DependencyObject> Elements(DependencyObject parent){yield return parent;foreach(var child in LogicalTreeHelper.GetChildren(parent).OfType<DependencyObject>())foreach(var descendant in Elements(child))yield return descendant;}

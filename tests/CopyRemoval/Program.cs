@@ -33,6 +33,24 @@ try{
     Directory.Delete(Path.Combine(linked,"Docs"),true);Directory.CreateSymbolicLink(Path.Combine(linked,"Docs"),outside);
     Rejected(linked);Require(File.ReadAllText(Path.Combine(outside,"owned.txt"))=="retain","Followed directory link");
     Require(File.Exists(Path.Combine(linked,"DivineLabs.IdleSlayer.exe")),"Link rejection partly deleted app");
+    string full=Create("full");
+    SetupOperations.RemoveCopy(full,(_,_)=>{},true);
+    Require(!Directory.Exists(Path.Combine(full,"Data")),"Full removal retained Data");
+    Require(File.ReadAllText(Path.Combine(full,"save.sav"))=="retain"&&File.ReadAllText(Path.Combine(full,"Docs/user-notes.txt"))=="retain","Full removal deleted unrelated files outside Data");
+    Require(InstallationLocations.Inspect(second)!=null,"Full removal changed another copy");
+    string fullLocked=Create("full-locked");
+    using(var handle=new FileStream(Path.Combine(fullLocked,"Data/Backups/Application/old.exe"),FileMode.Open,FileAccess.Read,FileShare.None)){
+        bool blocked=false;try{SetupOperations.Cleanup(fullLocked,-1,true,(_,_)=>{},true);}catch(IOException){blocked=true;}
+        Require(blocked&&File.Exists(Path.Combine(fullLocked,"DivineLabs.IdleSlayer.exe"))&&File.ReadAllText(Path.Combine(fullLocked,"Data/Config/settings.json"))=="retain","Locked data bypassed full-removal preflight");
+    }
+    SetupOperations.Cleanup(fullLocked,-1,true,(_,_)=>{},true);
+    Require(!Directory.Exists(Path.Combine(fullLocked,"Data")),"Main full cleanup retained Data after retry");
+    string fullLink=Create("full-link");Directory.CreateSymbolicLink(Path.Combine(fullLink,"Data/external"),outside);
+    bool refused=false;try{SetupOperations.RemoveCopy(fullLink,(_,_)=>{},true);}catch(IOException){refused=true;}
+    Require(refused&&File.Exists(Path.Combine(fullLink,"DivineLabs.IdleSlayer.exe"))&&File.ReadAllText(Path.Combine(outside,"owned.txt"))=="retain","Full removal followed a Data link or partly deleted app");
+    string empty=Create("empty-after-full");File.Delete(Path.Combine(empty,"save.sav"));File.Delete(Path.Combine(empty,"Docs/user-notes.txt"));
+    SetupOperations.Cleanup(empty,-1,true,(_,_)=>{},true);Require(!Directory.Exists(empty),"Empty installation folder survived full removal");
+    Console.WriteLine("Passed: optional full Data removal, default retention, main/copy paths, data lock preflight/retry, data link rejection, unrelated files and neighbor retention, empty root cleanup.");
     Console.WriteLine("Passed: selected-only removal, retained settings/saves/backups/unowned files, catalog isolation, normalized traversal rejection, locked-file preflight/retry, running-copy rejection, reparse rejection. "+scratch);
 }finally{InstallationLocations.Forget(first);InstallationLocations.Forget(second);}
 

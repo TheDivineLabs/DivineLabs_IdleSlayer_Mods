@@ -8,7 +8,7 @@ Windows용 Idle Slayer 모드 런처입니다. 게임 모드, 설정 및 게임 
 
 ## 다운로드
 
-**[설치 프로그램](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/latest/download/DivineLabs.Idle.Slayer.Mods.exe)** · **[포터블 ZIP](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/latest/download/DivineLabs-IdleSlayer-0.5.2-portable.zip)**
+**[설치 프로그램](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/latest/download/DivineLabs.Idle.Slayer.Mods.exe)** · **[포터블 ZIP](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/latest/download/DivineLabs-IdleSlayer-0.5.3-portable.zip)**
 
 Windows x64 · Steam · Idle Slayer 7.3.4 (빌드 25810322). .NET을 따로 설치할 필요가 없습니다.
 

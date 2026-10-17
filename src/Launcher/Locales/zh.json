@@ -247,5 +247,13 @@
   "CopyRemoved": "副本已删除。设置、存档及备份仍保留在原文件夹中。",
   "CopyRemovalFailed": "删除未完成。请关闭从此文件夹运行的应用后重试；详情见日志。您的数据已保留。",
   "CopiesRemoveBody": "查找并删除多余的副本。当前安装显示在上方，可通过向导的主按钮删除。",
-  "CopiesRemovalKnown": "其他应用安装。设置、存档及备份将保留。"
+  "CopiesRemovalKnown": "其他应用安装。设置、存档及备份将保留。",
+  "FullRemoval": "完全卸载，包括应用数据",
+  "FullRemovalHint": "永久删除此安装目录中 Data 文件夹内的设置、缓存、日志和所有备份。游戏文件夹中的原始存档以及 Data 以外的无关文件将被保留。",
+  "RemoveOnlyFull": "删除程序文件及此安装目录中的 Data 文件夹。",
+  "FullRemovedBody": "应用及其 Data 文件夹已删除。游戏文件夹中的存档及 Data 以外的无关文件未受影响。",
+  "FullRemovedPath": "安装文件夹：",
+  "FullCopyRemovalHint": "还会永久删除此副本 Data 文件夹中的设置、缓存、日志和所有备份。其他安装、游戏模组和游戏文件夹中的原始存档不受影响。",
+  "FullCopyRemoved": "应用副本及其 Data 文件夹已删除。",
+  "FullCopyRemovalFailed": "卸载未完成，部分文件可能已被删除。请关闭从此文件夹运行的应用后重试；详情请查看日志。"
 }

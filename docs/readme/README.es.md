@@ -8,7 +8,7 @@ Lanzador de mods para Idle Slayer en Windows. Gestiona las modificaciones, los a
 
 ## Descargar
 
-**[Instalador](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/latest/download/DivineLabs.Idle.Slayer.Mods.exe)** · **[ZIP portable](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/latest/download/DivineLabs-IdleSlayer-0.5.2-portable.zip)**
+**[Instalador](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/latest/download/DivineLabs.Idle.Slayer.Mods.exe)** · **[ZIP portable](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/latest/download/DivineLabs-IdleSlayer-0.5.3-portable.zip)**
 
 Windows x64 · Steam · Idle Slayer 7.3.4 (compilación 25810322). No hace falta instalar .NET por separado.
 

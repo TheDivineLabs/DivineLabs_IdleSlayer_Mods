@@ -1,4 +1,4 @@
-DivineLabs Idle Slayer Mods 0.5.2
+DivineLabs Idle Slayer Mods 0.5.3
 
 Mod launcher for Idle Slayer on Windows x64 / Steam.
 Supported game: Idle Slayer 7.3.4, Steam build 25810322.
@@ -18,8 +18,10 @@ App contains application files. Data contains settings, logs, cache and backups.
 Docs contains instructions and licenses.
 The installed edition has DivineLabs.Uninstall.exe in the main folder.
 In its Options step, Other app installations lets you remove extra copies.
-Settings, saves, backups and unrelated files are retained. Removing an extra
-copy does not disable mods in the game. Close apps running from that copy first.
+Settings, saves and backups are retained by default. Full removal also permanently
+deletes the selected installation’s Data folder: settings, cache, logs and backups.
+Original saves in the game folder and unrelated files outside Data are kept.
+Removing an extra copy does not disable game mods. Close apps from that copy first.
 Move the portable edition as a whole after closing it.
 Game settings: UserData/DivineLabs.settings.json in the game folder.
 

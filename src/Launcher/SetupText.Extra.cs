@@ -3,6 +3,14 @@ namespace DivineLabs.IdleSlayer.Launcher;
 public sealed partial class SetupText
 {
     private static Dictionary<string,(string Ru,string En)> ExtraCopy()=>new(){
+        ["FullRemoval"]=("Полное удаление, включая данные программы","Full removal, including app data"),
+        ["FullRemovalHint"]=("Удаляются настройки, кэш, журналы и все резервные копии внутри Data этой установки. Восстановить их будет нельзя. Оригинальные сохранения в папке игры и посторонние файлы вне Data останутся.","Permanently deletes settings, cache, logs and all backups in this installation’s Data folder. Original saves in the game folder and unrelated files outside Data are kept."),
+        ["RemoveOnlyFull"]=("Удаляются файлы программы и папка Data этой установки.","Removes program files and this installation’s Data folder."),
+        ["FullRemovedBody"]=("Программа и её папка Data удалены. Сохранения в папке игры и посторонние файлы вне Data не затронуты.","The app and its Data folder were removed. Saves in the game folder and unrelated files outside Data were not changed."),
+        ["FullRemovedPath"]=("Папка установки: ","Installation folder: "),
+        ["FullCopyRemovalHint"]=("Также безвозвратно удаляются настройки, кэш, журналы и все резервные копии внутри Data этой копии. Другие установки, моды и оригинальные сохранения в папке игры не затрагиваются.","Also permanently deletes settings, cache, logs and all backups in this copy’s Data folder. Other installations, game mods and original saves in the game folder are not affected."),
+        ["FullCopyRemoved"]=("Копия программы и её папка Data удалены.","The app copy and its Data folder were removed."),
+        ["FullCopyRemovalFailed"]=("Удаление не завершено. Часть файлов могла быть удалена. Закройте приложения из этой папки и повторите; подробности — в журнале.","Removal did not complete. Some files may have been removed. Close apps running from this folder and retry; see the log for details."),
         ["Home"]=("Главная","Home"),
         ["Functions"]=("Функции","Features"),
         ["Resources"]=("Ресурсы","Resources"),

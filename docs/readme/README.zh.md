@@ -8,7 +8,7 @@
 
 ## 下载
 
-**[安装程序](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/latest/download/DivineLabs.Idle.Slayer.Mods.exe)** · **[便携版 ZIP](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/latest/download/DivineLabs-IdleSlayer-0.5.2-portable.zip)**
+**[安装程序](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/latest/download/DivineLabs.Idle.Slayer.Mods.exe)** · **[便携版 ZIP](https://github.com/TheDivineLabs/DivineLabs_IdleSlayer_Mods/releases/latest/download/DivineLabs-IdleSlayer-0.5.3-portable.zip)**
 
 Windows x64 · Steam · Idle Slayer 7.3.4（构建 25810322）。无需单独安装 .NET。
 

@@ -10,7 +10,7 @@ namespace DivineLabs.IdleSlayer.Setup;
 internal sealed class Receipt
 {
     public string Product {get;set;}="DivineLabs.IdleSlayer";
-    public string Version {get;set;}="0.5.2";
+    public string Version {get;set;}="0.5.3";
     public string[] Files {get;set;}=Array.Empty<string>();
 }
 [JsonSerializable(typeof(Receipt))]
@@ -124,7 +124,7 @@ internal static class SetupOperations
     {
         foreach(var known in InstallationLocations.Known())InstallationLocations.Remember(known.Folder);
         InstallationLocations.Remember(target);
-        using var key=Registry.CurrentUser.CreateSubKey(RegistryKey);key.SetValue("DisplayName","DivineLabs Idle Slayer Mods");key.SetValue("DisplayVersion","0.5.2");key.SetValue("Publisher","DivineLabs");key.SetValue("InstallLocation",target);key.SetValue("DisplayIcon",Inside(target,"DivineLabs.IdleSlayer.exe"));key.SetValue("UninstallString","\""+Inside(target,Uninstaller)+"\" --uninstall");key.SetValue("NoModify",1);key.SetValue("NoRepair",1);
+        using var key=Registry.CurrentUser.CreateSubKey(RegistryKey);key.SetValue("DisplayName","DivineLabs Idle Slayer Mods");key.SetValue("DisplayVersion","0.5.3");key.SetValue("Publisher","DivineLabs");key.SetValue("InstallLocation",target);key.SetValue("DisplayIcon",Inside(target,"DivineLabs.IdleSlayer.exe"));key.SetValue("UninstallString","\""+Inside(target,Uninstaller)+"\" --uninstall");key.SetValue("NoModify",1);key.SetValue("NoRepair",1);
         if(!desktopShortcut&&!menuShortcut)return;
         string Q(string text)=>"'"+text.Replace("'","''")+"'";
         string desktop=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),"DivineLabs Idle Slayer Mods.lnk");
@@ -139,7 +139,7 @@ internal static class SetupOperations
         var directory=new DirectoryInfo(Path.GetDirectoryName(Environment.ProcessPath)!);
         return directory.Name.Equals("Setup",StringComparison.OrdinalIgnoreCase)&&directory.Parent?.Name.Equals("App",StringComparison.OrdinalIgnoreCase)==true?directory.Parent.Parent!.FullName:directory.FullName;
     }
-    internal static void BeginUninstall(string root,bool filesOnly,bool silent,string report="")
+    internal static void BeginUninstall(string root,bool filesOnly,bool silent,string report="",bool removeData=false)
     {
         root=ValidateTarget(root);if(!File.Exists(ReceiptPath(root)))throw new IOException("Установка DivineLabs не найдена.");
         foreach(var p in Launchers(root))using(p){if(p.MainWindowHandle!=0)p.CloseMainWindow();if(!p.WaitForExit(15000))throw new IOException("Закройте лаунчер DivineLabs перед удалением.");}
@@ -147,11 +147,13 @@ internal static class SetupOperations
         {
             var info=new ProcessStartInfo(Inside(root,"DivineLabs.IdleSlayer.exe")){UseShellExecute=false,CreateNoWindow=true};info.ArgumentList.Add("--uninstall-components");using var p=Process.Start(info)!;p.WaitForExit();if(p.ExitCode!=0)throw new IOException("Закройте игру перед удалением программы. Установка сохранена.");
         }
-        string cache=Inside(root,"Data/Cache/Work");Directory.CreateDirectory(cache);
-        string helper=Path.Combine(cache,"DivineLabs-Uninstall-"+Guid.NewGuid().ToString("N")+".exe");File.Copy(Environment.ProcessPath!,helper);
-        var start=new ProcessStartInfo(helper){UseShellExecute=false,CreateNoWindow=silent};foreach(string a in new[]{"--cleanup","--dir",root,"--parent",Environment.ProcessId.ToString()})start.ArgumentList.Add(a);if(filesOnly)start.ArgumentList.Add("--files-only");if(silent)start.ArgumentList.Add("--silent");if(!string.IsNullOrEmpty(report)){start.ArgumentList.Add("--report");start.ArgumentList.Add(report);}Process.Start(start);
+        // The helper must live outside the installation, including when Data is removed.
+        string scratch=Directory.Exists(@"W:\DEV\.cache\temp")?@"W:\DEV\.cache\temp":Path.GetTempPath();
+        string cache=Path.Combine(scratch,"DivineLabs-maintenance-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(cache);
+        string helper=Path.Combine(cache,"worker.exe");File.Copy(Environment.ProcessPath!,helper);
+        var start=new ProcessStartInfo(helper){UseShellExecute=false,CreateNoWindow=silent};foreach(string a in new[]{"--cleanup","--dir",root,"--parent",Environment.ProcessId.ToString()})start.ArgumentList.Add(a);if(filesOnly)start.ArgumentList.Add("--files-only");if(removeData)start.ArgumentList.Add("--remove-data");if(silent)start.ArgumentList.Add("--silent");if(!string.IsNullOrEmpty(report)){start.ArgumentList.Add("--report");start.ArgumentList.Add(report);}Process.Start(start);
     }
-    internal static void UninstallNow(string root,bool filesOnly,Action<string,int> progress=null)
+    internal static void UninstallNow(string root,bool filesOnly,Action<string,int> progress=null,bool removeData=false)
     {
         root=ValidateTarget(root);
         if(!File.Exists(ReceiptPath(root)))throw new IOException("Установка DivineLabs не найдена.");
@@ -161,24 +163,13 @@ internal static class SetupOperations
             using var process=Process.Start(info)!;process.WaitForExit();if(process.ExitCode!=0)throw new IOException("Закройте игру перед удалением программы.");
         }
         progress?.Invoke("Удаление файлов программы…",10);
-        Cleanup(root,-1,filesOnly,progress);
+        Cleanup(root,-1,filesOnly,progress,removeData);
     }
     // Removing an extra app copy must not disable the shared game installation.
-    internal static void RemoveCopy(string root,Action<string,int> progress)
+    internal static void RemoveCopy(string root,Action<string,int> progress,bool removeData=false)
     {
         root=ValidateTarget(root);
         NoLinks(root);
-        string receiptPath=ReceiptPath(root);NoLinks(receiptPath);
-        var receipt=JsonSerializer.Deserialize(File.ReadAllText(receiptPath),ReceiptJson.Default.Receipt);
-        if(receipt?.Product!="DivineLabs.IdleSlayer"||receipt.Files==null||receipt.Files.Length==0)
-            throw new IOException("Неверный список файлов установки. Восстановите копию перед удалением.");
-        var paths=receipt.Files.Select(relative=>{
-            string path=Inside(root,relative),normalized=Path.GetRelativePath(root,path).Replace('\\','/');
-            if(!(normalized.StartsWith("App/",StringComparison.OrdinalIgnoreCase)||normalized.StartsWith("Docs/",StringComparison.OrdinalIgnoreCase)||
-                normalized.Equals("DivineLabs.IdleSlayer.exe",StringComparison.OrdinalIgnoreCase)||normalized.Equals(Uninstaller,StringComparison.OrdinalIgnoreCase)))
-                throw new IOException("Неверный список файлов установки. Пользовательские данные не удалены.");
-            NoLinks(path);return path;
-        }).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         // Check every owned file before deleting any, including ancestors and running executables.
         foreach(var process in Process.GetProcesses())using(process){
             try{string executable=process.MainModule?.FileName;
@@ -186,20 +177,14 @@ internal static class SetupOperations
                     throw new IOException("Закройте программы из выбранной копии перед удалением.");
             }catch(System.ComponentModel.Win32Exception){}catch(InvalidOperationException){}
         }
-        foreach(string path in paths.Append(receiptPath))if(File.Exists(path))
-            using(new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.Delete)){}
-        int removed=0;
-        foreach(string path in paths){NoLinks(path);File.Delete(path);progress?.Invoke("Удаление файлов программы…",10+(int)(80d*++removed/paths.Length));}
-        if(paths.Any(File.Exists))throw new IOException("Не все файлы программы удалены. Повторите удаление.");
-        File.Delete(receiptPath);
-        foreach(string folder in new[]{"App","Docs"})RemoveEmpty(Inside(root,folder));
+        RemoveInstallationFiles(root,removeData,progress);
         InstallationLocations.Forget(root);
         using(var key=Registry.CurrentUser.OpenSubKey(RegistryKey)){
             bool matches=string.Equals(key?.GetValue("InstallLocation") as string,root,StringComparison.OrdinalIgnoreCase);
             key?.Close();if(matches)Registry.CurrentUser.DeleteSubKeyTree(RegistryKey,false);
         }
         // Shared shortcuts may point at a different copy. Do not remove them blindly.
-        progress?.Invoke("Копия удалена. Пользовательские данные сохранены.",100);
+        progress?.Invoke(removeData?"Программа и её локальные данные удалены.":"Копия удалена. Пользовательские данные сохранены.",100);
     }
     private static void NoLinks(string path)
     {
@@ -207,16 +192,11 @@ internal static class SetupOperations
             if((File.Exists(current)||Directory.Exists(current))&&(File.GetAttributes(current)&FileAttributes.ReparsePoint)!=0)
                 throw new IOException("Папка содержит ссылки. Выберите исходную папку установки.");
     }
-    internal static void Cleanup(string root,int parent,bool filesOnly,Action<string,int> progress=null)
+    internal static void Cleanup(string root,int parent,bool filesOnly,Action<string,int> progress=null,bool removeData=false)
     {
         if(parent>=0)try{using var p=Process.GetProcessById(parent);if(!p.WaitForExit(30000))throw new IOException("Программа удаления ещё работает.");}catch(ArgumentException){}
-        root=ValidateTarget(root);string receiptPath=ReceiptPath(root);var receipt=JsonSerializer.Deserialize(File.ReadAllText(receiptPath),ReceiptJson.Default.Receipt);
-        if(receipt?.Product!="DivineLabs.IdleSlayer"||receipt.Files.Any(p=>p.StartsWith("Data/",StringComparison.OrdinalIgnoreCase)||p.StartsWith(".application-history/",StringComparison.OrdinalIgnoreCase)))throw new IOException("Неверный список файлов установки.");
-        var paths=receipt.Files.Select(p=>Inside(root,p)).ToArray();
-        int removed=0;
-        foreach(string path in paths){if(File.Exists(path))File.Delete(path);removed++;progress?.Invoke("Удаление файлов программы…",10+(int)(80d*removed/Math.Max(1,paths.Length)));}
-        File.Delete(receiptPath);
-        foreach(string folder in new[]{"App","Docs"})RemoveEmpty(Inside(root,folder));
+        root=ValidateTarget(root);
+        RemoveInstallationFiles(root,removeData,progress);
         if(!filesOnly)
         {
             InstallationLocations.Forget(root);
@@ -224,8 +204,44 @@ internal static class SetupOperations
             foreach(string shortcut in new[]{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),"DivineLabs Idle Slayer Mods.lnk"),Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs),"DivineLabs","IdleSlayer Mods.lnk")})if(File.Exists(shortcut))File.Delete(shortcut);
         }
         progress?.Invoke("Проверка удаления…",94);
-        if(paths.Any(File.Exists))throw new IOException("Не все файлы программы удалены. Закройте использующие их приложения и повторите.");
-        // Data, ownership, application/game/save backups and unowned files are retained.
+    }
+    private static void RemoveInstallationFiles(string root,bool removeData,Action<string,int> progress)
+    {
+        NoLinks(root);
+        string receiptPath=ReceiptPath(root);NoLinks(receiptPath);
+        var receipt=JsonSerializer.Deserialize(File.ReadAllText(receiptPath),ReceiptJson.Default.Receipt);
+        if(receipt?.Product!="DivineLabs.IdleSlayer"||receipt.Files==null||receipt.Files.Length==0)
+            throw new IOException("Неверный список файлов установки. Восстановите копию перед удалением.");
+        var owned=receipt.Files.Select(relative=>{
+            string path=Inside(root,relative),normalized=Path.GetRelativePath(root,path).Replace('\\','/');
+            if(!(normalized.StartsWith("App/",StringComparison.OrdinalIgnoreCase)||normalized.StartsWith("Docs/",StringComparison.OrdinalIgnoreCase)||
+                normalized.Equals("DivineLabs.IdleSlayer.exe",StringComparison.OrdinalIgnoreCase)||normalized.Equals(Uninstaller,StringComparison.OrdinalIgnoreCase)))
+                throw new IOException("Неверный список файлов установки. Пользовательские данные не удалены.");
+            NoLinks(path);return path;
+        }).Where(path=>!string.Equals(path,receiptPath,StringComparison.OrdinalIgnoreCase)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        string data=Inside(root,"Data");var directories=new List<string>();var dataFiles=new List<string>();
+        if(removeData&&Directory.Exists(data))Collect(data);
+        // Validate the complete plan, including data locks, before deleting the first file.
+        var paths=dataFiles.Concat(owned).ToArray();
+        foreach(string path in paths.Append(receiptPath))if(File.Exists(path))
+            using(new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.Delete)){}
+        int removed=0;
+        foreach(string path in paths){NoLinks(path);File.Delete(path);progress?.Invoke("Удаление файлов программы…",10+(int)(80d*++removed/Math.Max(1,paths.Length)));}
+        foreach(string directory in directories){NoLinks(directory);Directory.Delete(directory,false);}
+        if(paths.Any(File.Exists)||(removeData&&Directory.Exists(data)))
+            throw new IOException("Не все файлы программы удалены. Закройте использующие их приложения и повторите.");
+        // Keep the receipt until all requested data is gone, so a failed operation can be retried.
+        NoLinks(receiptPath);File.Delete(receiptPath);
+        foreach(string folder in new[]{"App","Docs"})RemoveEmpty(Inside(root,folder));
+        if(removeData&&Directory.Exists(root)&&!Directory.EnumerateFileSystemEntries(root).Any())Directory.Delete(root,false);
+        void Collect(string folder){
+            NoLinks(folder);
+            foreach(string entry in Directory.EnumerateFileSystemEntries(folder)){
+                NoLinks(entry);
+                if(Directory.Exists(entry))Collect(entry);else dataFiles.Add(entry);
+            }
+            directories.Add(folder);
+        }
     }
     private static void RemoveEmpty(string folder)
     {

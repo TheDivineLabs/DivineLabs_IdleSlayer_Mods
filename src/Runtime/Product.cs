@@ -2,7 +2,7 @@ using System.Text.Json;
 namespace DivineLabs.IdleSlayer.Runtime;
 public static class Product
 {
-    public const string Version = "0.5.2";
+    public const string Version = "0.5.3";
     public const string ComponentVersion = "0.5.0";
     public const string LoaderDirectory = "DivineLabs_Loader";
     public static string ResolveHome(string executableDirectory)

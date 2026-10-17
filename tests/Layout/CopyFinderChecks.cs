@@ -11,7 +11,7 @@ using DivineLabs.DesktopUI;
 
 internal static class CopyFinderChecks
 {
-    internal static void Run(string output,string? worker=null,bool uninstall=false)
+    internal static void Run(string output,string? worker=null,bool uninstall=false,bool fullRemoval=false)
     {
         foreach(string language in SetupText.Languages)foreach(string key in SetupText.Keys)if(!SetupText.HasTranslation(language,key))throw new Exception("Missing translation: "+language+":"+key);
         string fixture=Path.Combine(output,"copy-fixture");string first=Create("first"),second=Create(@"deep\second");
@@ -21,6 +21,16 @@ internal static class CopyFinderChecks
         var flags=BindingFlags.NonPublic|BindingFlags.Instance;
         try{
             window.Show();typeof(MaintenanceWindow).GetMethod("ShowPage",flags)!.Invoke(window,new object[]{2,false});
+            var full=(CheckBox)window.FindName("FullRemoval");
+            if(full.IsChecked==true)throw new Exception("Full removal must be opt-in");
+            if(uninstall){
+                full.IsChecked=true;
+                if(((TextBlock)window.FindName("Retention")).Text!=SetupText.Current["FullRemovalHint"])throw new Exception("Main full removal warning did not change");
+                typeof(MaintenanceWindow).GetField("done",flags)!.SetValue(window,true);
+                typeof(MaintenanceWindow).GetMethod("ApplyLanguage",flags)!.Invoke(window,null);
+                if(((TextBlock)window.FindName("ResultDescription")).Text!=SetupText.Current["FullRemovedBody"]||((TextBlock)window.FindName("ResultPath")).Text.Contains("Data"))throw new Exception("Full removal falsely promises retained Data");
+                typeof(MaintenanceWindow).GetField("done",flags)!.SetValue(window,false);full.IsChecked=false;
+            }
             var finder=(InstallationFinder)window.FindName("CopyFinder");
             var expander=(Expander)finder.Content;
             if(uninstall)PumpUntil(()=>finder.IsLoaded&&finder.IsVisible&&expander.IsExpanded);
@@ -40,12 +50,16 @@ internal static class CopyFinderChecks
             }
             if((int)typeof(MaintenanceWindow).GetField("page",flags)!.GetValue(window)! !=2)throw new Exception("Choosing an installation changed the wizard stage");
             typeof(InstallationFinder).GetMethod("RemoveCopyClick",flags)!.Invoke(finder,new object[]{new Button{Tag=removed},new RoutedEventArgs()});
+            if(((CheckBox)finder.FindName("FullCopyRemoval")).IsChecked==true)throw new Exception("Copy full removal must be opt-in");
+            ((CheckBox)finder.FindName("FullCopyRemoval")).IsChecked=true;
             if(((TextBlock)finder.FindName("RemovalPath")).Text!=removed)throw new Exception("Confirmation shows wrong target");
             if(!File.Exists(Path.Combine(removed,"DivineLabs.IdleSlayer.exe")))throw new Exception("Opening confirmation deleted files");
             ((Button)finder.FindName("CancelRemoval")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             if(((FrameworkElement)finder.FindName("RemovalConfirmation")).Visibility!=Visibility.Collapsed)throw new Exception("Cancel did not dismiss confirmation");
             if(worker!=null){
                 typeof(InstallationFinder).GetMethod("RemoveCopyClick",flags)!.Invoke(finder,new object[]{new Button{Tag=removed},new RoutedEventArgs()});
+                if(((CheckBox)finder.FindName("FullCopyRemoval")).IsChecked==true)throw new Exception("Copy full removal consent leaked across confirmations");
+                ((CheckBox)finder.FindName("FullCopyRemoval")).IsChecked=fullRemoval;
                 using(var locked=new FileStream(Path.Combine(removed,"DivineLabs.IdleSlayer.exe"),FileMode.Open,FileAccess.Read,FileShare.None)){
                     ((Button)finder.FindName("ConfirmRemoval")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                     PumpUntil(()=>!finder.IsRemoving);
@@ -59,16 +73,18 @@ internal static class CopyFinderChecks
                 if(((TextBlock)window.FindName("InlineNotice")).Text.Length!=0)throw new Exception("Completed removal left a stale busy notice");
                 if(File.Exists(Path.Combine(removed,"DivineLabs.IdleSlayer.exe")))throw new Exception("Native worker failed to remove selected copy");
                 if(((ItemsControl)finder.FindName("Copies")).Items.Cast<DivineLabs.IdleSlayer.Maintenance.InstallationLocation>().Any(x=>x.Folder==removed))throw new Exception("Removed copy remains visible");
-                if(!File.Exists(Path.Combine(kept,"DivineLabs.IdleSlayer.exe"))||File.ReadAllText(Path.Combine(removed,"Data/Config/keep.txt"))!="retain")throw new Exception("Removal changed other copy or settings");
+                if(!File.Exists(Path.Combine(kept,"DivineLabs.IdleSlayer.exe")))throw new Exception("Removal changed other copy");
+                if(fullRemoval?Directory.Exists(Path.Combine(removed,"Data")):File.ReadAllText(Path.Combine(removed,"Data/Config/keep.txt"))!="retain")throw new Exception("Removal did not honor data choice");
                 if(((TextBox)window.FindName("TargetPath")).Text!=kept)throw new Exception("Removal changed main target");
             }
             foreach(string theme in new[]{"light","dark"}){
+                full.IsChecked=fullRemoval;
                 ThemeManager.Select(theme);window.UpdateLayout();window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);
                 var root=(FrameworkElement)window.Content;
                 var bitmap=new RenderTargetBitmap((int)root.ActualWidth,(int)root.ActualHeight,96,96,PixelFormats.Pbgra32);bitmap.Render(root);
                 var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using var file=File.Create(Path.Combine(output,(uninstall?"uninstaller":"installer")+"-copy-finder-"+theme+".png"));encoder.Save(file);
             }
-            File.WriteAllText(Path.Combine(output,"copy-finder-checks.json"),JsonSerializer.Serialize(new{Mode=uninstall?"Uninstall":"Install",Copies=rows,Selected=kept,Removed=worker==null?null:removed,Translations=SetupText.Keys.Count(),PhysicalInput="WPF events/reflection; no physical clicks"},new JsonSerializerOptions{WriteIndented=true}));
+            File.WriteAllText(Path.Combine(output,"copy-finder-checks.json"),JsonSerializer.Serialize(new{Mode=uninstall?"Uninstall":"Install",FullRemoval=fullRemoval,Copies=rows,Selected=kept,Removed=worker==null?null:removed,Translations=SetupText.Keys.Count(),PhysicalInput="WPF events/reflection; no physical clicks"},new JsonSerializerOptions{WriteIndented=true}));
         }finally{typeof(MaintenanceWindow).GetField("allowClose",flags)!.SetValue(window,true);window.Close();}
         string Create(string relative){string folder=Path.GetFullPath(Path.Combine(fixture,relative));Directory.CreateDirectory(Path.Combine(folder,"App","Setup"));Directory.CreateDirectory(Path.Combine(folder,"Data/Config"));File.WriteAllText(Path.Combine(folder,"Data/Config/keep.txt"),"retain");File.WriteAllText(Path.Combine(folder,"DivineLabs.IdleSlayer.exe"),"fixture");File.WriteAllText(Path.Combine(folder,"App","Setup","installation.json"),JsonSerializer.Serialize(new{Product="DivineLabs.IdleSlayer",Version="0.5.1",Files=new[]{"DivineLabs.IdleSlayer.exe"}}));return folder;}
     }

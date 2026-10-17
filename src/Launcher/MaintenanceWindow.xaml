@@ -246,7 +246,8 @@
                 <Border x:Name="RetentionBox" Visibility="Collapsed" Background="{DynamicResource Surface}" CornerRadius="9" Padding="18" Margin="0,10,0,0">
                   <StackPanel>
                     <TextBlock x:Name="RetentionTitle" Text="{local:Tr RetentionTitle}" FontWeight="SemiBold" />
-                    <TextBlock x:Name="Retention" Foreground="{DynamicResource Muted}" FontSize="13" Margin="0,8,0,0" />
+                    <TextBlock x:Name="Retention" Foreground="{DynamicResource Muted}" TextWrapping="Wrap" FontSize="13" Margin="0,8,0,0" />
+                    <CheckBox x:Name="FullRemoval" Content="{local:Tr FullRemoval}" Margin="0,14,0,0" Checked="RemovalModeChanged" Unchecked="RemovalModeChanged"/>
                   </StackPanel>
                 </Border>
               </StackPanel>
