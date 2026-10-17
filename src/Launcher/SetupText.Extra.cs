@@ -114,5 +114,16 @@ public sealed partial class SetupText
         ["DivinityResource"]=("Очки божественности · DP","Divinity Points · DP"),
         ["Material"]=("Материал","Material"),
         ["LocalJewels"]=("Камни душ · локальный баланс","Jewels of Soul · local balance"),
+        ["OtherCopies"]=("Другие установки программы","Other installations"),
+        ["CopiesBody"]=("Выберите найденную копию для обновления. Поиск не меняет файлы; резервные копии пропускаются.","Choose an existing copy to update. Search does not change files and skips backups."),
+        ["FindCopies"]=("Поиск по дискам","Search local drives"),
+        ["CancelSearch"]=("Остановить поиск","Stop search"),
+        ["CopiesNotKnown"]=("Известных установок пока нет. Запустите поиск по дискам или выберите папку.","No known installations yet. Search local drives or select a folder."),
+        ["CopiesKnown"]=("Найденные установки. Выбор папки не запускает обновление автоматически.","Found installations. Choosing a folder does not start updating automatically."),
+        ["CopySearching"]=("Ищем копии программы…","Searching for installed copies…"),
+        ["CopySearchProgress"]=("Проверено папок: {0}. Поиск можно остановить.","Folders checked: {0}. You can stop the search."),
+        ["CopySearchDone"]=("Найдено установок: {0}. Системные папки, кэш и резервные копии пропущены.","Installations found: {0}. System, cache and backup folders were skipped."),
+        ["CopySearchCancelled"]=("Поиск остановлен. Найдено установок: {0}.","Search stopped. Installations found: {0}."),
+        ["ChooseCopy"]=("Выбрать","Choose"),
     };
 }

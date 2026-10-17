@@ -12,9 +12,10 @@ public static class InstalledApps
         var found=new Dictionary<string,InstalledApp>(StringComparer.OrdinalIgnoreCase);int unavailable=0;
         void Remember(string name,string folder,string version,string kind){
             if(string.IsNullOrWhiteSpace(folder))return;
-            try{folder=Path.GetFullPath(folder.Trim('"'));if(Directory.Exists(folder))found.TryAdd(folder,new(name,folder,version??"",kind));}
+            try{folder=DivineLabs.IdleSlayer.Maintenance.InstallationLocations.Normalize(folder.Trim('"'));if(Directory.Exists(folder))found.TryAdd(folder,new(name,folder,version??"",kind));}
             catch(Exception e)when(e is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException){unavailable++;}
         }
+        foreach(var copy in DivineLabs.IdleSlayer.Maintenance.InstallationLocations.Known())Remember("DivineLabs Idle Slayer Mods",copy.Folder,copy.Version,"installed");
         foreach(var hive in new[]{RegistryHive.CurrentUser,RegistryHive.LocalMachine})foreach(var view in new[]{RegistryView.Registry64,RegistryView.Registry32}){
             try{
                 using var root=RegistryKey.OpenBaseKey(hive,view);using var uninstall=root.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");

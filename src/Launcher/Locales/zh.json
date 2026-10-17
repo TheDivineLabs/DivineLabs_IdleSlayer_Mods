@@ -228,5 +228,16 @@
   "ReplyMissing": "未收到响应。请点击“检查结果”：相同请求不会重复发放资源，切换游戏会话后请求会被拒绝。",
   "DivinityResource": "神性点数 · DP",
   "Material": "材料",
-  "LocalJewels": "灵魂宝石 · 本地余额"
+  "LocalJewels": "灵魂宝石 · 本地余额",
+  "OtherCopies": "其他安装",
+  "CopiesBody": "选择要更新的现有副本。搜索不会修改文件，并会跳过备份。",
+  "FindCopies": "搜索本地磁盘",
+  "CancelSearch": "停止搜索",
+  "CopiesNotKnown": "暂无已知安装。请搜索本地磁盘或选择文件夹。",
+  "CopiesKnown": "已找到的安装。选择文件夹不会自动开始更新。",
+  "CopySearching": "正在搜索已安装的副本…",
+  "CopySearchProgress": "已检查文件夹：{0}。可以停止搜索。",
+  "CopySearchDone": "找到的安装：{0}。已跳过系统、缓存和备份文件夹。",
+  "CopySearchCancelled": "搜索已停止。找到的安装：{0}。",
+  "ChooseCopy": "选择"
 }

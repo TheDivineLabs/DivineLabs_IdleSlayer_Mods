@@ -223,6 +223,7 @@
                   </DockPanel>
                 </Border>
                 <TextBlock x:Name="PathHint" Foreground="{DynamicResource Muted}" FontSize="12" Margin="4,12,4,22" />
+                <local:InstallationFinder x:Name="CopyFinder" CurrentFolder="{Binding Text,ElementName=TargetPath}" FolderSelected="CopyFolderSelected"/>
                 <StackPanel x:Name="ShortcutOptions">
                   <Border BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="9" Padding="18" Margin="0,0,0,10">
                     <CheckBox x:Name="Shortcuts" IsChecked="True" Margin="0">

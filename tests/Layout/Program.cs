@@ -16,6 +16,7 @@ internal static class Program
         string output=args.Length>0?args[0]:@"W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\design-0.4";Directory.CreateDirectory(output);
         var app=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
         AppContext.SetSwitch("DivineLabs.Interface.Transient",true);
+        if(args.Contains("--copy-finder-check")){CopyFinderChecks.Run(output);Console.WriteLine("Copy finder checks complete: "+output);app.Shutdown();return;}
         if(args.Contains("--appearance-check")){AppearanceChecks.Run(output);Console.WriteLine("Appearance checks complete: "+output);app.Shutdown();return;}
         if(args.Contains("--window-check")){DesktopChecks.Run(output);Console.WriteLine("Shown-window checks complete: "+output);app.Shutdown();return;}
         if(!args.Contains("--maintenance-only")) foreach(double scale in new[]{1d,1.5d,2d}){

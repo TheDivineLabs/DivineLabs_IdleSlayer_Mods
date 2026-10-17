@@ -228,5 +228,16 @@
   "ReplyMissing": "Sin respuesta. Usa Comprobar resultado: la misma solicitud no entrega recursos dos veces. Una nueva sesión la rechaza.",
   "DivinityResource": "Puntos de divinidad · DP",
   "Material": "Material",
-  "LocalJewels": "Joyas de alma · saldo local"
+  "LocalJewels": "Joyas de alma · saldo local",
+  "OtherCopies": "Otras instalaciones",
+  "CopiesBody": "Elige una copia para actualizar. La búsqueda no modifica archivos y omite las copias de seguridad.",
+  "FindCopies": "Buscar en discos",
+  "CancelSearch": "Detener búsqueda",
+  "CopiesNotKnown": "Aún no hay instalaciones conocidas. Busca en los discos o elige una carpeta.",
+  "CopiesKnown": "Instalaciones encontradas. Elegir una carpeta no inicia la actualización automáticamente.",
+  "CopySearching": "Buscando copias instaladas…",
+  "CopySearchProgress": "Carpetas revisadas: {0}. Puedes detener la búsqueda.",
+  "CopySearchDone": "Instalaciones encontradas: {0}. Se omitieron carpetas de sistema, caché y copias de seguridad.",
+  "CopySearchCancelled": "Búsqueda detenida. Instalaciones encontradas: {0}.",
+  "ChooseCopy": "Elegir"
 }

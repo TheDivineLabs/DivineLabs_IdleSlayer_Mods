@@ -47,6 +47,7 @@ public partial class MaintenanceWindow : Window
         LoadLicenses();OwnTab.IsChecked=true;
         long.TryParse(Arg("--required-bytes"),out requiredBytes);
         if(uninstall){
+            CopyFinder.Visibility=Visibility.Collapsed;
             WelcomeTitle.Text="До следующей игры";
             WelcomeText.Text="Удалим программу. Ваш прогресс останется.";
             WelcomeDetail.Text="Настройки и резервные копии сохранятся.";
@@ -62,7 +63,7 @@ public partial class MaintenanceWindow : Window
             if(busy){e.Cancel=true;InlineNotice.Text=T("CloseBlocked");return;}
             if(!done&&!allowClose&&IsVisible){e.Cancel=true;ShowCancel();}
         };
-        Closed+=(_,_)=>{closed=true;if(!uninstall)return;try{File.WriteAllText(Path.Combine(Path.GetDirectoryName(worker)!,"maintenance.complete"),"DivineLabs");}catch(IOException){}catch(UnauthorizedAccessException){}};
+        Closed+=(_,_)=>{closed=true;CopyFinder.Stop();if(!uninstall)return;try{File.WriteAllText(Path.Combine(Path.GetDirectoryName(worker)!,"maintenance.complete"),"DivineLabs");}catch(IOException){}catch(UnauthorizedAccessException){}};
         Loaded+=(_,_)=>{
             var area=SystemParameters.WorkArea;MinWidth=Math.Min(MinWidth,area.Width);MinHeight=Math.Min(MinHeight,area.Height);
             Width=Math.Min(Width,area.Width);Height=Math.Min(Height,area.Height);
@@ -169,6 +170,7 @@ public partial class MaintenanceWindow : Window
     }
     private void BrowseClick(object sender,RoutedEventArgs e)
     {var dialog=new OpenFolderDialog{Title=T("FolderTitle")};if(dialog.ShowDialog()==true)TargetPath.Text=dialog.FolderName;}
+    private void CopyFolderSelected(object sender,string folder)=>TargetPath.Text=folder;
     private void BackClick(object sender,RoutedEventArgs e){InlineNotice.Text="";ShowPage(page==3?2:page==2&&uninstall?0:page-1);}
     private void CancelClick(object sender,RoutedEventArgs e)=>Close();
     private void FinishClick(object sender,RoutedEventArgs e){if(done&&!busy)Close();}
@@ -222,7 +224,7 @@ public partial class MaintenanceWindow : Window
             catch(Exception error)when(error is IOException or UnauthorizedAccessException){InlineNotice.Text=T("CheckFailed");return;}
         }
         if(busy||closed||page!=requestedPage||TargetPath.Text!=requestedPath)return;
-        busy=true;InlineNotice.Text="";ErrorPanel.Visibility=Visibility.Collapsed;Progress.Visibility=Visibility.Visible;
+        CopyFinder.Stop();busy=true;InlineNotice.Text="";ErrorPanel.Visibility=Visibility.Collapsed;Progress.Visibility=Visibility.Visible;
         Progress.IsIndeterminate=true;Progress.Value=0;ProgressRing.Value=0;Percent.Text="…";Status.Text=T("Preparing");
         lastPercent=-1;UpdateProgressLabels();ShowPage(3);
         string report=Path.Combine(AppContext.BaseDirectory,"operation-"+Guid.NewGuid().ToString("N")+".txt");

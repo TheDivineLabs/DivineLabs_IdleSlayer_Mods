@@ -5,6 +5,7 @@ using System.Text.Json;
 using DivineLabs.IdleSlayer;
 using DivineLabs.IdleSlayer.Runtime;
 static void Check(bool value,string name){if(!value)throw new Exception(name);Console.WriteLine("ПРОЙДЕНО: "+name);}
+if(args.Contains("--copies")){CopyDiscoveryChecks.Run();return;}
 if(args.Length>0&&args[0]=="--live"){
     if(args.Length<2)throw new ArgumentException("Укажите папку запущенной игры после --live.");
     string config=Installation.Config(args[1]);

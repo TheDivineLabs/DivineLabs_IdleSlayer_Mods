@@ -10,4 +10,4 @@
   </PropertyGroup>
   <ItemGroup><EmbeddedResource Include="$(PackageArchive)" LogicalName="DivineLabs.ApplicationPackage" Condition="Exists('$(PackageArchive)')"/></ItemGroup>
   <Target Name="RequireApplicationPackage" BeforeTargets="Publish"><Error Condition="!Exists('$(PackageArchive)')" Text="Сначала создайте portable ZIP через scripts/Build.ps1 или укажите PackageArchive."/></Target>
-<ItemGroup><Compile Include="../Shared/OperationReport.cs" Link="Maintenance/OperationReport.cs"/></ItemGroup><ItemGroup><Compile Include="../Shared/InstallTarget.cs" Link="Maintenance/InstallTarget.cs"/></ItemGroup></Project>
+<ItemGroup><Compile Include="../Shared/OperationReport.cs" Link="Maintenance/OperationReport.cs"/></ItemGroup><ItemGroup><Compile Include="../Shared/InstallTarget.cs" Link="Maintenance/InstallTarget.cs"/></ItemGroup><ItemGroup><Compile Include="../Shared/InstallationLocations.cs" Link="Maintenance/InstallationLocations.cs"/></ItemGroup></Project>

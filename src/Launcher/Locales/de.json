@@ -228,5 +228,16 @@
   "ReplyMissing": "Keine Antwort. Nutze Ergebnis prüfen: Derselbe Auftrag vergibt nicht doppelt. Eine neue Sitzung lehnt ihn ab.",
   "DivinityResource": "Göttlichkeitspunkte · DP",
   "Material": "Material",
-  "LocalJewels": "Seelenjuwelen · lokales Guthaben"
+  "LocalJewels": "Seelenjuwelen · lokales Guthaben",
+  "OtherCopies": "Weitere Installationen",
+  "CopiesBody": "Wähle eine vorhandene Installation zum Aktualisieren. Die Suche ändert keine Dateien und überspringt Sicherungen.",
+  "FindCopies": "Laufwerke durchsuchen",
+  "CancelSearch": "Suche stoppen",
+  "CopiesNotKnown": "Noch keine bekannten Installationen. Durchsuche Laufwerke oder wähle einen Ordner.",
+  "CopiesKnown": "Gefundene Installationen. Die Ordnerauswahl startet kein automatisches Update.",
+  "CopySearching": "Installationen werden gesucht…",
+  "CopySearchProgress": "Geprüfte Ordner: {0}. Die Suche kann gestoppt werden.",
+  "CopySearchDone": "Gefundene Installationen: {0}. System-, Cache- und Sicherungsordner wurden übersprungen.",
+  "CopySearchCancelled": "Suche gestoppt. Gefundene Installationen: {0}.",
+  "ChooseCopy": "Auswählen"
 }

@@ -33,6 +33,8 @@ public static class Program
         }
         using var mutex=new Mutex(true,@"Local\DivineLabs.IdleSlayer.Launcher",out bool first);
         if(!first){foreach(var p in Process.GetProcessesByName("DivineLabs.IdleSlayer.Launcher"))if(p.Id!=Environment.ProcessId&&p.MainWindowHandle!=0){ShowWindow(p.MainWindowHandle,9);SetForegroundWindow(p.MainWindowHandle);break;}return;}
+        try{DivineLabs.IdleSlayer.Maintenance.InstallationLocations.Remember(Product.Home);}
+        catch(Exception e)when(e is IOException or UnauthorizedAccessException or System.Security.SecurityException){Product.Record(e);}
         var app=new Application();app.DispatcherUnhandledException+=(_,e)=>{Product.Record(e.Exception);if(app.MainWindow is MainWindow main)main.ShowError(e.Exception);e.Handled=true;};app.Run(new MainWindow());
     }
     [DllImport("user32.dll")] private static extern bool ShowWindow(IntPtr window,int command);

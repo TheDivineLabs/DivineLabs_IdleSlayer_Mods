@@ -122,6 +122,8 @@ internal static class SetupOperations
     {string logs=Inside(root,"Data/Logs");Directory.CreateDirectory(logs);File.AppendAllText(Path.Combine(logs,"setup.log"),$"{DateTime.UtcNow:O} {error}{Environment.NewLine}");}
     private static void Register(string target,bool desktopShortcut,bool menuShortcut)
     {
+        foreach(var known in InstallationLocations.Known())InstallationLocations.Remember(known.Folder);
+        InstallationLocations.Remember(target);
         using var key=Registry.CurrentUser.CreateSubKey(RegistryKey);key.SetValue("DisplayName","DivineLabs Idle Slayer Mods");key.SetValue("DisplayVersion","0.5.0");key.SetValue("Publisher","DivineLabs");key.SetValue("InstallLocation",target);key.SetValue("DisplayIcon",Inside(target,"DivineLabs.IdleSlayer.exe"));key.SetValue("UninstallString","\""+Inside(target,Uninstaller)+"\" --uninstall");key.SetValue("NoModify",1);key.SetValue("NoRepair",1);
         if(!desktopShortcut&&!menuShortcut)return;
         string Q(string text)=>"'"+text.Replace("'","''")+"'";
@@ -173,6 +175,7 @@ internal static class SetupOperations
         foreach(string folder in new[]{"App","Docs"})RemoveEmpty(Inside(root,folder));
         if(!filesOnly)
         {
+            InstallationLocations.Forget(root);
             using var key=Registry.CurrentUser.OpenSubKey(RegistryKey);bool matches=string.Equals(key?.GetValue("InstallLocation") as string,root,StringComparison.OrdinalIgnoreCase);key?.Close();if(matches)Registry.CurrentUser.DeleteSubKeyTree(RegistryKey,false);
             foreach(string shortcut in new[]{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),"DivineLabs Idle Slayer Mods.lnk"),Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs),"DivineLabs","IdleSlayer Mods.lnk")})if(File.Exists(shortcut))File.Delete(shortcut);
         }

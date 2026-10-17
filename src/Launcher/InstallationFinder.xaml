@@ -1,0 +1,17 @@
+<UserControl x:Class="DivineLabs.IdleSlayer.Launcher.InstallationFinder"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:DivineLabs.IdleSlayer.Launcher">
+ <UserControl.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/DivineLabs.DesktopUI;component/SetupTheme.xaml"/></ResourceDictionary.MergedDictionaries></ResourceDictionary></UserControl.Resources>
+ <Expander Header="{local:Tr OtherCopies}" Foreground="{DynamicResource Text}" FontSize="14" Expanded="Expanded" Margin="0,0,0,18">
+  <Border Background="{DynamicResource WhiteSurface}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="9" Padding="16" Margin="0,10,0,0"><StackPanel>
+   <TextBlock Text="{local:Tr CopiesBody}" FontSize="12" Foreground="{DynamicResource Muted}" Margin="0,0,0,12"/>
+   <WrapPanel><Button x:Name="FindAll" Content="{local:Tr FindCopies}" Click="FindAllClick" Padding="12,7" MinHeight="36" Margin="0,0,8,8"/><Button x:Name="ChooseRoot" Content="{local:Tr ScanFolder}" Click="ChooseRootClick" Padding="12,7" MinHeight="36" Margin="0,0,8,8"/><Button x:Name="CancelSearch" Content="{local:Tr CancelSearch}" Click="CancelClick" Visibility="Collapsed" Padding="12,7" MinHeight="36" Margin="0,0,0,8"/></WrapPanel>
+   <TextBlock x:Name="Status" Foreground="{DynamicResource Muted}" FontSize="12" AutomationProperties.LiveSetting="Polite" Margin="0,0,0,6"/>
+   <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto"><ItemsControl x:Name="Copies"><ItemsControl.ItemTemplate><DataTemplate>
+    <Border BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Padding="0,8"><DockPanel>
+     <Button DockPanel.Dock="Right" Content="{local:Tr ChooseCopy}" Tag="{Binding Folder}" Click="ChooseCopyClick" Padding="12,7" MinHeight="34" Margin="12,0,0,0"/>
+     <StackPanel><TextBlock Text="{Binding Folder}" FontSize="12" TextWrapping="Wrap"/><TextBlock Text="{Binding Version}" FontSize="11" Foreground="{DynamicResource Muted}"/></StackPanel>
+    </DockPanel></Border>
+   </DataTemplate></ItemsControl.ItemTemplate></ItemsControl></ScrollViewer>
+  </StackPanel></Border>
+ </Expander>
+</UserControl>
