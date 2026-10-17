@@ -15,7 +15,7 @@ internal static class AppearanceChecks
     {
         var missing=(from language in SetupText.Languages from key in SetupText.Keys where !SetupText.HasTranslation(language,key) select language+":"+key).ToArray();
         if(missing.Length>0)throw new Exception("Missing translations: "+string.Join(",",missing));
-        if(SetupText.ResolveLanguage("ja")!="en"||SetupText.ResolveLanguage("uk")!="uk")throw new Exception("Language detection fallback failed");
+        if(SetupText.ResolveLanguage("it")!="en"||SetupText.ResolveLanguage("ja")!="ja"||SetupText.ResolveLanguage("be")!="be")throw new Exception("Language detection fallback failed");
         var flags=BindingFlags.Instance|BindingFlags.NonPublic;
         foreach(string theme in new[]{"light","dark"})foreach(string language in SetupText.Languages){
             ThemeManager.Select(theme);SetupText.Current.Select(language);

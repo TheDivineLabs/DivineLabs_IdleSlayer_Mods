@@ -17,7 +17,7 @@ internal sealed class Receipt
 internal partial class ReceiptJson:JsonSerializerContext{}
 internal static class SetupOperations
 {
-    private const string OwnerFile="Data/Config/.divinelabs-owner",ReceiptFile="App/Setup/installation.json",Uninstaller="App/Setup/DivineLabs.Uninstall.exe";
+    private const string OwnerFile="Data/Config/.divinelabs-owner",ReceiptFile="App/Setup/installation.json",Uninstaller="DivineLabs.Uninstall.exe";
     internal const string RegistryKey=@"Software\Microsoft\Windows\CurrentVersion\Uninstall\DivineLabs.IdleSlayer";
     internal static string DefaultDirectory=>InstallTarget.DefaultDirectory;
     internal static string Inside(string root,string relative)
@@ -73,9 +73,10 @@ internal static class SetupOperations
             throw new IOException("В пакете отсутствует лаунчер.");
         string history=Inside(target,"Data/Backups/Application/"+DateTime.UtcNow.ToString("yyyyMMddHHmmssfff")+"-"+Guid.NewGuid().ToString("N")[..6]);Directory.CreateDirectory(history);
         Directory.CreateDirectory(Path.GetDirectoryName(Inside(stage,Uninstaller))!);File.Copy(Environment.ProcessPath!,Inside(stage,Uninstaller));files.Add(Uninstaller);
+        Directory.CreateDirectory(Path.GetDirectoryName(Inside(stage,ReceiptFile))!);
         File.WriteAllText(Inside(stage,ReceiptFile),JsonSerializer.Serialize(new Receipt{Files=files.ToArray()},ReceiptJson.Default.Receipt));files.Add(ReceiptFile);
         Directory.CreateDirectory(Path.GetDirectoryName(Inside(stage,OwnerFile))!);File.WriteAllText(Inside(stage,OwnerFile),"DivineLabs.IdleSlayer");files.Add(OwnerFile);
-        var legacyFiles=new HashSet<string>(StringComparer.OrdinalIgnoreCase){"installation.json",".divinelabs-owner","DivineLabs.Uninstall.exe"};
+        var legacyFiles=new HashSet<string>(StringComparer.OrdinalIgnoreCase){"installation.json",".divinelabs-owner","App/Setup/DivineLabs.Uninstall.exe"};
         string oldReceipt=ReceiptPath(target);
         if(File.Exists(oldReceipt))
         {

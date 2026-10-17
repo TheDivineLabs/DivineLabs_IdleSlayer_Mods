@@ -60,8 +60,8 @@ public partial class LanguageMenu : UserControl
     public void Refresh()
     {
         var text = SetupText.Current;
-        string Native(string language)=>language switch{"ru"=>"Русский","uk"=>"Українська","de"=>"Deutsch","es"=>"Español",_=>"English"};
-        string Flag(string language)=>language switch{"ru"=>"FlagRu","uk"=>"FlagUk","de"=>"FlagDe","es"=>"FlagEs",_=>"FlagEn"};
+        string Native(string language)=>language switch{"ru"=>"Россия","uk"=>"Україна","be"=>"Беларусь","de"=>"Deutschland","es"=>"España","ko"=>"대한민국","zh"=>"中国","ja"=>"日本",_=>"United Kingdom"};
+        string Flag(string language)=>language switch{"ru"=>"FlagRu","uk"=>"FlagUk","be"=>"FlagBy","de"=>"FlagDe","es"=>"FlagEs","ko"=>"FlagKr","zh"=>"FlagCn","ja"=>"FlagJp",_=>"FlagEn"};
         CurrentLabel.Text = text.Selection == "auto" ? text["Automatic"] : Native(text.EffectiveLanguage);
         CurrentFlag.Source = (ImageSource)FindResource(text.Selection == "auto" ? "FlagAuto" : Flag(text.EffectiveLanguage));
         RuCheck.Visibility = text.Selection == "ru" ? Visibility.Visible : Visibility.Hidden;
@@ -69,10 +69,21 @@ public partial class LanguageMenu : UserControl
         UkCheck.Visibility = text.Selection == "uk" ? Visibility.Visible : Visibility.Hidden;
         DeCheck.Visibility = text.Selection == "de" ? Visibility.Visible : Visibility.Hidden;
         EsCheck.Visibility = text.Selection == "es" ? Visibility.Visible : Visibility.Hidden;
+        ByCheck.Visibility = text.Selection == "be" ? Visibility.Visible : Visibility.Hidden;
+        KrCheck.Visibility = text.Selection == "ko" ? Visibility.Visible : Visibility.Hidden;
+        CnCheck.Visibility = text.Selection == "zh" ? Visibility.Visible : Visibility.Hidden;
+        JpCheck.Visibility = text.Selection == "ja" ? Visibility.Visible : Visibility.Hidden;
+        Trigger.ToolTip=CurrentLabel.Text;
         Auto.Background = (Brush)FindResource(text.Selection == "auto" ? "SelectedSurface" : "WhiteSurface");
         Recommended.Text = text["Recommended"] + Native(SetupText.ResolveLanguage(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName));
     }
-    private void MenuOpened(object sender, EventArgs e) { Refresh(); Motion.Enter((FrameworkElement)Menu.Child); }
+    private void MenuOpened(object sender, EventArgs e)
+    {
+        Refresh();int columns=owner!=null&&owner.ActualWidth<1000?2:3;
+        LanguageGrid.Columns=columns;MenuPanel.Width=columns*164+18;
+        Menu.HorizontalOffset=Trigger.ActualWidth-MenuPanel.Width;
+        Motion.Enter((FrameworkElement)Menu.Child);
+    }
     private void SelectLanguage(object sender, RoutedEventArgs e)
     { SetupText.Current.Select((string)((Button)sender).Tag); InterfacePreferences.Save(); Refresh(); CloseMenu(keyboardOpened); LanguageChanged?.Invoke(this, EventArgs.Empty); }
 }

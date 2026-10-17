@@ -43,6 +43,21 @@ internal static class DesktopChecks
             Require(DivineLabs.DesktopUI.ThemeManager.Selection=="dark"&&((SolidColorBrush)window.FindResource("Background")).Color.R<40,"Theme picker did not apply the dark palette");
             themes.SelectedIndex=1;Pump(window);
             Require(DivineLabs.DesktopUI.ThemeManager.Selection=="light"&&((SolidColorBrush)window.FindResource("Background")).Color.R>240,"Theme picker did not apply the light palette");
+            Require(Math.Abs(themes.ActualWidth-trigger.ActualWidth)<.1&&Math.Abs(themes.ActualHeight-trigger.ActualHeight)<.1,"Language and theme controls have different bounds");
+            trigger.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump(window);
+            Require(((UniformGrid)language.FindName("LanguageGrid")).Columns==3,"Wide language menu is not three columns");
+            CaptureElement((FrameworkElement)popup.Child,Path.Combine(output,"language-grid-wide.png"));
+            window.Width=960;Pump(window);
+            trigger.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump(window);
+            Require(((UniformGrid)language.FindName("LanguageGrid")).Columns==2,"Narrow language menu is not two columns");
+            CaptureElement((FrameworkElement)popup.Child,Path.Combine(output,"language-grid-narrow.png"));
+            foreach(var (name,code,country) in new[]{("Belarusian","be","Беларусь"),("Korean","ko","대한민국"),("Chinese","zh","中国"),("Japanese","ja","日本")}){
+                ((Button)language.FindName(name)).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump(window);
+                Require(SetupText.Current.EffectiveLanguage==code&&((TextBlock)language.FindName("CurrentLabel")).Text==country,"New language selection did not apply: "+code);
+            }
+            Capture(window,Path.Combine(output,"desktop-japanese.png"));
+            ((Button)language.FindName("Russian")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            window.Width=1100;Pump(window);
 
             var primary=(Button)window.FindName("Primary");
             primary.ApplyTemplate();
@@ -58,7 +73,7 @@ internal static class DesktopChecks
             Capture(window,Path.Combine(output,"desktop-maximized.png"));
             File.WriteAllText(Path.Combine(output,"desktop-checks.json"),JsonSerializer.Serialize(new{
                 MaxWidth=window.ActualWidth,MaxHeight=window.ActualHeight,WorkArea=work.ToString(),FooterBottom=actualFooter.Bottom,
-                Checks=new[]{"Language repeat click","Outside preview click","Keyboard open and Escape","Theme picker light/dark selection","Full button hover bounds","Actual maximized HWND layout and footer"},
+                Checks=new[]{"Language repeat click","Outside preview click","Keyboard open and Escape","Theme picker light/dark selection","Equal language/theme bounds","Language grid two/three columns","be/ko/zh/ja selection and native country labels","Full button hover bounds","Actual maximized HWND layout and footer"},
                 Input="WPF routed events in a shown HWND; not physical mouse acceptance"
             },new JsonSerializerOptions{WriteIndented=true}));
             window.WindowState=WindowState.Normal;Pump(window);
@@ -79,6 +94,10 @@ internal static class DesktopChecks
     private static void Capture(Window window,string path)
     {
         var root=(FrameworkElement)window.Content;
+        CaptureElement(root,path);
+    }
+    private static void CaptureElement(FrameworkElement root,string path)
+    {
         var bitmap=new RenderTargetBitmap((int)Math.Ceiling(root.ActualWidth),(int)Math.Ceiling(root.ActualHeight),96,96,PixelFormats.Pbgra32);bitmap.Render(root);
         var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using var file=File.Create(path);encoder.Save(file);
     }

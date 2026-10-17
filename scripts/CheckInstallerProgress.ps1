@@ -39,7 +39,7 @@ if($process.ExitCode-ne 0-or $samples-eq 0){throw 'Обновление с оп�
 if((Get-Content -LiteralPath $preserved)-ne 'retained'){throw 'Настройки потеряны при обновлении'}
 Write-Output "ПРОЙДЕНО: реальное обновление с частым чтением прогресса, получено $samples статусов"
 $worker=Join-Path $work 'uninstall-worker.exe'
-Copy-Item -LiteralPath "$target\App\Setup\DivineLabs.Uninstall.exe" -Destination $worker
+Copy-Item -LiteralPath "$target\DivineLabs.Uninstall.exe" -Destination $worker
 $process=StartWorker $worker @('--silent','--uninstall-now','--files-only','--dir',$target,'--report',$report)
 $process.WaitForExit()
 if($process.ExitCode-ne 0-or (Test-Path -LiteralPath "$target\DivineLabs.IdleSlayer.exe")){throw 'Удаление вернуло неверный результат'}

@@ -13,7 +13,7 @@ public sealed partial class SetupText : INotifyPropertyChanged
     public static SetupText Current { get; } = new();
     public event PropertyChangedEventHandler PropertyChanged;
     public string Selection { get; private set; } = "auto";
-    public static readonly string[] Languages={"ru","en","uk","de","es"};
+    public static readonly string[] Languages={"ru","en","uk","be","de","es","ko","zh","ja"};
     public static string ResolveLanguage(string language)=>Languages.Contains(language)?language:"en";
     public string EffectiveLanguage=>ResolveLanguage(Selection=="auto"?CultureInfo.CurrentUICulture.TwoLetterISOLanguageName:Selection);
     public string this[string key] => Copy.TryGetValue(key,out var value)?EffectiveLanguage=="ru"?value.Ru:EffectiveLanguage=="en"?value.En:Translations[EffectiveLanguage].GetValueOrDefault(key,value.En):key;
@@ -25,7 +25,7 @@ public sealed partial class SetupText : INotifyPropertyChanged
     private static Dictionary<string,Dictionary<string,string>> LoadTranslations()
     {
         var result=new Dictionary<string,Dictionary<string,string>>();
-        foreach(string language in new[]{"uk","de","es"}){
+        foreach(string language in Languages.Where(language=>language is not ("ru" or "en"))){
             using var stream=typeof(SetupText).Assembly.GetManifestResourceStream("DivineLabs.Locales."+language+".json")??throw new InvalidDataException("Missing locale: "+language);
             result[language]=JsonSerializer.Deserialize<Dictionary<string,string>>(stream)??throw new InvalidDataException("Empty locale: "+language);
         }

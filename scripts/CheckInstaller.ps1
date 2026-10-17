@@ -12,10 +12,11 @@ function RunApp([string]$File,[string[]]$Arguments){
 }
 function InstallTest{RunApp $Setup @('--silent','--no-integrations','--no-launch','--dir',$target)}
 function CheckRoot{
- $unexpected=Get-ChildItem -LiteralPath $target|Where-Object Name -notin @('DivineLabs.IdleSlayer.exe','App','Data','Docs','user.txt')
+ $unexpected=Get-ChildItem -LiteralPath $target|Where-Object Name -notin @('DivineLabs.IdleSlayer.exe','DivineLabs.Uninstall.exe','App','Data','Docs','user.txt')
  if($unexpected){throw "Лишние файлы в корне: $($unexpected.Name -join ', ')"}
  if(Get-ChildItem "$target\App","$target\Docs" -Recurse -File -Filter '*.pdb'){throw 'В поставке остались PDB'}
- if(-not(Test-Path "$target\App\Setup\DivineLabs.Uninstall.exe")){throw 'Неверный путь удаления'}
+ if(-not(Test-Path "$target\DivineLabs.Uninstall.exe")){throw 'Неверный путь удаления'}
+ if(Test-Path "$target\App\Setup\DivineLabs.Uninstall.exe"){throw 'Прежний удалятор не перенесён'}
 }
 if(Test-Path $LegacySetup){RunApp $LegacySetup @('--silent','--no-integrations','--no-launch','--dir',$target)}
 else {InstallTest}
@@ -34,7 +35,7 @@ if(Test-Path "$target\App\Launcher\Data"){throw 'Data создана внутр�
 InstallTest
 CheckRoot
 $uninstallReport=$target+'.uninstall-report.txt'
-RunApp "$target\App\Setup\DivineLabs.Uninstall.exe" @('--uninstall','--files-only','--silent','--report',$uninstallReport)
+RunApp "$target\DivineLabs.Uninstall.exe" @('--files-only','--silent','--report',$uninstallReport)
 $completed=$false
 for($i=0;$i -lt 120;$i++){
  if(Test-Path -LiteralPath $uninstallReport){
