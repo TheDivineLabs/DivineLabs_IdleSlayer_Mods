@@ -1,13 +1,12 @@
 <UserControl x:Class="DivineLabs.IdleSlayer.Launcher.SocialLinks"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- xmlns:local="clr-namespace:DivineLabs.IdleSlayer.Launcher">
- <UserControl.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/DivineLabs.DesktopUI;component/SetupTheme.xaml"/></ResourceDictionary.MergedDictionaries></ResourceDictionary></UserControl.Resources>
+ xmlns:local="clr-namespace:DivineLabs.IdleSlayer.Launcher"><UserControl.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/DivineLabs.DesktopUI;component/SetupTheme.xaml"/></ResourceDictionary.MergedDictionaries></ResourceDictionary></UserControl.Resources>
  <Grid>
   <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="12"/><ColumnDefinition/></Grid.ColumnDefinitions>
   <Button Tag="https://discord.gg/vF47ExMQpn" Click="OpenLink" Style="{StaticResource SocialButton}">
    <StackPanel Orientation="Horizontal">
     <Viewbox Width="16" Height="16" Margin="0,0,10,0"><Canvas Width="24" Height="24">
-     <Path Fill="#6658E8" Data="M5,5 L9,4 10,6 14,6 15,4 19,5 Q23,11 22,17 L17,20 16,18 Q12,20 8,18 L7,20 2,17 Q1,11 5,5 Z"/>
+     <Path Fill="{DynamicResource Accent}" Data="M5,5 L9,4 10,6 14,6 15,4 19,5 Q23,11 22,17 L17,20 16,18 Q12,20 8,18 L7,20 2,17 Q1,11 5,5 Z"/>
      <Ellipse Fill="White" Width="3" Height="4" Canvas.Left="7" Canvas.Top="11"/><Ellipse Fill="White" Width="3" Height="4" Canvas.Left="14" Canvas.Top="11"/>
     </Canvas></Viewbox>
     <TextBlock Text="{local:Tr Discord}" FontWeight="SemiBold"/>
@@ -15,7 +14,7 @@
   </Button>
   <Button Grid.Column="2" Tag="https://t.me/ps1xo_on1ks" Click="OpenLink" Style="{StaticResource SocialButton}">
    <StackPanel Orientation="Horizontal">
-    <Viewbox Width="17" Height="17" Margin="0,0,10,0"><Path Fill="#6658E8" Data="M1,10 L23,1 18,23 11,17 7,20 8,13 19,5 6,12 Z"/></Viewbox>
+    <Viewbox Width="17" Height="17" Margin="0,0,10,0"><Path Fill="{DynamicResource Accent}" Data="M1,10 L23,1 18,23 11,17 7,20 8,13 19,5 6,12 Z"/></Viewbox>
     <TextBlock Text="{local:Tr Telegram}" FontWeight="SemiBold"/>
    </StackPanel>
   </Button>

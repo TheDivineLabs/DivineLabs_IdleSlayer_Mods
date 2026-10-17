@@ -24,7 +24,7 @@
       </Style>
       <Style x:Key="LicenseTab" TargetType="RadioButton">
         <Setter Property="GroupName" Value="LicenseTabs" />
-        <Setter Property="Foreground" Value="#667389" />
+        <Setter Property="Foreground" Value="{DynamicResource Muted}" />
         <Setter Property="Padding" Value="22,12" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
@@ -35,12 +35,12 @@
               </Border>
               <ControlTemplate.Triggers>
                 <Trigger Property="IsChecked" Value="True">
-                  <Setter TargetName="Body" Property="Background" Value="White" />
-                  <Setter TargetName="Body" Property="BorderBrush" Value="#6658E8" />
-                  <Setter Property="Foreground" Value="#6658E8" />
+                  <Setter TargetName="Body" Property="Background" Value="{DynamicResource WhiteSurface}" />
+                  <Setter TargetName="Body" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                  <Setter Property="Foreground" Value="{DynamicResource Accent}" />
                 </Trigger>
                 <Trigger Property="IsKeyboardFocused" Value="True">
-                  <Setter TargetName="Body" Property="BorderBrush" Value="#6658E8" />
+                  <Setter TargetName="Body" Property="BorderBrush" Value="{DynamicResource Accent}" />
                 </Trigger>
               </ControlTemplate.Triggers>
             </ControlTemplate>
@@ -49,20 +49,20 @@
       </Style>
     </ResourceDictionary>
   </Window.Resources>
-  <Border BorderBrush="#DDE3EE" BorderThickness="1" Background="{DynamicResource Background}">
+  <Border BorderBrush="{DynamicResource Line}" BorderThickness="1" Background="{DynamicResource Background}">
     <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="50" />
         <RowDefinition Height="*" />
       </Grid.RowDefinitions>
-      <Border Background="#F4F6FC" BorderBrush="#DEE3ED" BorderThickness="0,0,0,1">
+      <Border Background="{DynamicResource HeaderSurface}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
         <DockPanel Margin="16,0,0,0">
           <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" shell:WindowChrome.IsHitTestVisibleInChrome="True">
             <Button shell:WindowChrome.IsHitTestVisibleInChrome="True" Style="{StaticResource ChromeButton}" x:Name="MinimizeControl" Click="MinimizeClick" AutomationProperties.Name="Свернуть"><Image Source="{StaticResource MinimizeIcon}" Width="12" Height="1.2"/></Button>
             <Button shell:WindowChrome.IsHitTestVisibleInChrome="True" Style="{StaticResource ChromeButton}" x:Name="MaximizeControl" Click="MaximizeClick" AutomationProperties.Name="Развернуть"><Image Style="{StaticResource MaximizeGlyph}"/></Button>
             <Button shell:WindowChrome.IsHitTestVisibleInChrome="True" Style="{StaticResource ChromeButton}" x:Name="CloseControl" Click="CancelClick" AutomationProperties.Name="Закрыть"><Image Source="{StaticResource CloseIcon}" Width="12" Height="12"/></Button>
           </StackPanel>
-          <local:LanguageMenu x:Name="LanguagePicker" DockPanel.Dock="Right" Margin="0,0,50,0" VerticalAlignment="Center" LanguageChanged="LanguageChanged" shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+          <local:ThemePicker DockPanel.Dock="Right" Margin="0,0,16,0" VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True"/><local:LanguageMenu x:Name="LanguagePicker" DockPanel.Dock="Right" Margin="0,0,12,0" VerticalAlignment="Center" LanguageChanged="LanguageChanged" shell:WindowChrome.IsHitTestVisibleInChrome="True" />
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
             <Image Source="{StaticResource BadgeLogo}" Width="28" Height="28" Margin="0,0,12,0" />
             <TextBlock Text="DivineLabs Idle Slayer Mods" FontSize="16" FontWeight="SemiBold" />
@@ -103,8 +103,8 @@
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
           <Grid x:Name="StepHeader" SizeChanged="StepHeaderSizeChanged" Height="82" Margin="0,0,0,14" MaxWidth="900">
-            <Border x:Name="StepBase" Height="2" Background="#E0E5EF" VerticalAlignment="Top" Margin="64,19,64,0" />
-            <ProgressBar x:Name="StepTrack" Height="2" Margin="64,19,64,0" VerticalAlignment="Top" Minimum="0" Maximum="100" Foreground="#6658E8" Background="Transparent" />
+            <Border x:Name="StepBase" Height="2" Background="{DynamicResource Line}" VerticalAlignment="Top" Margin="64,19,64,0" />
+            <ProgressBar x:Name="StepTrack" Height="2" Margin="64,19,64,0" VerticalAlignment="Top" Minimum="0" Maximum="100" Foreground="{DynamicResource Accent}" Background="Transparent" />
             <ItemsControl x:Name="Steps" IsTabStop="False">
               <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -143,7 +143,7 @@
                     <ColumnDefinition Width="16" />
                     <ColumnDefinition Width="*" />
                   </Grid.ColumnDefinitions>
-                  <Border BorderBrush="#E1E5F0" BorderThickness="1" CornerRadius="10" Padding="16" MinHeight="94">
+                  <Border BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="10" Padding="16" MinHeight="94">
                     <Grid>
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="38" />
@@ -151,16 +151,16 @@
                       </Grid.ColumnDefinitions>
                       <Viewbox Width="32" Height="30" VerticalAlignment="Center">
                         <Canvas Width="32" Height="28">
-                          <Path Stroke="#7766F0" StrokeThickness="2.4" Fill="#F0EDFF" Data="M8,6 C4,6 3,10 2,18 C1,25 6,26 10,21 L22,21 C26,26 31,25 30,18 C29,10 28,6 24,6 Z" />
-                          <Path Stroke="#7766F0" StrokeThickness="2.2" Data="M8,10 L8,18 M4,14 L12,14" />
-                          <Ellipse Fill="#7766F0" Width="3" Height="3" Canvas.Left="21" Canvas.Top="10" />
-                          <Ellipse Fill="#7766F0" Width="3" Height="3" Canvas.Left="25" Canvas.Top="15" />
+                          <Path Stroke="{DynamicResource Accent}" StrokeThickness="2.4" Fill="{DynamicResource SelectedSurface}" Data="M8,6 C4,6 3,10 2,18 C1,25 6,26 10,21 L22,21 C26,26 31,25 30,18 C29,10 28,6 24,6 Z" />
+                          <Path Stroke="{DynamicResource Accent}" StrokeThickness="2.2" Data="M8,10 L8,18 M4,14 L12,14" />
+                          <Ellipse Fill="{DynamicResource Accent}" Width="3" Height="3" Canvas.Left="21" Canvas.Top="10" />
+                          <Ellipse Fill="{DynamicResource Accent}" Width="3" Height="3" Canvas.Left="25" Canvas.Top="15" />
                         </Canvas>
                       </Viewbox>
                       <TextBlock x:Name="WelcomeDetail" Grid.Column="1" Text="{local:Tr More}" Foreground="{DynamicResource Muted}" FontSize="15" LineHeight="23" Margin="14,0,0,0" VerticalAlignment="Center" />
                     </Grid>
                   </Border>
-                  <Border Grid.Column="2" BorderBrush="#E1E5F0" BorderThickness="1" CornerRadius="10" Padding="16" MinHeight="94">
+                  <Border Grid.Column="2" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="10" Padding="16" MinHeight="94">
                     <Grid>
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="38" />
@@ -168,8 +168,8 @@
                       </Grid.ColumnDefinitions>
                       <Viewbox Width="31" Height="31" VerticalAlignment="Center">
                         <Canvas Width="32" Height="32">
-                          <Path Fill="#7766F0" Data="M13,1 L19,1 20,6 24,8 29,6 32,12 28,16 29,20 32,23 28,29 23,27 19,29 18,32 12,32 11,27 7,25 3,27 0,21 4,17 3,12 0,9 4,3 9,5 12,4 Z" />
-                          <Ellipse Fill="#FAFBFE" Width="12" Height="12" Canvas.Left="10" Canvas.Top="10" />
+                          <Path Fill="{DynamicResource Accent}" Data="M13,1 L19,1 20,6 24,8 29,6 32,12 28,16 29,20 32,23 28,29 23,27 19,29 18,32 12,32 11,27 7,25 3,27 0,21 4,17 3,12 0,9 4,3 9,5 12,4 Z" />
+                          <Ellipse Fill="{DynamicResource Background}" Width="12" Height="12" Canvas.Left="10" Canvas.Top="10" />
                         </Canvas>
                       </Viewbox>
                       <TextBlock x:Name="WelcomeNote" Grid.Column="1" Text="{local:Tr Flexible}" Foreground="{DynamicResource Muted}" FontSize="15" LineHeight="23" Margin="14,0,0,0" VerticalAlignment="Center" />
@@ -195,7 +195,7 @@
                 <RadioButton Content="{local:Tr Loader}" Style="{StaticResource LicenseTab}" Tag="loader" Checked="LicenseTabChanged" />
                 <RadioButton Content="{local:Tr Dependencies}" Style="{StaticResource LicenseTab}" Tag="deps" Checked="LicenseTabChanged" />
               </StackPanel>
-              <Border Grid.Row="2" Background="White" BorderBrush="#DFE4EE" BorderThickness="1" CornerRadius="9" Padding="20">
+              <Border Grid.Row="2" Background="{DynamicResource WhiteSurface}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="9" Padding="20">
                 <Grid>
                   <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -213,18 +213,18 @@
               <StackPanel Visibility="Visible" Margin="20,0" VerticalAlignment="Center">
                 <TextBlock x:Name="OptionsTitle" Text="{local:Tr OptionsTitle}" FontSize="29" FontWeight="SemiBold" TextAlignment="Center" />
                 <TextBlock x:Name="OptionsDescription" Text="{local:Tr OptionsBody}" Foreground="{DynamicResource Muted}" TextAlignment="Center" Margin="0,10,0,28" />
-                <Border Background="White" BorderBrush="#DFE4EE" BorderThickness="1" CornerRadius="10" Padding="18">
+                <Border Background="{DynamicResource WhiteSurface}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="10" Padding="18">
                   <DockPanel>
                     <Button x:Name="Browse" Content="{local:Tr Browse}" DockPanel.Dock="Right" Click="BrowseClick" Margin="14,0,0,0" />
                     <Viewbox DockPanel.Dock="Left" Width="35" Height="30" Margin="0,0,18,0">
-                      <Path Fill="#7969ED" Data="M1,4 L12,4 16,8 35,8 Q39,8 39,12 L39,32 Q39,36 35,36 L4,36 Q0,36 0,32 L0,8 Q0,4 1,4 Z" />
+                      <Path Fill="{DynamicResource Accent}" Data="M1,4 L12,4 16,8 35,8 Q39,8 39,12 L39,32 Q39,36 35,36 L4,36 Q0,36 0,32 L0,8 Q0,4 1,4 Z" />
                     </Viewbox>
                     <TextBox x:Name="TargetPath" TextChanged="PathChanged" Margin="0" Padding="8" FontSize="13" VerticalContentAlignment="Center" />
                   </DockPanel>
                 </Border>
                 <TextBlock x:Name="PathHint" Foreground="{DynamicResource Muted}" FontSize="12" Margin="4,12,4,22" />
                 <StackPanel x:Name="ShortcutOptions">
-                  <Border BorderBrush="#E1E5F0" BorderThickness="1" CornerRadius="9" Padding="18" Margin="0,0,0,10">
+                  <Border BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="9" Padding="18" Margin="0,0,0,10">
                     <CheckBox x:Name="Shortcuts" IsChecked="True" Margin="0">
                       <StackPanel>
                         <TextBlock Text="{local:Tr DesktopShortcut}" FontSize="15" />
@@ -232,7 +232,7 @@
                       </StackPanel>
                     </CheckBox>
                   </Border>
-                  <Border BorderBrush="#E1E5F0" BorderThickness="1" CornerRadius="9" Padding="18">
+                  <Border BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="9" Padding="18">
                     <CheckBox x:Name="StartMenuShortcut" IsChecked="True" Margin="0">
                       <StackPanel>
                         <TextBlock Text="{local:Tr MenuShortcut}" FontSize="15" />
@@ -242,7 +242,7 @@
                   </Border>
                 </StackPanel>
                 <TextBlock x:Name="RequiredSpace" FontSize="12" Foreground="{DynamicResource Muted}" Margin="4,18,4,0" />
-                <Border x:Name="RetentionBox" Visibility="Collapsed" Background="#F0F2F8" CornerRadius="9" Padding="18" Margin="0,10,0,0">
+                <Border x:Name="RetentionBox" Visibility="Collapsed" Background="{DynamicResource Surface}" CornerRadius="9" Padding="18" Margin="0,10,0,0">
                   <StackPanel>
                     <TextBlock x:Name="RetentionTitle" Text="{local:Tr RetentionTitle}" FontWeight="SemiBold" />
                     <TextBlock x:Name="Retention" Foreground="{DynamicResource Muted}" FontSize="13" Margin="0,8,0,0" />
@@ -258,7 +258,7 @@
                 </Grid>
                 <TextBlock x:Name="ProgressTitle" Text="{local:Tr Installing}" FontSize="29" FontWeight="SemiBold" TextAlignment="Center" />
                 <TextBlock x:Name="ProgressDescription" Text="{local:Tr InstallBody}" TextAlignment="Center" Foreground="{DynamicResource Muted}" Margin="0,9,0,18" />
-                <Border Background="White" BorderBrush="#E1E5F0" BorderThickness="1" CornerRadius="9" Padding="18,8">
+                <Border Background="{DynamicResource WhiteSurface}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="9" Padding="18,8">
                   <StackPanel>
                     <DockPanel Margin="0,9">
                       <TextBlock x:Name="PrepareState" DockPanel.Dock="Right" Foreground="{DynamicResource Muted}" />
@@ -276,18 +276,18 @@
                 </Border>
                 <ProgressBar x:Name="Progress" Height="6" Minimum="0" Maximum="100" Margin="0,17,0,12" />
                 <TextBlock x:Name="Status" Text="{local:Tr Preparing}" Foreground="{DynamicResource Muted}" FontSize="13" TextAlignment="Center" />
-                <Border x:Name="ErrorPanel" Visibility="Collapsed" Background="#FFF0F1" CornerRadius="9" Padding="16" Margin="0,18,0,0">
+                <Border x:Name="ErrorPanel" Visibility="Collapsed" Background="{DynamicResource ErrorSurface}" CornerRadius="9" Padding="16" Margin="0,18,0,0">
                   <StackPanel>
-                    <TextBlock Text="{local:Tr Failed}" FontWeight="SemiBold" Foreground="#A32C42" />
-                    <TextBlock x:Name="ErrorText" Foreground="#8B3D4B" FontSize="13" Margin="0,8,0,12" />
+                    <TextBlock Text="{local:Tr Failed}" FontWeight="SemiBold" Foreground="{DynamicResource ErrorBrush}" />
+                    <TextBlock x:Name="ErrorText" Foreground="{DynamicResource ErrorBrush}" FontSize="13" Margin="0,8,0,12" />
                     <Button x:Name="Log" Content="{local:Tr Log}" Click="LogClick" HorizontalAlignment="Left" Margin="0" />
                   </StackPanel>
                 </Border>
               </StackPanel>
             </ScrollViewer>
             <StackPanel x:Name="ResultPage" Visibility="Collapsed" VerticalAlignment="Center" MaxWidth="760">
-              <Border Width="70" Height="70" Background="#E7F6EF" CornerRadius="22" HorizontalAlignment="Center" Margin="0,0,0,22">
-                <TextBlock Text="✓" Foreground="#24855C" FontSize="38" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              <Border Width="70" Height="70" Background="{DynamicResource SuccessSurface}" CornerRadius="22" HorizontalAlignment="Center" Margin="0,0,0,22">
+                <TextBlock Text="✓" Foreground="{DynamicResource SuccessBrush}" FontSize="38" HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
               <TextBlock x:Name="ResultTitle" Text="{local:Tr ResultTitle}" FontSize="32" FontWeight="SemiBold" TextAlignment="Center" />
               <TextBlock x:Name="ResultDescription" Foreground="{DynamicResource Muted}" FontSize="16" TextAlignment="Center" LineHeight="25" Margin="0,12,0,24" />
@@ -300,7 +300,7 @@
               <RowDefinition Height="Auto" />
               <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <TextBlock x:Name="InlineNotice" Foreground="#A32C42" FontSize="12" Margin="0,0,0,8" />
+            <TextBlock x:Name="InlineNotice" Foreground="{DynamicResource ErrorBrush}" FontSize="12" Margin="0,0,0,8" />
             <Border Grid.Row="1" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Padding="0,18,0,0">
               <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
@@ -316,9 +316,9 @@
         </Grid>
       </Grid>
       <Grid x:Name="CancelOverlay" Grid.RowSpan="2" Panel.ZIndex="20" Visibility="Collapsed" Background="#291B2638" PreviewKeyDown="CancelOverlayKeyDown">
-        <Border Width="480" MaxWidth="700" HorizontalAlignment="Center" VerticalAlignment="Center" Background="White" BorderBrush="#DEE3ED" BorderThickness="1" CornerRadius="16" Padding="32" KeyboardNavigation.TabNavigation="Cycle">
+        <Border Width="480" MaxWidth="700" HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource WhiteSurface}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="16" Padding="32" KeyboardNavigation.TabNavigation="Cycle">
           <StackPanel>
-            <TextBlock Text="DivineLabs" Foreground="#6658E8" FontSize="12" Margin="0,0,0,18"/>
+            <TextBlock Text="DivineLabs" Foreground="{DynamicResource Accent}" FontSize="12" Margin="0,0,0,18"/>
             <TextBlock x:Name="CancelTitle" Text="{local:Tr CancelTitle}" FontWeight="SemiBold" FontSize="24" Margin="0,0,0,18"/>
             <TextBlock x:Name="CancelDescription" Text="{local:Tr CancelBody}" Foreground="{DynamicResource Muted}" LineHeight="23" Margin="0,0,0,28"/>
             <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/></Grid.ColumnDefinitions>

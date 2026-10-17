@@ -1,0 +1,4 @@
+<UserControl x:Class="DivineLabs.IdleSlayer.Launcher.ThemePicker"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <ComboBox x:Name="Choice" Width="140" Height="34" MinHeight="34" FontSize="13" Margin="0" Padding="8,5" SelectionChanged="ThemeChanged" DisplayMemberPath="Title" AutomationProperties.Name="Theme"/>
+</UserControl>

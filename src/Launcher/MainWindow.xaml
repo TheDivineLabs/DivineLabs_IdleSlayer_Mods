@@ -7,16 +7,16 @@
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Window.Resources>
-  <Border Background="{StaticResource Background}" BorderBrush="{StaticResource Line}" BorderThickness="1" TextElement.FontFamily="Segoe UI" TextElement.Foreground="{StaticResource Text}">
+  <Border Background="{DynamicResource Background}" BorderBrush="{DynamicResource Line}" BorderThickness="1" TextElement.FontFamily="Segoe UI" TextElement.Foreground="{DynamicResource Text}">
   <Grid><Grid.RowDefinitions><RowDefinition Height="50"/><RowDefinition/></Grid.RowDefinitions>
-    <Border Background="#F4F6FC" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+    <Border Background="{DynamicResource HeaderSurface}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
       <DockPanel Margin="16,0,0,0">
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" shell:WindowChrome.IsHitTestVisibleInChrome="True">
           <Button Style="{StaticResource ChromeButton}" Click="MinimizeClick" AutomationProperties.Name="Свернуть"><Image Source="{StaticResource MinimizeIcon}" Width="12" Height="1.2"/></Button>
           <Button Style="{StaticResource ChromeButton}" Click="MaximizeClick" AutomationProperties.Name="Развернуть"><Image Style="{StaticResource MaximizeGlyph}"/></Button>
           <Button Style="{StaticResource ChromeButton}" Click="CloseClick" AutomationProperties.Name="Закрыть"><Image Source="{StaticResource CloseIcon}" Width="12" Height="12"/></Button>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Image Source="{StaticResource BadgeLogo}" Width="28" Height="28" Margin="0,0,12,0"/><TextBlock Text="DivineLabs Idle Slayer Mods" FontWeight="SemiBold" FontSize="16"/></StackPanel>
+        <local:ThemePicker DockPanel.Dock="Right" Margin="0,0,16,0" VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True"/><local:LanguageMenu x:Name="LanguagePicker" DockPanel.Dock="Right" Margin="0,0,12,0" VerticalAlignment="Center" LanguageChanged="LanguageChanged" shell:WindowChrome.IsHitTestVisibleInChrome="True"/><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Image Source="{StaticResource BadgeLogo}" Width="28" Height="28" Margin="0,0,12,0"/><TextBlock Text="DivineLabs Idle Slayer Mods" FontWeight="SemiBold" FontSize="16"/></StackPanel>
       </DockPanel>
     </Border>
   <Grid Grid.Row="1">
@@ -24,22 +24,23 @@
       <ColumnDefinition Width="200" />
       <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
-    <Border Background="#F4F6FC" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+    <Border Background="{DynamicResource HeaderSurface}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,1,0">
       <DockPanel Margin="16,28">
         <StackPanel DockPanel.Dock="Top">
           <StackPanel Orientation="Horizontal" Margin="8,0,0,8">
             <Image Source="{StaticResource BadgeLogo}" Width="28" Height="28" Margin="0,0,8,0" />
-            <TextBlock Text="DivineLabs" Foreground="{StaticResource Accent}" FontSize="15" FontWeight="Bold" />
+            <TextBlock Text="DivineLabs" Foreground="{DynamicResource Accent}" FontSize="15" FontWeight="Bold" />
           </StackPanel>
           <TextBlock Text="IDLE SLAYER" Style="{StaticResource Caption}" Margin="8,0,0,32" />
-          <Button x:Name="NavHome" Content="Главная" Tag="home" Click="Navigate" Style="{StaticResource NavigationButton}" />
-          <Button x:Name="NavFeatures" Content="Функции" Tag="features" Click="Navigate" Style="{StaticResource NavigationButton}" />
-          <Button x:Name="NavResources" Content="Ресурсы" Tag="resources" Click="Navigate" Style="{StaticResource NavigationButton}" />
-          <Button x:Name="NavSettings" Content="Настройки" Tag="settings" Click="Navigate" Style="{StaticResource NavigationButton}" />
+          <Button x:Name="NavHome" Content="{local:Tr Home}" Tag="home" Click="Navigate" Style="{StaticResource NavigationButton}" />
+          <Button x:Name="NavFeatures" Content="{local:Tr Functions}" Tag="features" Click="Navigate" Style="{StaticResource NavigationButton}" />
+          <Button x:Name="NavResources" Content="{local:Tr Resources}" Tag="resources" Click="Navigate" Style="{StaticResource NavigationButton}" />
+          <Button x:Name="NavSettings" Content="{local:Tr Settings}" Tag="settings" Click="Navigate" Style="{StaticResource NavigationButton}" />
+          <Button x:Name="NavClients" Tag="clients" Click="Navigate" Style="{StaticResource NavigationButton}"><TextBlock Text="{local:Tr Clients}" TextWrapping="Wrap"/></Button>
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
-          <TextBlock x:Name="Connection" Text="Нет связи" Foreground="{StaticResource Muted}" Margin="8,12" />
-          <TextBlock Text="DivineLabs / 0.5.0" FontSize="11" Foreground="{StaticResource Muted}" Margin="8" />
+          <TextBlock x:Name="Connection" Text="{local:Tr NoConnection}" Foreground="{DynamicResource Muted}" Margin="8,12" />
+          <TextBlock Text="DivineLabs / 0.5.0" FontSize="11" Foreground="{DynamicResource Muted}" Margin="8" />
         </StackPanel>
       </DockPanel>
     </Border>
@@ -48,12 +49,13 @@
         <RowDefinition Height="*" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
+      <local:ClientsView x:Name="ClientsPage" Visibility="Collapsed"/>
       <ScrollViewer x:Name="HomePage" VerticalScrollBarVisibility="Auto">
         <StackPanel>
           <Border Style="{StaticResource Card}" Padding="0" ClipToBounds="True">
             <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition/></Grid.ColumnDefinitions>
               <Image Source="Installer.cover.png" Height="176" Stretch="UniformToFill"/>
-              <StackPanel Grid.Column="1" Margin="26,22" VerticalAlignment="Center"><TextBlock Text="DivineLabs · Idle Slayer" Foreground="{StaticResource Accent}" FontSize="11"/><TextBlock Text="Играйте в своём темпе" FontSize="29" FontWeight="SemiBold" Margin="0,8,0,12"/><TextBlock Text="Ваши функции, ресурсы и настройки — в одном месте." Style="{StaticResource Caption}" Margin="0"/></StackPanel>
+              <StackPanel Grid.Column="1" Margin="26,22" VerticalAlignment="Center"><TextBlock Text="DivineLabs · Idle Slayer" Foreground="{DynamicResource Accent}" FontSize="11"/><TextBlock Text="{local:Tr Pace}" FontSize="29" FontWeight="SemiBold" Margin="0,8,0,12"/><TextBlock Text="{local:Tr HomeBody}" Style="{StaticResource Caption}" Margin="0"/></StackPanel>
             </Grid>
           </Border>
           <Border Style="{StaticResource Card}">
@@ -62,18 +64,18 @@
               <TextBlock x:Name="Detail" Style="{StaticResource Caption}" />
               <ProgressBar x:Name="Progress" Visibility="Collapsed" Margin="0,6,0,18" />
               <WrapPanel>
-                <Button x:Name="Play" Content="Играть →" Style="{StaticResource Primary}" Click="PlayClick" />
-                <Button x:Name="Vanilla" Content="Без модов" Click="VanillaClick" />
+                <Button x:Name="Play" Content="{local:Tr Play}" Style="{StaticResource Primary}" Click="PlayClick" />
+                <Button x:Name="Vanilla" Content="{local:Tr Vanilla}" Click="VanillaClick" />
               </WrapPanel>
             </StackPanel>
           </Border>
           <local:SocialLinks Margin="0,0,0,16"/>
           <Border Style="{StaticResource Card}">
             <StackPanel>
-              <TextBlock Text="Ваши функции" FontSize="19" Margin="0,0,0,16" />
+              <TextBlock Text="{local:Tr YourFeatures}" FontSize="19" Margin="0,0,0,16" />
               <TextBlock x:Name="Summary" FontSize="19" TextWrapping="Wrap" />
               <TextBlock x:Name="MenuHint" Style="{StaticResource Caption}" />
-              <Button Content="Настроить функции" Tag="features" Click="Navigate" HorizontalAlignment="Left" />
+              <Button Content="{local:Tr ConfigureFeatures}" Tag="features" Click="Navigate" HorizontalAlignment="Left" />
             </StackPanel>
           </Border>
         </StackPanel>
@@ -84,16 +86,16 @@
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <StackPanel>
-          <TextBlock Text="Функции" Style="{StaticResource Heading}" />
-          <CheckBox x:Name="AllEnabled" Content="Функции включены" Click="AllClick" />
-          <TextBlock Text="Поиск по названию или категории" Style="{StaticResource Caption}" />
-          <TextBox x:Name="Search" ToolTip="Поиск по названию и категории" TextChanged="FilterChanged" />
+          <TextBlock Text="{local:Tr Functions}" Style="{StaticResource Heading}" />
+          <CheckBox x:Name="AllEnabled" Content="{local:Tr FeaturesEnabled}" Click="AllClick" />
+          <TextBlock Text="{local:Tr SearchFeatures}" Style="{StaticResource Caption}" />
+          <TextBox x:Name="Search" ToolTip="{local:Tr SearchCategory}" TextChanged="FilterChanged" />
           <WrapPanel>
-            <Button Content="Все" Tag="all" Click="CategoryClick" />
-            <Button Content="Избранное" Tag="favorites" Click="CategoryClick" />
-            <Button Content="Экономика" Tag="Экономика" Click="CategoryClick" />
-            <Button Content="Бой" Tag="Бой" Click="CategoryClick" />
-            <Button Content="Покупки" Tag="Покупки" Click="CategoryClick" />
+            <Button Content="{local:Tr All}" Tag="all" Click="CategoryClick" />
+            <Button Content="{local:Tr Favorites}" Tag="favorites" Click="CategoryClick" />
+            <Button Content="{local:Tr Economy}" Tag="Экономика" Click="CategoryClick" />
+            <Button Content="{local:Tr Combat}" Tag="Бой" Click="CategoryClick" />
+            <Button Content="{local:Tr Purchases}" Tag="Покупки" Click="CategoryClick" />
           </WrapPanel>
         </StackPanel>
         <ListBox x:Name="FeatureList" Grid.Row="1">
@@ -102,11 +104,11 @@
               <Border Style="{StaticResource Card}">
                 <StackPanel>
                   <DockPanel>
-                    <Button Content="{Binding FavoriteLabel}" Tag="{Binding Id}" Click="FavoriteClick" DockPanel.Dock="Right" ToolTip="Избранное" />
+                    <Button Content="{Binding FavoriteLabel}" Tag="{Binding Id}" Click="FavoriteClick" DockPanel.Dock="Right" ToolTip="{local:Tr Favorites}" />
                     <TextBlock Text="{Binding Title}" FontSize="22" FontWeight="SemiBold" />
                   </DockPanel>
                   <TextBlock Text="{Binding Description}" Style="{StaticResource Caption}" />
-                  <CheckBox Content="Включено" IsChecked="{Binding Enabled,Mode=OneWay}" Tag="{Binding Id}" Click="FeatureEnabledClick" />
+                  <CheckBox Content="{local:Tr Enabled}" IsChecked="{Binding Enabled,Mode=OneWay}" Tag="{Binding Id}" Click="FeatureEnabledClick" />
                   <WrapPanel Visibility="{Binding MultiplierVisibility}">
                     <TextBox Text="{Binding Value,Mode=OneWay}" Width="150" FontSize="22" Tag="{Binding Id}" LostKeyboardFocus="NumberCommit" KeyDown="NumberKey" />
                     <Button Content="×1" Tag="{Binding Id}" Click="PresetClick" />
@@ -125,11 +127,11 @@
       <local:ResourceView x:Name="ResourcesPage" Visibility="Collapsed" />
       <ScrollViewer x:Name="SettingsPage" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
         <StackPanel>
-          <TextBlock Text="Настройки" Style="{StaticResource Heading}" />
+          <TextBlock Text="{local:Tr Settings}" Style="{StaticResource Heading}" />
           <Border Style="{StaticResource Card}">
             <StackPanel>
-              <TextBlock Text="Клавиши" FontSize="20" />
-              <TextBlock Text="Нажмите кнопку и новое сочетание. Esc — отмена, Backspace — очистить (кроме меню)." Style="{StaticResource Caption}" />
+              <TextBlock Text="{local:Tr Keys}" FontSize="20" />
+              <TextBlock Text="{local:Tr KeyHelp}" Style="{StaticResource Caption}" />
               <ItemsControl x:Name="KeyList">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
@@ -144,37 +146,37 @@
           </Border>
           <Border Style="{StaticResource Card}">
             <StackPanel>
-              <TextBlock Text="Игровой интерфейс" FontSize="20" Margin="0,0,0,12" />
-              <CheckBox x:Name="WidgetVisible" Content="Показывать виджет" Click="WidgetClick" />
-              <CheckBox x:Name="ActiveListVisible" Content="Список активных функций в игре" Click="ActiveListClick" />
-              <CheckBox x:Name="ReduceMotion" Content="Уменьшить анимации" Click="MotionClick" />
-              <TextBlock Text="Прозрачность виджета · 20–100%" Style="{StaticResource Caption}" />
+              <TextBlock Text="{local:Tr GameUi}" FontSize="20" Margin="0,0,0,12" />
+              <CheckBox x:Name="WidgetVisible" Content="{local:Tr ShowWidget}" Click="WidgetClick" />
+              <CheckBox x:Name="ActiveListVisible" Content="{local:Tr ActiveList}" Click="ActiveListClick" />
+              <CheckBox x:Name="ReduceMotion" Content="{local:Tr ReduceMotion}" Click="MotionClick" />
+              <TextBlock Text="{local:Tr WidgetOpacity}" Style="{StaticResource Caption}" />
               <Slider x:Name="OpacitySlider" Minimum="20" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True" PreviewMouseLeftButtonUp="VisualCommit" PreviewKeyUp="VisualKeyCommit" />
-              <TextBlock Text="Масштаб меню · 75–150%" Style="{StaticResource Caption}" />
+              <TextBlock Text="{local:Tr MenuScale}" Style="{StaticResource Caption}" />
               <Slider x:Name="ScaleSlider" Minimum="75" Maximum="150" TickFrequency="5" IsSnapToTickEnabled="True" PreviewMouseLeftButtonUp="VisualCommit" PreviewKeyUp="VisualKeyCommit" />
-              <Button Content="Сбросить расположение виджета" Click="ResetWidget" Margin="0,18,0,0" HorizontalAlignment="Left" />
-              <TextBlock Text="Виджет можно перетащить мышью прямо в игре." Style="{StaticResource Caption}" />
+              <Button Content="{local:Tr ResetWidget}" Click="ResetWidget" Margin="0,18,0,0" HorizontalAlignment="Left" />
+              <TextBlock Text="{local:Tr DragWidget}" Style="{StaticResource Caption}" />
             </StackPanel>
           </Border>
-          <Expander Header="Обслуживание" Foreground="{StaticResource Text}" Margin="0,0,0,20">
+          <Expander Header="Обслуживание" Foreground="{DynamicResource Text}" Margin="0,0,0,20">
             <StackPanel Margin="0,16,0,0">
               <TextBlock x:Name="GamePath" Style="{StaticResource Caption}" />
               <WrapPanel>
-                <Button x:Name="Choose" Content="Выбрать игру" Click="ChooseGame" />
-                <Button x:Name="Repair" Content="Проверить / восстановить" Click="RepairClick" />
-                <Button x:Name="Restore" Content="Вернуть прошлую установку" Click="RestoreClick" />
-                <Button Content="Папка программы" Click="OpenHome" />
-                <Button Content="Журнал" Click="OpenLog" />
+                <Button x:Name="Choose" Content="{local:Tr ChooseGame}" Click="ChooseGame" />
+                <Button x:Name="Repair" Content="{local:Tr Repair}" Click="RepairClick" />
+                <Button x:Name="Restore" Content="{local:Tr Restore}" Click="RestoreClick" />
+                <Button Content="{local:Tr AppHome}" Click="OpenHome" />
+                <Button Content="{local:Tr LogShort}" Click="OpenLog" />
               </WrapPanel>
             </StackPanel>
           </Expander>
-          <Expander Header="Компоненты и лицензии" Foreground="{StaticResource Text}">
-            <TextBlock Margin="0,16" Style="{StaticResource Caption}" Text="DivineLabs 0.5.0. Собственные интерфейсы и игровые функции. DivineLabs_Loader основан на MelonLoader 0.7.3 (Apache-2.0). .NET, Unity, Harmony и Il2CppInterop сохраняют авторство. Полные лицензии: Docs/Licenses." />
+          <Expander Header="Компоненты и лицензии" Foreground="{DynamicResource Text}">
+            <TextBlock Margin="0,16" Style="{StaticResource Caption}" Text="DivineLabs · MIT. DivineLabs_Loader · MelonLoader 0.7.3 (Apache-2.0). .NET · Unity · Harmony · Il2CppInterop. Docs/Licenses." />
           </Expander>
         </StackPanel>
       </ScrollViewer>
-      <Border Grid.Row="1" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Margin="0,12,0,0" Padding="0,12,0,0">
-        <TextBlock x:Name="Notice" Foreground="{StaticResource Muted}" Text="Изменения применяются автоматически." />
+      <Border Grid.Row="1" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Margin="0,12,0,0" Padding="0,12,0,0">
+        <TextBlock x:Name="Notice" Foreground="{DynamicResource Muted}" Text="{local:Tr AutoChanges}" />
       </Border>
     </Grid>
   </Grid>

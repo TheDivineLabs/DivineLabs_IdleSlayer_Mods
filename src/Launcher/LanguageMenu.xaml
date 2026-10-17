@@ -1,24 +1,26 @@
 <UserControl x:Class="DivineLabs.IdleSlayer.Launcher.LanguageMenu"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- xmlns:local="clr-namespace:DivineLabs.IdleSlayer.Launcher" Focusable="False">
- <UserControl.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/DivineLabs.DesktopUI;component/SetupTheme.xaml"/></ResourceDictionary.MergedDictionaries></ResourceDictionary></UserControl.Resources>
+ xmlns:local="clr-namespace:DivineLabs.IdleSlayer.Launcher" Focusable="False"><UserControl.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/DivineLabs.DesktopUI;component/SetupTheme.xaml"/></ResourceDictionary.MergedDictionaries></ResourceDictionary></UserControl.Resources>
  <Grid>
   <Button x:Name="Trigger" Click="ToggleMenu" PreviewKeyDown="TriggerKeyDown" MinWidth="174" Height="34" Margin="0" Padding="12,6" FocusVisualStyle="{StaticResource KeyboardFocus}" AutomationProperties.Name="Language / Язык">
    <Button.Template><ControlTemplate TargetType="Button">
-    <Border x:Name="Body" Background="#F4F6FC" BorderBrush="#E5E8F0" BorderThickness="1" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border>
-    <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Body" Property="Background" Value="#EEEAFD"/></Trigger></ControlTemplate.Triggers>
+    <Border x:Name="Body" Background="{DynamicResource HeaderSurface}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border>
+    <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Body" Property="Background" Value="{DynamicResource HoverSurface}"/></Trigger></ControlTemplate.Triggers>
    </ControlTemplate></Button.Template>
-   <DockPanel><Path Data="M0,0 L5,5 L10,0" Stroke="#667389" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="10" Height="6" DockPanel.Dock="Right" Margin="22,0,0,0" VerticalAlignment="Center"/><Image x:Name="CurrentFlag" Width="23" Height="16" Margin="0,0,10,0"/><TextBlock x:Name="CurrentLabel" FontSize="13"/></DockPanel>
+   <DockPanel><Path Data="M0,0 L5,5 L10,0" Stroke="{DynamicResource Muted}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="10" Height="6" DockPanel.Dock="Right" Margin="22,0,0,0" VerticalAlignment="Center"/><Image x:Name="CurrentFlag" Width="23" Height="16" Margin="0,0,10,0"/><TextBlock x:Name="CurrentLabel" FontSize="13"/></DockPanel>
   </Button>
   <Popup x:Name="Menu" PlacementTarget="{Binding ElementName=Trigger}" Placement="Bottom" StaysOpen="True" AllowsTransparency="True" PopupAnimation="None" Opened="MenuOpened">
-   <Border PreviewKeyDown="MenuKeyDown" Background="White" BorderBrush="#DEE3ED" BorderThickness="1" CornerRadius="12" Padding="10" Width="280" Margin="0,6,0,0" KeyboardNavigation.TabNavigation="Cycle">
+   <Border PreviewKeyDown="MenuKeyDown" Background="{DynamicResource WhiteSurface}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="10" Width="280" Margin="0,6,0,0" KeyboardNavigation.TabNavigation="Cycle">
     <StackPanel>
-     <TextBlock Text="{local:Tr Language}" Foreground="#667389" FontSize="10" Margin="10,4,10,8"/>
+     <TextBlock Text="{local:Tr Language}" Foreground="{DynamicResource Muted}" FontSize="10" Margin="10,4,10,8"/>
      <Button x:Name="Auto" Tag="auto" Click="SelectLanguage" Style="{StaticResource LanguageOption}">
-      <DockPanel><Image Source="{StaticResource FlagAuto}" Width="22" Height="20" Margin="0,0,10,0"/><StackPanel><TextBlock Text="{local:Tr Automatic}"/><TextBlock x:Name="Recommended" FontSize="10" Foreground="#667389" Margin="0,3,0,0"/></StackPanel></DockPanel>
+      <DockPanel><Image Source="{StaticResource FlagAuto}" Width="22" Height="20" Margin="0,0,10,0"/><StackPanel><TextBlock Text="{local:Tr Automatic}"/><TextBlock x:Name="Recommended" FontSize="10" Foreground="{DynamicResource Muted}" Margin="0,3,0,0"/></StackPanel></DockPanel>
      </Button>
-     <Button x:Name="Russian" Tag="ru" Click="SelectLanguage" Style="{StaticResource LanguageOption}"><DockPanel><TextBlock x:Name="RuCheck" Text="✓" Foreground="#6658E8" DockPanel.Dock="Right"/><Image Source="{StaticResource FlagRu}" Width="23" Height="16" Margin="0,0,10,0"/><TextBlock Text="Русский"/></DockPanel></Button>
-     <Button x:Name="English" Tag="en" Click="SelectLanguage" Style="{StaticResource LanguageOption}"><DockPanel><TextBlock x:Name="EnCheck" Text="✓" Foreground="#6658E8" DockPanel.Dock="Right"/><Image Source="{StaticResource FlagEn}" Width="23" Height="16" Margin="0,0,10,0"/><TextBlock Text="English"/></DockPanel></Button>
+     <Button x:Name="Russian" Tag="ru" Click="SelectLanguage" Style="{StaticResource LanguageOption}"><DockPanel><TextBlock x:Name="RuCheck" Text="✓" Foreground="{DynamicResource Accent}" DockPanel.Dock="Right"/><Image Source="{StaticResource FlagRu}" Width="23" Height="16" Margin="0,0,10,0"/><TextBlock Text="Русский"/></DockPanel></Button>
+     <Button x:Name="English" Tag="en" Click="SelectLanguage" Style="{StaticResource LanguageOption}"><DockPanel><TextBlock x:Name="EnCheck" Text="✓" Foreground="{DynamicResource Accent}" DockPanel.Dock="Right"/><Image Source="{StaticResource FlagEn}" Width="23" Height="16" Margin="0,0,10,0"/><TextBlock Text="English"/></DockPanel></Button>
+     <Button x:Name="Ukrainian" Tag="uk" Click="SelectLanguage" Style="{StaticResource LanguageOption}"><DockPanel><TextBlock x:Name="UkCheck" Text="✓" Foreground="{DynamicResource Accent}" DockPanel.Dock="Right"/><Image Source="{StaticResource FlagUk}" Width="23" Height="16" Margin="0,0,10,0"/><TextBlock Text="Українська"/></DockPanel></Button>
+     <Button x:Name="German" Tag="de" Click="SelectLanguage" Style="{StaticResource LanguageOption}"><DockPanel><TextBlock x:Name="DeCheck" Text="✓" Foreground="{DynamicResource Accent}" DockPanel.Dock="Right"/><Image Source="{StaticResource FlagDe}" Width="23" Height="16" Margin="0,0,10,0"/><TextBlock Text="Deutsch"/></DockPanel></Button>
+     <Button x:Name="Spanish" Tag="es" Click="SelectLanguage" Style="{StaticResource LanguageOption}"><DockPanel><TextBlock x:Name="EsCheck" Text="✓" Foreground="{DynamicResource Accent}" DockPanel.Dock="Right"/><Image Source="{StaticResource FlagEs}" Width="23" Height="16" Margin="0,0,10,0"/><TextBlock Text="Español"/></DockPanel></Button>
     </StackPanel>
    </Border>
   </Popup>

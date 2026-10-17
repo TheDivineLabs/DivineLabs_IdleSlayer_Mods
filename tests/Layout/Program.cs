@@ -8,8 +8,15 @@ internal static class Program
 {
     [STAThread]static void Main(string[] args)
     {
+        try{Run(args);}
+        catch(Exception error){Console.Error.WriteLine(error);Environment.ExitCode=1;Application.Current?.Shutdown(1);}
+    }
+    static void Run(string[] args)
+    {
         string output=args.Length>0?args[0]:@"W:\DEV\artifacts\DivineLabs_IdleSlayer_Mods\design-0.4";Directory.CreateDirectory(output);
         var app=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
+        AppContext.SetSwitch("DivineLabs.Interface.Transient",true);
+        if(args.Contains("--appearance-check")){AppearanceChecks.Run(output);Console.WriteLine("Appearance checks complete: "+output);app.Shutdown();return;}
         if(args.Contains("--window-check")){DesktopChecks.Run(output);Console.WriteLine("Shown-window checks complete: "+output);app.Shutdown();return;}
         if(!args.Contains("--maintenance-only")) foreach(double scale in new[]{1d,1.5d,2d}){
             var window=new MainWindow();

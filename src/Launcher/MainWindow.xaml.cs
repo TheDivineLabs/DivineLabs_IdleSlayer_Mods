@@ -19,31 +19,34 @@ public partial class MainWindow:Window
     private bool busy,polling,supported,ready,refreshing,editing;
     private string category="all",capture;
     private long renderedRevision=-1;
+    private string selectedPage="home";
     public MainWindow()
     {
-        InitializeComponent();ResourcesPage.Attach(client);Style=(Style)FindResource(typeof(Window));
-        DesktopWindow.Attach(this);
+        InterfacePreferences.Load();InitializeComponent();ResourcesPage.Attach(client);Style=(Style)FindResource(typeof(Window));
+        DesktopWindow.Attach(this);ThemeManager.Attach(this);
+        ThemeManager.Changed+=ThemeChanged;
+        Closed+=(_,_)=>ThemeManager.Changed-=ThemeChanged;
         Icon=new BitmapImage(new Uri("pack://application:,,,/DivineLabs.IdleSlayer.Launcher;component/DivineLabs.png"));
         PreviewKeyDown+=CaptureKey;PreviewMouseDown+=CaptureMouse;
         Loaded+=async(_,_)=>{
             client.Game=Installation.FindGame();await TryRefresh();await Run(()=>Prepare());
             poll.Start();SelectPage("home");
         };
-        Closing+=(_,e)=>{if(busy){e.Cancel=true;Notice.Text="Дождитесь завершения текущей операции.";return;}lifetime.Cancel();poll.Stop();searchDelay.Stop();};
+        Closing+=(_,e)=>{if(busy){e.Cancel=true;Notice.Text=SetupText.Current["WaitOperation"];return;}lifetime.Cancel();poll.Stop();searchDelay.Stop();};
         poll.Tick+=async(_,_)=>{
             if(polling||busy||editing||capture!=null)return;polling=true;
-            try{await client.Refresh();Render(false);}catch{Connection.Text=Installation.Running?"Нет связи с игрой":"Игра не запущена";}
+            try{await client.Refresh();Render(false);}catch{Connection.Text=Installation.Running?SetupText.Current["NoGameConnection"]:SetupText.Current["GameStopped"];}
             finally{polling=false;RefreshState();}
         };
         searchDelay.Tick+=(_,_)=>{searchDelay.Stop();Filter();};
         Render(true);RefreshState();
     }
     private async Task TryRefresh(){try{await client.Refresh();Render(true);}catch(Exception e){ShowError(e);}}
-    internal void ShowError(Exception e){Product.Record(e);Notice.Text=e is OperationCanceledException?"Нет связи с игрой. Изменение не подтверждено.":System.Text.RegularExpressions.Regex.IsMatch(e.Message,@"^[А-ЯЁа-яё]")?e.Message:"Не удалось выполнить действие. Подробности сохранены в журнале.";}
+    internal void ShowError(Exception e){Product.Record(e);Notice.Text=e is OperationCanceledException?SetupText.Current["ConnectionLost"]:System.Text.RegularExpressions.Regex.IsMatch(e.Message,@"^[А-ЯЁа-яё]")?e.Message:SetupText.Current["ActionFailed"];}
     private async Task Change(Action<Settings> action)
     {
         if(refreshing||editing)return;editing=true;RefreshState();
-        try{await client.Change(action);Notice.Text="Настройки применены.";Render(true);}
+        try{await client.Change(action);Notice.Text=SetupText.Current["SettingsApplied"];Render(true);}
         catch(Exception e){ShowError(e);Render(true);}
         finally{editing=false;RefreshState();}
     }
@@ -57,10 +60,10 @@ public partial class MainWindow:Window
             AllEnabled.IsChecked=s.Enabled;WidgetVisible.IsChecked=s.WidgetVisible;ActiveListVisible.IsChecked=s.ActiveListVisible;ReduceMotion.IsChecked=s.ReduceMotion;
             OpacitySlider.Value=s.WidgetOpacity*100;ScaleSlider.Value=s.UiScale*100;
             Motion.SetEnabled(this,!s.ReduceMotion&&SystemParameters.ClientAreaAnimation);
-            KeyList.ItemsSource=FeatureCatalog.Actions.Select(id=>new{Id=id,Title=FeatureCatalog.ActionTitle(id),Label=s.Bindings[id].ToString()}).ToArray();
-            var active=FeatureCatalog.All.Where(f=>s.Enabled&&s.FeatureEnabled(f.Id)).Select(f=>f.Title+" "+(f.HasMultiplier?"×"+s.Multiplier(f.Id).ToString("G6",CultureInfo.InvariantCulture):"вкл")).ToArray();
-            Summary.Text=active.Length>0?string.Join("   ·   ",active):"Все функции выключены";
-            MenuHint.Text=$"Меню в игре — {s.Bindings["menu"]}.";
+            KeyList.ItemsSource=FeatureCatalog.Actions.Select(id=>new{Id=id,Title=SetupText.Current.Translate(FeatureCatalog.ActionTitle(id)),Label=SetupText.Current.Translate(s.Bindings[id].ToString())}).ToArray();
+            var active=FeatureCatalog.All.Where(f=>s.Enabled&&s.FeatureEnabled(f.Id)).Select(f=>SetupText.Current.Translate(f.Title)+" "+(f.HasMultiplier?"×"+s.Multiplier(f.Id).ToString("G6",CultureInfo.InvariantCulture):SetupText.Current["On"])).ToArray();
+            Summary.Text=active.Length>0?string.Join("   ·   ",active):SetupText.Current["AllDisabled"];
+            MenuHint.Text=string.Format(SetupText.Current["InGameMenuHint"],s.Bindings["menu"]);
             Filter();
         }finally{refreshing=false;}
     }
@@ -69,7 +72,7 @@ public partial class MainWindow:Window
         if(Search==null)return;
         string query=Search.Text.Trim();
         FeatureList.ItemsSource=features.Where(f=>(category=="all"||category=="favorites"&&client.Current.Favorites.Contains(f.Id)||category==f.Category)&&
-            (f.Title.Contains(query,StringComparison.OrdinalIgnoreCase)||f.Category.Contains(query,StringComparison.OrdinalIgnoreCase))).ToArray();
+            (f.Title.Contains(query,StringComparison.OrdinalIgnoreCase)||SetupText.Current.Translate(f.Category).Contains(query,StringComparison.OrdinalIgnoreCase))).ToArray();
     }
     private void FilterChanged(object sender,TextChangedEventArgs e){if(searchDelay==null)return;searchDelay.Stop();searchDelay.Start();}
     private void CategoryClick(object sender,RoutedEventArgs e){category=(string)((Button)sender).Tag;Filter();}
@@ -79,16 +82,20 @@ public partial class MainWindow:Window
     private void CloseClick(object sender,RoutedEventArgs e)=>Close();
     private void SelectPage(string name)
     {
-        foreach(var view in new FrameworkElement[]{HomePage,FeaturesPage,SettingsPage,ResourcesPage})view.Visibility=Visibility.Collapsed;
-        var page=name=="features"?(FrameworkElement)FeaturesPage:name=="settings"?SettingsPage:name=="resources"?ResourcesPage:HomePage;
+        selectedPage=name;
+        foreach(var view in new FrameworkElement[]{HomePage,FeaturesPage,SettingsPage,ResourcesPage,ClientsPage})view.Visibility=Visibility.Collapsed;
+        var page=name=="features"?(FrameworkElement)FeaturesPage:name=="settings"?SettingsPage:name=="resources"?ResourcesPage:name=="clients"?ClientsPage:HomePage;
         page.Visibility=Visibility.Visible;Motion.Enter(page);if(name=="resources")ResourcesPage.RefreshIfIdle();
-        foreach(var b in new[]{NavHome,NavFeatures,NavResources,NavSettings}){
+        if(name=="clients")ClientsPage.RefreshIfEmpty();
+        foreach(var b in new[]{NavHome,NavFeatures,NavResources,NavSettings,NavClients}){
             bool active=(string)b.Tag==name;
             b.BorderBrush=(System.Windows.Media.Brush)FindResource(active?"Accent":"WhiteSurface");
             b.Background=active?(System.Windows.Media.Brush)FindResource("SelectedSurface"):System.Windows.Media.Brushes.Transparent;
             b.Foreground=(System.Windows.Media.Brush)FindResource(active?"Accent":"Text");
         }
     }
+    private void LanguageChanged(object sender,EventArgs e){Render(true);RefreshState();ResourcesPage.RefreshLanguage();ClientsPage.RefreshLanguage();}
+    private void ThemeChanged()=>SelectPage(selectedPage);
     private async void AllClick(object s,RoutedEventArgs e){bool v=AllEnabled.IsChecked==true;await Change(c=>c.Enabled=v);}
     private async void FeatureEnabledClick(object sender,RoutedEventArgs e){var b=(CheckBox)sender;string id=(string)b.Tag;bool value=b.IsChecked==true;await Change(c=>c.SetFeatureEnabled(id,value));}
     private async void FavoriteClick(object sender,RoutedEventArgs e){string id=(string)((Button)sender).Tag;await Change(c=>c.Favorites=c.Favorites.Contains(id)?c.Favorites.Where(v=>v!=id).ToArray():c.Favorites.Append(id).ToArray());}
@@ -109,14 +116,14 @@ public partial class MainWindow:Window
     private async void VisualCommit(object s,MouseButtonEventArgs e)=>await CommitVisual();
     private async void VisualKeyCommit(object s,KeyEventArgs e){if(e.Key is Key.Left or Key.Right or Key.Up or Key.Down or Key.Home or Key.End)await CommitVisual();}
     private async void ResetWidget(object s,RoutedEventArgs e)=>await Change(c=>{c.WidgetX=1;c.WidgetY=0;});
-    private void CaptureClick(object sender,RoutedEventArgs e){capture=(string)((Button)sender).Tag;Notice.Text="Нажмите сочетание для «"+FeatureCatalog.ActionTitle(capture)+"». Esc — отмена.";Keyboard.Focus((Button)sender);}
+    private void CaptureClick(object sender,RoutedEventArgs e){capture=(string)((Button)sender).Tag;Notice.Text=string.Format(SetupText.Current["CaptureShortcut"],SetupText.Current.Translate(FeatureCatalog.ActionTitle(capture)));Keyboard.Focus((Button)sender);}
     private static int Modifiers()=>((Keyboard.Modifiers&ModifierKeys.Control)!=0?1:0)|((Keyboard.Modifiers&ModifierKeys.Alt)!=0?2:0)|((Keyboard.Modifiers&ModifierKeys.Shift)!=0?4:0);
     private async void CaptureKey(object sender,KeyEventArgs e)
     {
         if(capture==null)return;e.Handled=true;if(e.IsRepeat)return;Key key=e.Key==Key.System?e.SystemKey:e.Key;
-        if(key==Key.Escape){capture=null;Notice.Text="Назначение отменено.";return;}
+        if(key==Key.Escape){capture=null;Notice.Text=SetupText.Current["CaptureCancelled"];return;}
         if(key is Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LeftShift or Key.RightShift)return;
-        if((Keyboard.Modifiers&ModifierKeys.Windows)!=0){Notice.Text="Сочетания Windows недоступны.";return;}
+        if((Keyboard.Modifiers&ModifierKeys.Windows)!=0){Notice.Text=SetupText.Current["WindowsShortcut"];return;}
         await Assign(new(){Key=key==Key.Back?0:KeyInterop.VirtualKeyFromKey(key),Modifiers=key==Key.Back?0:Modifiers()});
     }
     private async void CaptureMouse(object sender,MouseButtonEventArgs e)
@@ -131,7 +138,7 @@ public partial class MainWindow:Window
         if(!Installation.ValidGame(client.Game))return;
         supported=await Task.Run(()=>Compatibility.Supported(client.Game));
         if(!supported||Installation.Running)return;
-        if(Installation.Restored(client.Game)&&!force){Detail.Text="Возвращена предыдущая установка. Для обновления используйте «Проверить / восстановить» в настройках.";return;}
+        if(Installation.Restored(client.Game)&&!force){Detail.Text=SetupText.Current["RestoredHelp"];return;}
         ready=await Installation.EnsureReadyAsync(client.Game,Reporter(),lifetime.Token,force);await TryRefresh();
     }
     private async Task Run(Func<Task> action)
@@ -142,12 +149,12 @@ public partial class MainWindow:Window
     private void RefreshState()
     {
         bool valid=Installation.ValidGame(client.Game),running=Installation.Running;
-        Connection.Text=running?(client.Connected?"● Игра подключена":"○ Нет связи с игрой"):"○ Игра не запущена";
-        State.Text=busy?"Подготовка…":running?"Игра запущена":!valid?"Найдём вашу игру":!supported?"Нужна проверка совместимости":ready?"Готово к игре":Installation.Restored(client.Game)?"Возвращена предыдущая установка":"Нужна подготовка";
-        if(!valid)Detail.Text="Установите Idle Slayer через Steam или выберите папку в настройках.";
-        else if(!supported&&!busy)Detail.Text="Для неизвестной версии игры доступен запуск без модов.";
-        else if(ready&&!busy&&!running)Detail.Text="Все компоненты готовы. Настройки применятся при запуске.";
-        GamePath.Text=valid?client.Game:"Папка игры не выбрана";
+        Connection.Text=running?(client.Connected?SetupText.Current["GameConnected"]:SetupText.Current["GameDisconnected"]):SetupText.Current["GameNotRunning"];
+        State.Text=busy?SetupText.Current["Preparing"]:running?SetupText.Current["GameRunning"]:!valid?SetupText.Current["FindGame"]:!supported?SetupText.Current["CompatibilityCheck"]:ready?SetupText.Current["Ready"]:Installation.Restored(client.Game)?SetupText.Current["PreviousRestored"]:SetupText.Current["PrepareNeeded"];
+        if(!valid)Detail.Text=SetupText.Current["InstallSteam"];
+        else if(!supported&&!busy)Detail.Text=SetupText.Current["UnsupportedGame"];
+        else if(ready&&!busy&&!running)Detail.Text=SetupText.Current["ComponentsReady"];
+        GamePath.Text=valid?client.Game:SetupText.Current["NoGameFolder"];
         Play.IsEnabled=valid&&!busy&&!running&&supported&&(ready||Installation.Restored(client.Game));
         Vanilla.IsEnabled=valid&&!busy&&!running;
         Choose.IsEnabled=Repair.IsEnabled=Restore.IsEnabled=!busy&&!running;
@@ -157,8 +164,8 @@ public partial class MainWindow:Window
     private async void PlayClick(object s,RoutedEventArgs e)=>await Run(()=>Installation.PlayAsync(client.Game,false,Reporter(),lifetime.Token));
     private async void VanillaClick(object s,RoutedEventArgs e)=>await Run(()=>Installation.PlayAsync(client.Game,true,Reporter(),lifetime.Token));
     private async void RepairClick(object s,RoutedEventArgs e)=>await Run(()=>Prepare(true));
-    private async void RestoreClick(object s,RoutedEventArgs e)=>await Run(async()=>{await Task.Run(()=>Installation.Restore(client.Game));ready=false;Detail.Text="Предыдущая установка восстановлена. Сохранения не откатывались.";await TryRefresh();});
-    private async void ChooseGame(object s,RoutedEventArgs e){var dialog=new OpenFolderDialog{Title="Установленная игра Idle Slayer"};if(dialog.ShowDialog()!=true)return;await Run(async()=>{Installation.RememberGame(dialog.FolderName);client.Game=dialog.FolderName;ready=false;await TryRefresh();await Prepare();});}
+    private async void RestoreClick(object s,RoutedEventArgs e)=>await Run(async()=>{await Task.Run(()=>Installation.Restore(client.Game));ready=false;Detail.Text=SetupText.Current["RestoreDone"];await TryRefresh();});
+    private async void ChooseGame(object s,RoutedEventArgs e){var dialog=new OpenFolderDialog{Title=SetupText.Current["GameFolder"]};if(dialog.ShowDialog()!=true)return;await Run(async()=>{Installation.RememberGame(dialog.FolderName);client.Game=dialog.FolderName;ready=false;await TryRefresh();await Prepare();});}
     private void OpenHome(object s,RoutedEventArgs e)=>Process.Start(new ProcessStartInfo(Product.Home){UseShellExecute=true});
-    private void OpenLog(object s,RoutedEventArgs e){if(File.Exists(Product.Log))Process.Start(new ProcessStartInfo(Product.Log){UseShellExecute=true});else Notice.Text="Журнал пока пуст.";}
+    private void OpenLog(object s,RoutedEventArgs e){if(File.Exists(Product.Log))Process.Start(new ProcessStartInfo(Product.Log){UseShellExecute=true});else Notice.Text=SetupText.Current["EmptyLog"];}
 }

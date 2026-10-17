@@ -1,5 +1,5 @@
 DivineLabs Idle Slayer Mods
-Copyright 2026 DivineLabs. Own code: Apache License 2.0.
+Copyright 2026 DivineLabs. Own code: MIT License.
 
 MelonLoader 0.7.3 (Lava Gang): Apache-2.0.
 Fork revision: 982ed9981ac5b0619648a2e79bcc02fd8861db33.
@@ -17,7 +17,7 @@ See licenses/ in source and Docs/Licenses/ in distribution for original license 
 
 Idle Slayer application icon, wordmark and promotional hero artwork: Pablo Leban.
 Extracted from the locally installed game and its Steam library artwork.
-Used to identify the game; these assets are excluded from the Apache-2.0 grant
+Used to identify the game; these assets are excluded from the MIT grant
 covering DivineLabs code. DivineLabs badge and code remain DivineLabs assets.
 Source: https://store.steampowered.com/app/1353300/Idle_Slayer/
 Installer portrait cover: AI-generated visual based on the game artwork and the approved design concept; game character rights remain with their respective owner.

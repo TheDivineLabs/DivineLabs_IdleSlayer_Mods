@@ -16,6 +16,7 @@ function RunDotnet([string[]]$Arguments){& $Dotnet @Arguments;if($LASTEXITCODE-n
 New-Item -ItemType Directory -Force $full|Out-Null
 $portable=Join-Path $full 'portable'
 Expand-Archive -LiteralPath $BasePortable -DestinationPath $portable
+foreach($document in @('LICENSE','THIRD-PARTY-NOTICES.txt','README.md')){Copy-Item -LiteralPath (Join-Path $root $document) -Destination (Join-Path $portable "Docs\$document")}
 RunDotnet @('publish',"$root\src\Launcher\Launcher.csproj",'-c','Release','-r','win-x64','--self-contained','true','-p:PublishSingleFile=true','-p:IncludeNativeLibrariesForSelfExtract=false','-p:DebugType=None','-p:DebugSymbols=false','-o',"$portable\App\Launcher")
 $archive=Join-Path $full 'DivineLabs-IdleSlayer-design-preview-portable.zip'
 & "$root\scripts\Package.ps1" -Portable $portable -Destination $archive

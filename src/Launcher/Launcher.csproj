@@ -2,6 +2,7 @@
 <Resource Include="../../assets/IdleSlayer.wordmark.png" Link="IdleSlayer.wordmark.png"/>
 <Resource Include="../../assets/Installer.cover.png" Link="Installer.cover.png"/>
 <EmbeddedResource Include="../../LICENSE" LogicalName="DivineLabs.License"/>
+<EmbeddedResource Include="Locales/*.json" LogicalName="DivineLabs.Locales.%(Filename)%(Extension)"/>
 <EmbeddedResource Include="../../THIRD-PARTY-NOTICES.txt" LogicalName="DivineLabs.Notices"/>
 <EmbeddedResource Include="../../licenses/*.txt" LogicalName="DivineLabs.Licenses.%(Filename)%(Extension)"/>
 <EmbeddedResource Include="../../DivineLabs_Loader/LICENSE.md" LogicalName="DivineLabs.Licenses.MelonLoader.txt"/>

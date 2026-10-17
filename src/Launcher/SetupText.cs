@@ -2,37 +2,44 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Markup;
+using System.Text.Json;
 
 namespace DivineLabs.IdleSlayer.Launcher;
 
 // Interface copy is separate from the original dependency license documents.
-public sealed class SetupText : INotifyPropertyChanged
+public sealed partial class SetupText : INotifyPropertyChanged
 {
+    static SetupText(){foreach(var pair in ExtraCopy())Copy.Add(pair.Key,pair.Value);}
     public static SetupText Current { get; } = new();
     public event PropertyChangedEventHandler PropertyChanged;
     public string Selection { get; private set; } = "auto";
-    public bool English => (Selection == "auto" ? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName : Selection) != "ru";
-    public string this[string key] => Copy.TryGetValue(key, out var value) ? English ? value.En : value.Ru : key;
+    public static readonly string[] Languages={"ru","en","uk","de","es"};
+    public static string ResolveLanguage(string language)=>Languages.Contains(language)?language:"en";
+    public string EffectiveLanguage=>ResolveLanguage(Selection=="auto"?CultureInfo.CurrentUICulture.TwoLetterISOLanguageName:Selection);
+    public string this[string key] => Copy.TryGetValue(key,out var value)?EffectiveLanguage=="ru"?value.Ru:EffectiveLanguage=="en"?value.En:Translations[EffectiveLanguage].GetValueOrDefault(key,value.En):key;
+    public string Translate(string original)
+    {var key=Copy.FirstOrDefault(pair=>pair.Value.Ru==original).Key;return key==null?original:this[key];}
+    public static IEnumerable<string> Keys=>Copy.Keys;
+    public static bool HasTranslation(string language,string key)=>language is "ru" or "en"?Copy.ContainsKey(key):Translations.TryGetValue(language,out var values)&&values.ContainsKey(key);
+    private static readonly Dictionary<string,Dictionary<string,string>> Translations=LoadTranslations();
+    private static Dictionary<string,Dictionary<string,string>> LoadTranslations()
+    {
+        var result=new Dictionary<string,Dictionary<string,string>>();
+        foreach(string language in new[]{"uk","de","es"}){
+            using var stream=typeof(SetupText).Assembly.GetManifestResourceStream("DivineLabs.Locales."+language+".json")??throw new InvalidDataException("Missing locale: "+language);
+            result[language]=JsonSerializer.Deserialize<Dictionary<string,string>>(stream)??throw new InvalidDataException("Empty locale: "+language);
+        }
+        return result;
+    }
     public void Select(string language)
     {
-        if (language is not ("auto" or "ru" or "en")) return;
+        if (language!="auto"&&!Languages.Contains(language)) return;
         Selection = language;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
     }
     public string Progress(string original)
     {
-        if(!English)return original;
-        return original switch {
-            "Распаковка программы…"=>"Unpacking the app…",
-            "Создание резервной копии и установка файлов…"=>"Backing up and installing files…",
-            "Проверка установленного комплекта…"=>"Verifying the installed package…",
-            "Создание ярлыков и регистрация…"=>"Creating shortcuts and registering the app…",
-            "DivineLabs установлен. Всё готово к запуску."=>"DivineLabs is installed and ready to launch.",
-            "Удаление файлов программы…"=>"Removing app files…",
-            "Проверка удаления…"=>"Verifying removal…",
-            "Отключение компонентов и удаление программы…"=>"Disabling components and removing the app…",
-            "Программа удалена."=>"The app has been removed.",
-            "Подготовка…"=>"Preparing…",_=>original};
+        return Translate(original);
     }
     private static readonly Dictionary<string, (string Ru, string En)> Copy = new()
     {
@@ -48,7 +55,7 @@ public sealed class SetupText : INotifyPropertyChanged
         ["LicenseTitle"] = ("Лицензии и компоненты", "Licenses and components"),
         ["LicenseBody"] = ("Перед установкой ознакомьтесь с условиями использования.", "Review the terms before installing."),
         ["Loader"] = ("Загрузчик", "Loader"), ["Dependencies"] = ("Зависимости", "Dependencies"),
-        ["Accept"] = ("Я принимаю условия Apache 2.0 и ознакомился с лицензиями компонентов.", "I accept Apache 2.0 and have reviewed the component licenses."),
+        ["Accept"] = ("Я принимаю условия MIT DivineLabs и ознакомился с лицензиями компонентов.", "I accept the DivineLabs MIT license and have reviewed the component licenses."),
         ["AcceptFirst"] = ("Примите условия", "Accept the terms"),
         ["AcceptHint"] = ("Отметьте принятие условий под текстом лицензии.", "Accept the terms below the license text to continue."),
         ["OptionsTitle"] = ("Куда установить программу?", "Where should we install the app?"),
@@ -107,6 +114,18 @@ public sealed class SetupText : INotifyPropertyChanged
         ["Language"] = ("ЯЗЫК ИНТЕРФЕЙСА", "INTERFACE LANGUAGE"),
         ["Automatic"] = ("Автоматически", "Automatic"), ["Recommended"] = ("Рекомендуется · ", "Recommended · "),
         ["Minimize"] = ("Свернуть", "Minimize"), ["Maximize"] = ("Развернуть", "Maximize"), ["Close"] = ("Закрыть", "Close"),
+        ["Theme"]=("Тема оформления","Appearance"),["ThemeSystem"]=("Системная","System"),["ThemeLight"]=("Светлая","Light"),["ThemeDark"]=("Тёмная","Dark"),
+        ["Unpacking"]=("Распаковка программы…","Unpacking the app…"),["BackingUp"]=("Создание резервной копии и установка файлов…","Backing up and installing files…"),
+        ["VerifyingPackage"]=("Проверка установленного комплекта…","Verifying the installed package…"),["Integrations"]=("Создание ярлыков и регистрация…","Creating shortcuts and registering the app…"),
+        ["InstallComplete"]=("DivineLabs установлен. Всё готово к запуску.","DivineLabs is installed and ready to launch."),["RemovingApp"]=("Удаление файлов программы…","Removing app files…"),
+        ["VerifyRemoval"]=("Проверка удаления…","Verifying removal…"),["DisablingApp"]=("Отключение компонентов и удаление программы…","Disabling components and removing the app…"),
+        ["Components"]=("Сведения о компонентах","Component information"),
+        ["Clients"]=("Приложения DivineLabs","DivineLabs apps"),["ClientsBody"]=("Найдите установленные приложения DivineLabs. Поиск не меняет и не удаляет их файлы.","Find installed DivineLabs apps. Discovery does not change or remove their files."),
+        ["Discover"]=("Найти приложения","Find apps"),["ScanFolder"]=("Проверить папку","Scan folder"),["OpenFolder"]=("Открыть папку","Open folder"),
+        ["Discovering"]=("Ищем установленные приложения…","Looking for installed apps…"),["NoClients"]=("Приложения не найдены. Для portable выберите папку с приложением или папку DivineLabs.","No apps found. For portable apps, select the app folder or your DivineLabs folder."),
+        ["DiscoveryFailed"]=("Не удалось выполнить поиск. Проверьте доступ к папке и повторите.","Discovery failed. Check folder access and retry."),["AppsFound"]=("Найдено приложений: {0}","Apps found: {0}"),
+        ["AppFolder"]=("Папка приложений DivineLabs","DivineLabs apps folder"),["CurrentApp"]=("Текущее приложение","Current app"),["InstalledApp"]=("Установлено","Installed"),["PortableApp"]=("Portable","Portable"),
+        ["SomeLocationsUnavailable"]=("Некоторые расположения недоступны для чтения.","Some locations could not be read."),
     };
 }
 

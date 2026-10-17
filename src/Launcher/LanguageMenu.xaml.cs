@@ -12,7 +12,7 @@ public partial class LanguageMenu : UserControl
     private bool keyboardOpened;
     public LanguageMenu()
     {
-        InitializeComponent();Refresh();
+        InitializeComponent();ThemeManager.Attach(this);Refresh();
         Loaded+=(_,_)=>{
             owner=Window.GetWindow(this);
             if(owner==null)return;
@@ -60,14 +60,19 @@ public partial class LanguageMenu : UserControl
     public void Refresh()
     {
         var text = SetupText.Current;
-        CurrentLabel.Text = text.Selection == "auto" ? text["Automatic"] : text.English ? "English" : "Русский";
-        CurrentFlag.Source = (ImageSource)FindResource(text.Selection == "auto" ? "FlagAuto" : text.English ? "FlagEn" : "FlagRu");
+        string Native(string language)=>language switch{"ru"=>"Русский","uk"=>"Українська","de"=>"Deutsch","es"=>"Español",_=>"English"};
+        string Flag(string language)=>language switch{"ru"=>"FlagRu","uk"=>"FlagUk","de"=>"FlagDe","es"=>"FlagEs",_=>"FlagEn"};
+        CurrentLabel.Text = text.Selection == "auto" ? text["Automatic"] : Native(text.EffectiveLanguage);
+        CurrentFlag.Source = (ImageSource)FindResource(text.Selection == "auto" ? "FlagAuto" : Flag(text.EffectiveLanguage));
         RuCheck.Visibility = text.Selection == "ru" ? Visibility.Visible : Visibility.Hidden;
         EnCheck.Visibility = text.Selection == "en" ? Visibility.Visible : Visibility.Hidden;
+        UkCheck.Visibility = text.Selection == "uk" ? Visibility.Visible : Visibility.Hidden;
+        DeCheck.Visibility = text.Selection == "de" ? Visibility.Visible : Visibility.Hidden;
+        EsCheck.Visibility = text.Selection == "es" ? Visibility.Visible : Visibility.Hidden;
         Auto.Background = (Brush)FindResource(text.Selection == "auto" ? "SelectedSurface" : "WhiteSurface");
-        Recommended.Text = text["Recommended"] + (CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ru" ? "Русский" : "English");
+        Recommended.Text = text["Recommended"] + Native(SetupText.ResolveLanguage(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName));
     }
     private void MenuOpened(object sender, EventArgs e) { Refresh(); Motion.Enter((FrameworkElement)Menu.Child); }
     private void SelectLanguage(object sender, RoutedEventArgs e)
-    { SetupText.Current.Select((string)((Button)sender).Tag); Refresh(); CloseMenu(keyboardOpened); LanguageChanged?.Invoke(this, EventArgs.Empty); }
+    { SetupText.Current.Select((string)((Button)sender).Tag); InterfacePreferences.Save(); Refresh(); CloseMenu(keyboardOpened); LanguageChanged?.Invoke(this, EventArgs.Empty); }
 }

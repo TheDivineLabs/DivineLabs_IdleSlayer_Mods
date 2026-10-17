@@ -81,6 +81,6 @@ $docs=Join-Path $Output 'Licenses';New-Item -ItemType Directory -Path $docs | Ou
 Copy-Item -LiteralPath $tools.LoaderLicense -Destination "$docs\LemonLoader-Apache-2.0.txt"
 Copy-Item -LiteralPath $tools.LoaderNotices -Destination "$docs\LemonLoader-NOTICE.txt"
 Copy-Item -LiteralPath (Join-Path $tools.LoaderRoot 'licenses') -Destination (Join-Path $docs 'Dependencies') -Recurse
-Copy-Item -LiteralPath (Join-Path $repo 'LICENSE') -Destination "$docs\DivineLabs-Apache-2.0.txt"
+Copy-Item -LiteralPath (Join-Path $repo 'LICENSE') -Destination "$docs\DivineLabs-MIT.txt"
 "$((Get-FileHash -LiteralPath $apk).Hash)  $([IO.Path]::GetFileName($apk))" | Set-Content -LiteralPath (Join-Path $Output 'SHA256SUMS.txt')
 Write-Output "Создан локальный APK: $apk. Установка на телефон и проверка игрового запуска ещё не выполнялись."

@@ -4,7 +4,7 @@ using System.Windows.Controls;
 namespace DivineLabs.IdleSlayer.Launcher;
 public partial class SocialLinks : UserControl
 {
-    public SocialLinks() => InitializeComponent();
+    public SocialLinks(){InitializeComponent();DivineLabs.DesktopUI.ThemeManager.Attach(this);}
     private void OpenLink(object sender, RoutedEventArgs e)
     {
         try { Process.Start(new ProcessStartInfo((string)((Button)sender).Tag) { UseShellExecute = true }); }

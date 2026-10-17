@@ -9,13 +9,13 @@
   <SolidColorBrush x:Key="SelectedSurface" Color="#F2EFFF"/>
   <SolidColorBrush x:Key="WhiteSurface" Color="White"/>
   <SolidColorBrush x:Key="ButtonHoverBrush" Color="#166658E8"/>
-  <Style x:Key="KeyboardFocus" TargetType="Control"><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Control"><Border BorderBrush="#6658E8" BorderThickness="1" CornerRadius="8" Margin="-3"/></ControlTemplate></Setter.Value></Setter></Style>
-  <DrawingImage x:Key="MinimizeIcon"><DrawingImage.Drawing><GeometryDrawing Geometry="M1,7 L13,7"><GeometryDrawing.Pen><Pen Brush="#253147" Thickness="1.2"/></GeometryDrawing.Pen></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
-  <DrawingImage x:Key="MaximizeIcon"><DrawingImage.Drawing><GeometryDrawing Geometry="M1,1 H13 V13 H1 Z"><GeometryDrawing.Pen><Pen Brush="#253147" Thickness="1.2" LineJoin="Round"/></GeometryDrawing.Pen></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
-  <DrawingImage x:Key="RestoreIcon"><DrawingImage.Drawing><GeometryDrawing Geometry="M4,1 H13 V10 H10 M1,4 H10 V13 H1 Z"><GeometryDrawing.Pen><Pen Brush="#253147" Thickness="1.2" LineJoin="Round"/></GeometryDrawing.Pen></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
-  <DrawingImage x:Key="CloseIcon"><DrawingImage.Drawing><GeometryDrawing Geometry="M1,1 L13,13 M13,1 L1,13"><GeometryDrawing.Pen><Pen Brush="#253147" Thickness="1.2" StartLineCap="Round" EndLineCap="Round"/></GeometryDrawing.Pen></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
+  <Style x:Key="KeyboardFocus" TargetType="Control"><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Control"><Border BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="8" Margin="-3"/></ControlTemplate></Setter.Value></Setter></Style>
+  <DrawingImage x:Key="MinimizeIcon"><DrawingImage.Drawing><GeometryDrawing Geometry="M1,7 L13,7"><GeometryDrawing.Pen><Pen Brush="{DynamicResource Text}" Thickness="1.2"/></GeometryDrawing.Pen></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
+  <DrawingImage x:Key="MaximizeIcon"><DrawingImage.Drawing><GeometryDrawing Geometry="M1,1 H13 V13 H1 Z"><GeometryDrawing.Pen><Pen Brush="{DynamicResource Text}" Thickness="1.2" LineJoin="Round"/></GeometryDrawing.Pen></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
+  <DrawingImage x:Key="RestoreIcon"><DrawingImage.Drawing><GeometryDrawing Geometry="M4,1 H13 V10 H10 M1,4 H10 V13 H1 Z"><GeometryDrawing.Pen><Pen Brush="{DynamicResource Text}" Thickness="1.2" LineJoin="Round"/></GeometryDrawing.Pen></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
+  <DrawingImage x:Key="CloseIcon"><DrawingImage.Drawing><GeometryDrawing Geometry="M1,1 L13,13 M13,1 L1,13"><GeometryDrawing.Pen><Pen Brush="{DynamicResource Text}" Thickness="1.2" StartLineCap="Round" EndLineCap="Round"/></GeometryDrawing.Pen></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
   <Style x:Key="SetupButton" TargetType="Button">
-    <Setter Property="Background" Value="#EFF1F7"/><Setter Property="Foreground" Value="#263147"/><Setter Property="BorderBrush" Value="#DEE3ED"/>
+    <Setter Property="Background" Value="{DynamicResource Surface}"/><Setter Property="Foreground" Value="{DynamicResource Text}"/><Setter Property="BorderBrush" Value="{DynamicResource Line}"/>
     <Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="16,10"/><Setter Property="Margin" Value="0"/>
     <Setter Property="MinHeight" Value="44"/><Setter Property="Cursor" Value="Hand"/>
     <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocus}"/>
@@ -26,7 +26,7 @@
         <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" RecognizesAccessKey="True"/>
       </Grid>
       <ControlTemplate.Triggers>
-        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Hover" Property="Opacity" Value="1"/><Setter TargetName="Body" Property="BorderBrush" Value="#A69CF5"/></Trigger>
+        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Hover" Property="Opacity" Value="1"/><Setter TargetName="Body" Property="BorderBrush" Value="{DynamicResource HoverBorder}"/></Trigger>
         <MultiTrigger><MultiTrigger.Conditions><Condition Property="IsMouseOver" Value="True"/><Condition Property="ui:Motion.Enabled" Value="True"/></MultiTrigger.Conditions><MultiTrigger.EnterActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="Hover" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.12" FillBehavior="Stop"/></Storyboard></BeginStoryboard></MultiTrigger.EnterActions></MultiTrigger>
         <Trigger Property="IsPressed" Value="True"><Setter TargetName="Body" Property="Opacity" Value=".78"/></Trigger>
         <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Body" Property="Opacity" Value=".45"/></Trigger>
@@ -34,28 +34,31 @@
     </ControlTemplate></Setter.Value></Setter>
   </Style>
   <Style x:Key="SocialButton" TargetType="Button" BasedOn="{StaticResource SetupButton}"><Setter Property="Background" Value="Transparent"/><Setter Property="FontSize" Value="13"/><Setter Property="MinHeight" Value="44"/></Style>
-  <Style x:Key="LanguageOption" TargetType="Button" BasedOn="{StaticResource SetupButton}"><Setter Property="Background" Value="White"/><Setter Property="BorderThickness" Value="0"/><Setter Property="MinHeight" Value="52"/><Setter Property="Padding" Value="10"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style>
+  <Style x:Key="LanguageOption" TargetType="Button" BasedOn="{StaticResource SetupButton}"><Setter Property="Background" Value="{DynamicResource WhiteSurface}"/><Setter Property="BorderThickness" Value="0"/><Setter Property="MinHeight" Value="52"/><Setter Property="Padding" Value="10"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style>
   <Style x:Key="ChromeButton" TargetType="Button" BasedOn="{StaticResource SetupButton}">
     <Setter Property="Background" Value="Transparent"/><Setter Property="BorderBrush" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Width" Value="48"/><Setter Property="Height" Value="48"/><Setter Property="Padding" Value="0"/><Setter Property="HorizontalContentAlignment" Value="Center"/>
-    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border x:Name="Body" Background="Transparent"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Body" Property="Background" Value="#EAE6FA"/></Trigger><Trigger Property="IsPressed" Value="True"><Setter TargetName="Body" Property="Background" Value="#DDD7F7"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border x:Name="Body" Background="Transparent"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Body" Property="Background" Value="{DynamicResource HoverSurface}"/></Trigger><Trigger Property="IsPressed" Value="True"><Setter TargetName="Body" Property="Background" Value="{DynamicResource PressedSurface}"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
   </Style>
   <Style x:Key="MaximizeGlyph" TargetType="Image"><Setter Property="Source" Value="{StaticResource MaximizeIcon}"/><Setter Property="Width" Value="12"/><Setter Property="Height" Value="12"/><Style.Triggers><DataTrigger Binding="{Binding WindowState,RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized"><Setter Property="Source" Value="{StaticResource RestoreIcon}"/></DataTrigger></Style.Triggers></Style>
   <DrawingImage x:Key="FlagRu"><DrawingImage.Drawing><DrawingGroup><GeometryDrawing Brush="White" Geometry="M0,0 H30 V6 H0 Z"/><GeometryDrawing Brush="#3265B0" Geometry="M0,6 H30 V12 H0 Z"/><GeometryDrawing Brush="#D84B54" Geometry="M0,12 H30 V18 H0 Z"/></DrawingGroup></DrawingImage.Drawing></DrawingImage>
+  <DrawingImage x:Key="FlagUk"><DrawingImage.Drawing><DrawingGroup><GeometryDrawing Brush="#2472CD" Geometry="M0,0 H30 V9 H0 Z"/><GeometryDrawing Brush="#FFDA44" Geometry="M0,9 H30 V18 H0 Z"/></DrawingGroup></DrawingImage.Drawing></DrawingImage>
+  <DrawingImage x:Key="FlagDe"><DrawingImage.Drawing><DrawingGroup><GeometryDrawing Brush="#202028" Geometry="M0,0 H30 V6 H0 Z"/><GeometryDrawing Brush="#DA3140" Geometry="M0,6 H30 V12 H0 Z"/><GeometryDrawing Brush="#FFCF43" Geometry="M0,12 H30 V18 H0 Z"/></DrawingGroup></DrawingImage.Drawing></DrawingImage>
+  <DrawingImage x:Key="FlagEs"><DrawingImage.Drawing><DrawingGroup><GeometryDrawing Brush="#C93440" Geometry="M0,0 H30 V18 H0 Z"/><GeometryDrawing Brush="#FFD44A" Geometry="M0,4.5 H30 V13.5 H0 Z"/><GeometryDrawing Brush="#BC5B48" Geometry="M7,7 H10 V11 H7 Z"/></DrawingGroup></DrawingImage.Drawing></DrawingImage>
   <DrawingImage x:Key="FlagEn"><DrawingImage.Drawing><DrawingGroup><GeometryDrawing Brush="#23457B" Geometry="M0,0 H30 V18 H0 Z"/><GeometryDrawing Pen="{x:Null}" Brush="White" Geometry="M0,0 H4 L30,15 V18 H26 L0,3 Z M30,0 H26 L0,15 V18 H4 L30,3 Z"/><GeometryDrawing Brush="#C94958" Geometry="M0,0 H2 L30,17 V18 H28 L0,1 Z M30,0 H28 L0,17 V18 H2 L30,1 Z"/><GeometryDrawing Brush="White" Geometry="M11,0 H19 V18 H11 Z M0,5 H30 V13 H0 Z"/><GeometryDrawing Brush="#C94958" Geometry="M13,0 H17 V18 H13 Z M0,7 H30 V11 H0 Z"/></DrawingGroup></DrawingImage.Drawing></DrawingImage>
-  <DrawingImage x:Key="FlagAuto"><DrawingImage.Drawing><GeometryDrawing><GeometryDrawing.Pen><Pen Brush="#6658E8" Thickness="1.5"/></GeometryDrawing.Pen><GeometryDrawing.Geometry><GeometryGroup><EllipseGeometry Center="10,10" RadiusX="9" RadiusY="9"/><EllipseGeometry Center="10,10" RadiusX="4" RadiusY="9"/><LineGeometry StartPoint="1,10" EndPoint="19,10"/></GeometryGroup></GeometryDrawing.Geometry></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
+  <DrawingImage x:Key="FlagAuto"><DrawingImage.Drawing><GeometryDrawing><GeometryDrawing.Pen><Pen Brush="{DynamicResource Accent}" Thickness="1.5"/></GeometryDrawing.Pen><GeometryDrawing.Geometry><GeometryGroup><EllipseGeometry Center="10,10" RadiusX="9" RadiusY="9"/><EllipseGeometry Center="10,10" RadiusX="4" RadiusY="9"/><LineGeometry StartPoint="1,10" EndPoint="19,10"/></GeometryGroup></GeometryDrawing.Geometry></GeometryDrawing></DrawingImage.Drawing></DrawingImage>
   <Style TargetType="Button" BasedOn="{StaticResource SetupButton}">
-    <Setter Property="Background" Value="#EFF1F7"/><Setter Property="Foreground" Value="#263147"/><Setter Property="BorderBrush" Value="#DDE2ED"/><Setter Property="MinHeight" Value="42"/>
+    <Setter Property="Background" Value="{DynamicResource Surface}"/><Setter Property="Foreground" Value="{DynamicResource Text}"/><Setter Property="BorderBrush" Value="{DynamicResource Line}"/><Setter Property="MinHeight" Value="42"/>
   </Style>
   <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource SetupButton}">
     <Style.Resources><SolidColorBrush x:Key="ButtonHoverBrush" Color="#22FFFFFF"/></Style.Resources><Setter Property="MinHeight" Value="42"/>
-    <Setter Property="Background" Value="#6658E8"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderBrush" Value="#6658E8"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="MinWidth" Value="130"/>
+    <Setter Property="Background" Value="{DynamicResource AccentSolid}"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderBrush" Value="{DynamicResource Accent}"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="MinWidth" Value="130"/>
   </Style>
   <Style TargetType="ScrollBar">
-    <Setter Property="Width" Value="10"/><Setter Property="Background" Value="#EDF0F6"/>
+    <Setter Property="Width" Value="10"/><Setter Property="Background" Value="{DynamicResource ScrollTrack}"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ScrollBar">
       <Grid><Border Background="{TemplateBinding Background}" CornerRadius="5"/>
         <Track x:Name="PART_Track" IsDirectionReversed="True" Orientation="{TemplateBinding Orientation}">
-          <Track.Thumb><Thumb MinHeight="22"><Thumb.Template><ControlTemplate TargetType="Thumb"><Border x:Name="Grip" Background="#9AA5B5" CornerRadius="4" Margin="1"/><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Grip" Property="Background" Value="#7D899D"/></Trigger><Trigger Property="IsDragging" Value="True"><Setter TargetName="Grip" Property="Background" Value="#6658E8"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Thumb.Template></Thumb></Track.Thumb>
+          <Track.Thumb><Thumb MinHeight="22"><Thumb.Template><ControlTemplate TargetType="Thumb"><Border x:Name="Grip" Background="{DynamicResource ScrollThumb}" CornerRadius="4" Margin="1"/><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Grip" Property="Background" Value="{DynamicResource ScrollHover}"/></Trigger><Trigger Property="IsDragging" Value="True"><Setter TargetName="Grip" Property="Background" Value="{DynamicResource AccentSolid}"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Thumb.Template></Thumb></Track.Thumb>
           <Track.DecreaseRepeatButton><RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0" Focusable="False"/></Track.DecreaseRepeatButton>
           <Track.IncreaseRepeatButton><RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0" Focusable="False"/></Track.IncreaseRepeatButton>
         </Track>
@@ -64,54 +67,54 @@
     <Style.Triggers><Trigger Property="Orientation" Value="Horizontal"><Setter Property="Width" Value="Auto"/><Setter Property="Height" Value="10"/></Trigger></Style.Triggers>
   </Style>
   <Style TargetType="TextBox" BasedOn="{StaticResource BaseTextBox}">
-    <Setter Property="Background" Value="White"/><Setter Property="Foreground" Value="#1B2638"/><Setter Property="CaretBrush" Value="#6658E8"/><Setter Property="BorderBrush" Value="#DDE2ED"/>
+    <Setter Property="Background" Value="{DynamicResource WhiteSurface}"/><Setter Property="Foreground" Value="{DynamicResource Text}"/><Setter Property="CaretBrush" Value="{DynamicResource AccentSolid}"/><Setter Property="BorderBrush" Value="{DynamicResource Line}"/>
   </Style>
   <Style TargetType="CheckBox" BasedOn="{StaticResource BaseCheckBox}">
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="CheckBox">
       <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="24"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-        <Border x:Name="Box" Width="20" Height="20" VerticalAlignment="Center" Background="White" BorderBrush="#BAC3D3" BorderThickness="1" CornerRadius="5">
+        <Border x:Name="Box" Width="20" Height="20" VerticalAlignment="Center" Background="{DynamicResource WhiteSurface}" BorderBrush="{DynamicResource ScrollThumb}" BorderThickness="1" CornerRadius="5">
           <TextBlock x:Name="Tick" Text="✓" FontSize="15" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
         </Border>
         <ContentPresenter Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True"/>
       </Grid>
       <ControlTemplate.Triggers>
-        <Trigger Property="IsChecked" Value="True"><Setter TargetName="Box" Property="Background" Value="#6658E8"/><Setter TargetName="Box" Property="BorderBrush" Value="#6658E8"/><Setter TargetName="Tick" Property="Visibility" Value="Visible"/></Trigger>
-        <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Box" Property="BorderBrush" Value="#6658E8"/><Setter TargetName="Box" Property="BorderThickness" Value="2"/></Trigger>
+        <Trigger Property="IsChecked" Value="True"><Setter TargetName="Box" Property="Background" Value="{DynamicResource AccentSolid}"/><Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource AccentSolid}"/><Setter TargetName="Tick" Property="Visibility" Value="Visible"/></Trigger>
+        <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource AccentSolid}"/><Setter TargetName="Box" Property="BorderThickness" Value="2"/></Trigger>
         <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value=".5"/></Trigger>
       </ControlTemplate.Triggers>
     </ControlTemplate></Setter.Value></Setter>
   </Style>
   <Style TargetType="ComboBoxItem">
-    <Setter Property="Foreground" Value="#263147"/><Setter Property="Padding" Value="12,9"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="Foreground" Value="{DynamicResource Text}"/><Setter Property="Padding" Value="12,9"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBoxItem">
-      <Border x:Name="Body" Background="White" CornerRadius="5" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border>
+      <Border x:Name="Body" Background="{DynamicResource WhiteSurface}" CornerRadius="5" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border>
       <ControlTemplate.Triggers><Trigger Property="IsHighlighted" Value="True"><Setter TargetName="Body" Property="Background" Value="#F0EEFF"/></Trigger><Trigger Property="IsSelected" Value="True"><Setter TargetName="Body" Property="Background" Value="#E6E1FF"/></Trigger></ControlTemplate.Triggers>
     </ControlTemplate></Setter.Value></Setter>
   </Style>
   <Style TargetType="ComboBox">
-    <Setter Property="Foreground" Value="#263147"/><Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#DEE3ED"/><Setter Property="Padding" Value="12,10"/><Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+    <Setter Property="Foreground" Value="{DynamicResource Text}"/><Setter Property="Background" Value="{DynamicResource WhiteSurface}"/><Setter Property="BorderBrush" Value="{DynamicResource Line}"/><Setter Property="Padding" Value="12,10"/><Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBox">
       <Grid>
         <Border x:Name="Edge" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="7"/>
-        <ContentPresenter IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" Margin="13,10,36,10" VerticalAlignment="Center"/>
+        <ContentPresenter IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" Margin="12,6,30,6" VerticalAlignment="Center"/>
         <ToggleButton Focusable="False" ClickMode="Press" IsChecked="{Binding IsDropDownOpen,RelativeSource={RelativeSource TemplatedParent},Mode=TwoWay}" Background="Transparent">
-          <ToggleButton.Template><ControlTemplate TargetType="ToggleButton"><Border Background="Transparent"><Path Data="M0,0 L5,5 10,0" Stroke="#667389" StrokeThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"/></Border></ControlTemplate></ToggleButton.Template>
+          <ToggleButton.Template><ControlTemplate TargetType="ToggleButton"><Border Background="Transparent"><Path Data="M0,0 L5,5 10,0" Stroke="{DynamicResource Muted}" StrokeThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"/></Border></ControlTemplate></ToggleButton.Template>
         </ToggleButton>
         <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True" Focusable="False">
-          <Border Background="White" BorderBrush="#DEE3ED" BorderThickness="1" CornerRadius="8" Padding="4" MinWidth="{Binding ActualWidth,RelativeSource={RelativeSource TemplatedParent}}" Margin="0,4,0,0">
+          <Border Background="{DynamicResource WhiteSurface}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="4" MinWidth="{Binding ActualWidth,RelativeSource={RelativeSource TemplatedParent}}" Margin="0,4,0,0">
             <ScrollViewer MaxHeight="240" CanContentScroll="True"><ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/></ScrollViewer>
           </Border>
         </Popup>
       </Grid>
-      <ControlTemplate.Triggers><Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="Edge" Property="BorderBrush" Value="#6658E8"/></Trigger></ControlTemplate.Triggers>
+      <ControlTemplate.Triggers><Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="Edge" Property="BorderBrush" Value="{DynamicResource AccentSolid}"/></Trigger></ControlTemplate.Triggers>
     </ControlTemplate></Setter.Value></Setter>
   </Style>
   <DrawingImage x:Key="BadgeLogo"><DrawingImage.Drawing><DrawingGroup>
-    <GeometryDrawing Brush="#6658E8"><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,32,32" RadiusX="8" RadiusY="8"/></GeometryDrawing.Geometry></GeometryDrawing>
+    <GeometryDrawing Brush="{DynamicResource Accent}"><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,32,32" RadiusX="8" RadiusY="8"/></GeometryDrawing.Geometry></GeometryDrawing>
     <DrawingGroup><DrawingGroup.Transform><MatrixTransform Matrix=".22,0,0,.22,1.04,.6"/></DrawingGroup.Transform><GeometryDrawing Brush="White" Geometry="M28,38 C28,22 40,16 54,16 L64,16 C82,16 96,26 104,42 L50,42 C41,42 33,47 28,54 Z M28,66 C28,54 40,48 52,48 L106,48 C109,58 109,67 106,78 L50,78 C41,78 33,83 28,91 Z M28,102 C28,90 40,84 52,84 L103,84 C95,102 79,114 61,114 L49,114 C40,114 33,119 28,124 Z"/></DrawingGroup>
   </DrawingGroup></DrawingImage.Drawing></DrawingImage>
   <Style TargetType="ProgressBar">
-    <Setter Property="Foreground" Value="#6658E8"/><Setter Property="Background" Value="#E2E7F0"/><Setter Property="Height" Value="6"/>
+    <Setter Property="Foreground" Value="{DynamicResource Accent}"/><Setter Property="Background" Value="{DynamicResource ProgressTrack}"/><Setter Property="Height" Value="6"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ProgressBar">
       <Grid x:Name="PART_Track" ClipToBounds="True"><Border Background="{TemplateBinding Background}" CornerRadius="3"/><Border x:Name="PART_Indicator" Background="{TemplateBinding Foreground}" HorizontalAlignment="Left" CornerRadius="3"/></Grid>
     </ControlTemplate></Setter.Value></Setter>

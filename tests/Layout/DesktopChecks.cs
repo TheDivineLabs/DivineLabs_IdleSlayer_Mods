@@ -37,6 +37,13 @@ internal static class DesktopChecks
             ((UIElement)popup.Child).RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,source,0,Key.Escape){RoutedEvent=Keyboard.PreviewKeyDownEvent});Pump(window);
             Require(!popup.IsOpen,"Escape did not dismiss the language menu");
 
+            var picker=FindThemePicker(window)??throw new InvalidOperationException("Theme picker missing");
+            var themes=(ComboBox)picker.FindName("Choice");
+            themes.SelectedIndex=2;Pump(window);
+            Require(DivineLabs.DesktopUI.ThemeManager.Selection=="dark"&&((SolidColorBrush)window.FindResource("Background")).Color.R<40,"Theme picker did not apply the dark palette");
+            themes.SelectedIndex=1;Pump(window);
+            Require(DivineLabs.DesktopUI.ThemeManager.Selection=="light"&&((SolidColorBrush)window.FindResource("Background")).Color.R>240,"Theme picker did not apply the light palette");
+
             var primary=(Button)window.FindName("Primary");
             primary.ApplyTemplate();
             var hover=(FrameworkElement)primary.Template.FindName("Hover",primary);
@@ -51,7 +58,7 @@ internal static class DesktopChecks
             Capture(window,Path.Combine(output,"desktop-maximized.png"));
             File.WriteAllText(Path.Combine(output,"desktop-checks.json"),JsonSerializer.Serialize(new{
                 MaxWidth=window.ActualWidth,MaxHeight=window.ActualHeight,WorkArea=work.ToString(),FooterBottom=actualFooter.Bottom,
-                Checks=new[]{"Language repeat click","Outside preview click","Keyboard open and Escape","Full button hover bounds","Actual maximized HWND layout and footer"},
+                Checks=new[]{"Language repeat click","Outside preview click","Keyboard open and Escape","Theme picker light/dark selection","Full button hover bounds","Actual maximized HWND layout and footer"},
                 Input="WPF routed events in a shown HWND; not physical mouse acceptance"
             },new JsonSerializerOptions{WriteIndented=true}));
             window.WindowState=WindowState.Normal;Pump(window);
@@ -63,6 +70,12 @@ internal static class DesktopChecks
     private static void Pump(Window window)
     {window.Dispatcher.Invoke(()=>{},DispatcherPriority.ApplicationIdle);window.UpdateLayout();}
     private static void Require(bool result,string message){if(!result)throw new InvalidOperationException(message);}
+    private static ThemePicker? FindThemePicker(DependencyObject root)
+    {
+        if(root is ThemePicker picker)return picker;
+        for(int i=0;i<VisualTreeHelper.GetChildrenCount(root);i++){var found=FindThemePicker(VisualTreeHelper.GetChild(root,i));if(found!=null)return found;}
+        return null;
+    }
     private static void Capture(Window window,string path)
     {
         var root=(FrameworkElement)window.Content;

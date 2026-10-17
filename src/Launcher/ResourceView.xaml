@@ -1,23 +1,22 @@
-<UserControl x:Class="DivineLabs.IdleSlayer.Launcher.ResourceView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
- <UserControl.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/DivineLabs.DesktopUI;component/ApplicationTheme.xaml" /></ResourceDictionary.MergedDictionaries></ResourceDictionary></UserControl.Resources>
+<UserControl x:Class="DivineLabs.IdleSlayer.Launcher.ResourceView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:DivineLabs.IdleSlayer.Launcher"><UserControl.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/DivineLabs.DesktopUI;component/ApplicationTheme.xaml"/></ResourceDictionary.MergedDictionaries></ResourceDictionary></UserControl.Resources>
  <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
-  <TextBlock Text="Ресурсы" Style="{StaticResource Heading}" />
-  <TextBlock Text="Разовая выдача в загруженной игре. Перед изменением создаётся резервная копия сохранений." Style="{StaticResource Caption}" />
+  <TextBlock Text="{local:Tr Resources}" Style="{StaticResource Heading}" />
+  <TextBlock Text="{local:Tr ResourceBody}" Style="{StaticResource Caption}" />
   <Border Style="{StaticResource Card}"><StackPanel>
-   <TextBlock x:Name="Balances" Text="Запустите игру и обновите баланс." TextWrapping="Wrap" FontSize="18" />
-   <Button Content="Обновить баланс" Click="RefreshClick" HorizontalAlignment="Left" Margin="0,16,0,0" />
+   <TextBlock x:Name="Balances" Text="{local:Tr StartBalance}" TextWrapping="Wrap" FontSize="18" />
+   <Button Content="{local:Tr RefreshBalance}" Click="RefreshClick" HorizontalAlignment="Left" Margin="0,16,0,0" />
   </StackPanel></Border>
   <Border Style="{StaticResource Card}"><StackPanel>
-   <TextBlock Text="Выдать ресурс" FontSize="22" Margin="0,0,0,14" />
+   <TextBlock Text="{local:Tr GrantResource}" FontSize="22" Margin="0,0,0,14" />
    <StackPanel x:Name="Editor">
     <ComboBox x:Name="Resource" SelectionChanged="ResourceChanged" DisplayMemberPath="Title" Margin="0,0,0,16" MinHeight="36" />
-    <StackPanel x:Name="MaterialPanel" Visibility="Collapsed"><TextBlock Text="Поиск материала" Style="{StaticResource Caption}"/><TextBox x:Name="MaterialSearch" TextChanged="SearchChanged"/><ComboBox x:Name="Material" DisplayMemberPath="Title" MinHeight="36" Margin="0,0,0,16" SelectionChanged="MaterialChanged"/><TextBlock x:Name="MaterialHint" Style="{StaticResource Caption}" /></StackPanel>
-    <TextBlock Text="Количество · целое число от 1, допускается запись 1e12" Style="{StaticResource Caption}" />
+    <StackPanel x:Name="MaterialPanel" Visibility="Collapsed"><TextBlock Text="{local:Tr SearchMaterial}" Style="{StaticResource Caption}"/><TextBox x:Name="MaterialSearch" TextChanged="SearchChanged"/><ComboBox x:Name="Material" DisplayMemberPath="Title" MinHeight="36" Margin="0,0,0,16" SelectionChanged="MaterialChanged"/><TextBlock x:Name="MaterialHint" Style="{StaticResource Caption}" /></StackPanel>
+    <TextBlock Text="{local:Tr AmountHelp}" Style="{StaticResource Caption}" />
     <TextBox x:Name="Amount" Text="100" MaxLength="340" />
     <TextBlock x:Name="Hint" Style="{StaticResource Caption}" />
    </StackPanel>
-   <Button x:Name="Give" Content="Выдать" Style="{StaticResource Primary}" Click="GiveClick" HorizontalAlignment="Left" />
-   <TextBlock x:Name="Result" TextWrapping="Wrap" Foreground="{StaticResource Accent}" Margin="0,16,0,0" />
+   <Button x:Name="Give" Content="{local:Tr Grant}" Style="{StaticResource Primary}" Click="GiveClick" HorizontalAlignment="Left" />
+   <TextBlock x:Name="Result" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" Margin="0,16,0,0" />
   </StackPanel></Border>
  </StackPanel></ScrollViewer>
 </UserControl>

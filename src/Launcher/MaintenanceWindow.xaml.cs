@@ -34,13 +34,15 @@ public partial class MaintenanceWindow : Window
     {
         string Arg(string name,string fallback=""){int i=Array.IndexOf(args,name);return i>=0&&i+1<args.Length?args[i+1]:fallback;}
         worker=Arg("--worker");uninstall=args.Contains("--uninstall");
-        InitializeComponent();Style=(Style)FindResource(typeof(Window));
-        DesktopWindow.Attach(this);
+        InterfacePreferences.Load();InitializeComponent();Style=(Style)FindResource(typeof(Window));
+        DesktopWindow.Attach(this);ThemeManager.Attach(this);
         Icon=new BitmapImage(new Uri("pack://application:,,,/DivineLabs.IdleSlayer.Launcher;component/DivineLabs.png"));
         Motion.SetEnabled(this,SystemParameters.ClientAreaAnimation);
         steps=(uninstall?new[]{"Начало","Параметры","Удаление","Готово"}:new[]{"Начало","Лицензии","Параметры","Установка","Готово"})
             .Select((title,index)=>new MaintenanceStep(title,index)).ToList();
         Steps.ItemsSource=steps;
+        ThemeManager.Changed+=ThemeChanged;
+        Closed+=(_,_)=>ThemeManager.Changed-=ThemeChanged;
         TargetPath.Text=Arg("--dir",InstallTarget.DefaultDirectory);
         LoadLicenses();OwnTab.IsChecked=true;
         long.TryParse(Arg("--required-bytes"),out requiredBytes);
@@ -97,11 +99,12 @@ public partial class MaintenanceWindow : Window
     {using var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream(name);if(stream==null)return "Текст лицензии недоступен. Проверьте комплект.";using var reader=new StreamReader(stream);return reader.ReadToEnd();}
     private void LoadLicenses()
     {
-        documents.Add(new("Apache License 2.0",Embedded("DivineLabs.License"),"own"));
+        documents.Add(new("DivineLabs — MIT License",Embedded("DivineLabs.License"),"own"));
         documents.Add(new("Сведения о компонентах",Embedded("DivineLabs.Notices"),"deps"));
         foreach(string name in Assembly.GetExecutingAssembly().GetManifestResourceNames().Where(n=>n.StartsWith("DivineLabs.Licenses.",StringComparison.Ordinal)).OrderBy(n=>n))
             documents.Add(new(name["DivineLabs.Licenses.".Length..].Replace(".txt",""),Embedded(name),name.EndsWith(".MelonLoader.txt",StringComparison.Ordinal)?"loader":"deps"));
     }
+    private void ThemeChanged(){foreach(var step in steps)step.Refresh();UpdateProgressLabels();}
     private void LicenseTabChanged(object sender,RoutedEventArgs e)
     {
         if(LicenseSelector==null||documents.Count==0)return;
